@@ -5,7 +5,7 @@ Ansible + Hadoop Prep and Ambari install
 
 This project is under development: Current release .0
 
-
+```
 production                # inventory file for production servers
 stage                     # inventory file for stage environment
 
@@ -45,3 +45,5 @@ roles/
     datanode/             # anything that only applies to datanodes
     masternode/           # ""
     edgenode/             # ""
+    
+    ```
