@@ -1,0 +1,132 @@
+---
+- name: "Build the environment"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+
+  tasks:
+    - name: Create a keypair
+      local_action:
+        module: rax_keypair
+        credentials: "{{ rax_credentials_file }}"
+        name: "{{ rax_sshkeyname }}"
+        public_key: "{{ lookup('file', rax_sshkeyfile) }}"
+        region: "{{ rax_region }}"
+      when: rax_sshkeyname and rax_sshkeyfile and rax_cloud_build|bool
+
+    - name: "Create Ambari host"
+      local_action:
+        module: rax
+        credentials: "{{ rax_credentials_file }}"
+        name: "{{ rax_ambari_fqdn }}"
+        image: "{{ rax_mbd_image }}"
+        flavor: "{{ rax_mbd_flavor }}"
+        region: "{{ rax_region }}"
+        key_name: "{{ rax_sshkeyname }}"
+        exact_count: yes
+        auto_increment: False
+        group: "{{ rax_ambari_fqdn }}"
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax
+      when: rax_cloud_build
+
+    - name: "Add the cloud server to ambari-server variable group"
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
+        ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+        ansible_ssh_user: root
+        groupname: ambari-server
+      with_items: rax.instances
+      when: rax_cloud_build
+
+    - name: "Add the cloud server to mbd-cluster variable group"
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
+        ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+        ansible_ssh_user: root
+        groupname: mbd-cluster
+      with_items: rax.instances
+      when: rax_cloud_build
+
+    - name: "Create CBS Volumes"
+      local_action:
+        module: rax_cbs
+        credentials: "{{ rax_credentials_file }}"
+        name: "{{ item }}"
+        volume_type: "{{ rax_cbs_type }}"
+        size: "{{ rax_cbs_size }}"
+        region: "{{ rax_region }}"
+        state: present
+        wait: true
+      register: cbs_volumes
+      with_items: rax_cbs_volumes
+      when: rax_cbs_build|bool and rax_cloud_build|bool
+
+    - name: "Attach CBS Volumes"
+      local_action:
+        module: rax_cbs_attachments
+        credentials: "{{ rax_credentials_file }}"
+        volume: "{{ item.0 }}"
+        device: "/dev/{{ item.1 }}"
+        server: "{{ rax.instances[0].id }}"
+        region: "{{ rax_region }}"
+        state: present
+        wait: true
+      with_together:
+        - rax_cbs_volumes
+        - hostvars[groups['mbd-cluster'][0]]['mbd_dfs_data_disks']
+      when: rax_cbs_build|bool and rax_cloud_build|bool
+
+- name: "Show debug info"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "MBD cluster info"
+      debug: var=hostvars[item]
+      with_items: groups['mbd-cluster']
+
+- name: "Apply the common role to all cluster nodes"
+  hosts: mbd-cluster
+  sudo: yes
+  sudo_user: root
+  roles:
+    - common
+
+- name: "Apply the datanode role to the Ambari host"
+  hosts: ambari-server
+  sudo: yes
+  sudo_user: root
+  roles:
+    - datanode
+
+- name: "Apply the ambari role to the Ambari host"
+  hosts: ambari-server
+  sudo: yes
+  sudo_user: root
+  roles:
+    - ambari
+
+- name: "Set iptables on the Ambari host"
+  hosts: ambari-server
+  handlers:
+  - name: restart iptables
+    service:
+      name=iptables
+      state=restarted
+  tasks:
+    - name: Set iptables
+      lineinfile: dest=/etc/sysconfig/iptables
+                  insertbefore="^-A INPUT"
+                  line="-A INPUT -s {{ item }}/32 -j ACCEPT"
+                  state=present
+      with_items: hostvars[groups['localhost'][0]]['rax_allow_ips']
+      notify: restart iptables
+      when: hostvars[groups['localhost'][0]]['rax_cloud_build']|bool and hostvars[groups['localhost'][0]]['rax_allow_ips']|length>0
+
