@@ -1,0 +1,125 @@
+---
+- name: "Upload file to Cloud Files"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Download the file first"
+      get_url:
+        url: "{{ input_file_url }}"
+        dest: /tmp/{{ input_file_name }}
+        validate_certs: no
+
+    - name: "Upload the file to the Cloud Files container"
+      rax_files_objects:
+        container: "{{ cfiles_container }}"
+        region: "{{ cbd_region }}"
+        method: put
+        src: /tmp/{{ input_file_name }}
+        credentials: "{{ credentials_file }}"
+
+
+- name: "Build environment"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Create test cluster"
+      local_action:
+        module: rax_cbd
+        credentials: "{{ credentials_file }}"
+        name: "{{ cbd_name }}"
+        type: "{{ cbd_type }}"
+        flavor: "{{ cbd_flavor }}"
+        nodes: "{{ cbd_nodes }}"
+        profile_username: "{{ cbd_profile_username }}"
+        profile_password: "{{ cbd_profile_password }}"
+        postinit_script: "{{ cbd_postinit_script }}"
+        sshkeyname: "{{ cbd_sshkeyname }}"
+        sshkeyfile: "{{ cbd_sshkeyfile }}"
+        region: "{{ cbd_region }}"
+        state: present
+        wait: true
+      register: my_cbd
+
+    - debug: var=my_cbd
+
+    - name: "Add gateway to group"
+      local_action:
+        module: add_host
+        hostname: "{{ my_cbd.cluster.gateway.name }}"
+        ansible_ssh_host: "{{ my_cbd.cluster.gateway.public_v4_address }}"
+        ansible_ssh_user: "{{ my_cbd.cluster.credentials.profile_username }}"
+        groupname: gateway
+      when: my_cbd.cluster.status == 'ACTIVE'
+
+    - name: "Add namenode to group"
+      local_action:
+        module: add_host
+        hostname: "{{ my_cbd.cluster.namenode.name }}"
+        ansible_ssh_host: "{{ my_cbd.cluster.namenode.public_v4_address }}"
+        ansible_ssh_user: "{{ my_cbd.cluster.credentials.profile_username }}"
+        groupname: nodes
+      when: my_cbd.cluster.status == 'ACTIVE'
+
+    - name: "Add datanodes to group"
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        ansible_ssh_host: "{{ item.public_v4_address }}"
+        ansible_ssh_user: "{{ my_cbd.cluster.credentials.profile_username }}"
+        groupname: nodes
+      with_items: my_cbd.cluster.datanodes
+      when: my_cbd.cluster.status == 'ACTIVE'
+
+
+- name: "Configure gateway"
+  hosts: gateway
+  sudo: yes
+  tasks:
+    - name: "Install sysstat"
+      yum: name=sysstat state=latest
+
+
+- name: "Configure nodes"
+  hosts: nodes
+  sudo: yes
+  tasks:
+    - name: "Install sysstat"
+      yum: name=sysstat state=latest
+
+
+- name: "Run MR job"
+  hosts: gateway
+  tasks:
+    - command: hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar wordcount swift://{{ hostvars.localhost.cfiles_container }}.rack-{{ hostvars.localhost.cbd_region|lower }}/{{ hostvars.localhost.input_file_name }} swift://{{ hostvars.localhost.cfiles_container }}.rack-{{ hostvars.localhost.cbd_region|lower }}/{{ hostvars.localhost.cfiles_output_folder }}
+
+
+- name: "Download result file from cloud files"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Download one file from test container"
+      rax_files_objects:
+        container: "{{ cfiles_container }}"
+        region: "{{ cbd_region }}"
+        src: "{{ cfiles_output_folder }}/part-r-00000"
+        credentials: "{{ credentials_file }}"
+        dest: "{{ local_output_folder }}"
+
+
+- name: "Delete environment"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Delete test cluster"
+      local_action:
+        module: rax_cbd
+        credentials: "{{ credentials_file }}"
+        name: "{{ cbd_name }}"
+        region: "{{ cbd_region }}"
+        state: absent
+        wait: true
+

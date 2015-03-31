@@ -1,0 +1,51 @@
+---
+- name: Build a Cloud Big Data cluster
+  gather_facts: False
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Cloud Big Data cluster create request
+      local_action:
+        module: rax_cbd
+        credentials: ~/.raxpub
+        name: my-test-cluster
+        type: HADOOP_HDP2_1
+        flavor: hadoop1-7
+        region: LON
+        profile_username: my-test-user
+        profile_password: Asd123!@#
+        postinit_script: http://fc595594b219777a4395-110c851fb29b5fda459c89608b6c18ea.r82.cf3.rackcdn.com/increase_swift_timeout.sh
+        wait: true
+        state: present
+      register: my_cbd
+
+    - debug: var=my_cbd
+
+    - name: "Add gateway to group"
+      local_action:
+        module: add_host
+        hostname: "{{ my_cbd.cluster.gateway.name }}"
+        ansible_ssh_host: "{{ my_cbd.cluster.gateway.public_v4_address }}"
+        ansible_ssh_user: "{{ my_cbd.cluster.credentials.profile_username }}"
+        ansible_ssh_pass: "{{ my_cbd.cluster.credentials.profile_password }}"
+        groupname: gateway
+      when: my_cbd.cluster.status == 'ACTIVE'
+
+- name: "Run MR job"
+  hosts: gateway
+  tasks:
+    - command: hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar wordcount swift://test-container.rack-lon/input_file swift://test-container.rack-lon/output_folder
+
+- name: "Delete the cluster"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Delete test cluster"
+      local_action:
+        module: rax_cbd
+        credentials: ~/.raxpub
+        name: my-test-cluster
+        region: LON
+        state: absent
+        wait: true
