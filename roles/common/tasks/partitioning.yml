@@ -1,0 +1,21 @@
+---
+- name: Partition and format data disks
+  shell: parted -s -a optimal /dev/{{ item }} mklabel gpt mkpart primary ext4 2048s 100% && sleep 2 && partprobe /dev/{{ item }} && sleep 2 && mkfs.ext4 -m1 /dev/{{ item }}1
+  when: ansible_devices[item]['partitions'] == {}
+  with_items: data_disks_devices
+
+- name: Disable periodic fsck
+  shell: for disk in $(blkid|grep ext[3,4]|cut -f1 -d':'); do tune2fs -c0 -i0 $disk; done
+
+- name: Mount data disks on slave nodes and single node
+  mount: state=mounted src="/dev/{{ item.1 }}1" name="/disk{{ item.0 + 1 }}" fstype=ext4 opts=defaults,noatime dump=0 passno=0
+  with_indexed_items: data_disks_devices
+  when: "'slave-nodes' in group_names or groups['hdp-cluster']|length == 1"
+
+- name: Mount data disks on master nodes
+  mount: state=mounted src="/dev/{{ data_disks_devices[0] }}1" name="/hadoop" fstype=ext4 opts=defaults,noatime dump=0 passno=0
+  when: "groups['hdp-cluster']|length > 1 and 'master-nodes' in group_names"
+
+- name: Mount data disks on edge nodes
+  mount: state=mounted src="/dev/{{ data_disks_devices[0] }}1" name="/hadoop" fstype=ext4 opts=defaults,noatime dump=0 passno=0
+  when: "groups['hdp-cluster']|length > 1 and 'edge-nodes' in group_names"

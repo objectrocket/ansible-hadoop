@@ -1,0 +1,58 @@
+---
+- include: prerequisites.yml
+
+- include: single-node.yml
+  when: groups['master-nodes']|length == 1 and groups['slave-nodes']|length == 0
+
+- include: multi-nodes.yml
+  when: groups['master-nodes']|length > 0 and groups['slave-nodes']|length > 0
+
+- name: Slurp the blueprint
+  slurp: src=/tmp/cluster_blueprint
+  register: cluster_blueprint
+
+- name: Make sure the blueprint doesn't already exist
+  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/blueprints/cluster_blueprint
+       method=DELETE
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202
+  ignore_errors: true
+
+- name: Register the blueprint with the Ambari server
+  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/blueprints/cluster_blueprint
+       method=POST
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{{ cluster_blueprint.content | b64decode }}'
+       status_code=200,201,202
+
+- name: Slurp the cluster creation template
+  slurp: src=/tmp/cluster_template
+  register: cluster_template
+
+- name: Create the cluster instance
+  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/clusters/{{ hdp_cluster_name }}
+       method=POST
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{{ cluster_template.content | b64decode }}'
+       status_code=200,201,202
+
+- name: Change Ambari admin user password
+  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/users/admin
+       method=PUT
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{"Users":{ "password":"{{ hdp_new_admin_password }}", "old_password":"admin"}}'
+       status_code=200,201,202
+  when: hdp_new_admin_password != 'admin'
+  ignore_errors: true

@@ -1,0 +1,6 @@
+---
+- name: Upload single-node blueprint
+  template: src=blueprint-single-node.j2 dest=/tmp/cluster_blueprint mode=0644
+
+- name: Upload single-node cluster creation template
+  template: src=cluster-template-single-node.j2 dest=/tmp/cluster_template mode=0644

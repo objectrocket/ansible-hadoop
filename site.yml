@@ -14,74 +14,231 @@
         region: "{{ rax_region }}"
       when: rax_sshkeyname and rax_sshkeyfile and rax_cloud_build|bool
 
-    - name: "Create Ambari host"
+    - name: "Create master nodes"
       local_action:
         module: rax
         credentials: "{{ rax_credentials_file }}"
-        name: "{{ rax_ambari_fqdn }}"
-        image: "{{ rax_mbd_image }}"
-        flavor: "{{ rax_mbd_flavor }}"
+        name: "master-%02d.{{ rax_cluster_domain }}"
+        image: "{{ rax_hdp_image }}"
+        flavor: "{{ rax_master_flavor }}"
+        count: "{{ rax_master_count }}"
         region: "{{ rax_region }}"
         key_name: "{{ rax_sshkeyname }}"
         exact_count: yes
-        auto_increment: False
-        group: "{{ rax_ambari_fqdn }}"
+        auto_increment: true
+        group: master-nodes
         state: present
         wait: true
         wait_timeout: 900
-      register: rax
+      register: rax_master
       when: rax_cloud_build
 
-    - name: "Add the cloud server to ambari-server variable group"
+    - name: "Add the cloud servers to master-nodes variable group"
       local_action:
         module: add_host
         hostname: "{{ item.name }}"
         servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
         ansible_ssh_host: "{{ item.rax_accessipv4 }}"
         ansible_ssh_user: root
-        groupname: ambari-server
-      with_items: rax.instances
+        groupname: master-nodes
+      with_items: rax_master.instances
       when: rax_cloud_build
 
-    - name: "Add the cloud server to mbd-cluster variable group"
+    - name: "Add the cloud servers to hdp-cluster variable group"
       local_action:
         module: add_host
         hostname: "{{ item.name }}"
         servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
         ansible_ssh_host: "{{ item.rax_accessipv4 }}"
         ansible_ssh_user: root
-        groupname: mbd-cluster
-      with_items: rax.instances
+        groupname: hdp-cluster
+      with_items: rax_master.instances
       when: rax_cloud_build
 
-    - name: "Create CBS Volumes"
+    - name: "Create slave nodes"
+      local_action:
+        module: rax
+        credentials: "{{ rax_credentials_file }}"
+        name: "slave-%02d.{{ rax_cluster_domain }}"
+        image: "{{ rax_hdp_image }}"
+        flavor: "{{ rax_slave_flavor }}"
+        count: "{{ rax_slave_count }}"
+        region: "{{ rax_region }}"
+        key_name: "{{ rax_sshkeyname }}"
+        exact_count: yes
+        auto_increment: true
+        group: slave-nodes
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax_slave
+      when: rax_cloud_build and rax_slave_count > 0
+
+    - name: "Add the cloud servers to slave-nodes variable group"
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
+        ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+        ansible_ssh_user: root
+        groupname: slave-nodes
+      with_items: rax_slave.instances
+      when: rax_cloud_build and rax_slave_count > 0
+
+    - name: "Add the cloud servers to hdp-cluster variable group"
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
+        ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+        ansible_ssh_user: root
+        groupname: hdp-cluster
+      with_items: rax_slave.instances
+      when: rax_cloud_build and rax_slave_count > 0
+
+    - name: "Create edge nodes"
+      local_action:
+        module: rax
+        credentials: "{{ rax_credentials_file }}"
+        name: "edge-%02d.{{ rax_cluster_domain }}"
+        image: "{{ rax_hdp_image }}"
+        flavor: "{{ rax_edge_flavor }}"
+        count: "{{ rax_edge_count }}"
+        region: "{{ rax_region }}"
+        key_name: "{{ rax_sshkeyname }}"
+        exact_count: yes
+        auto_increment: true
+        group: edge-nodes
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax_edge
+      when: rax_cloud_build and rax_edge_count > 0
+
+    - name: "Add the cloud servers to edge-nodes variable group"
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
+        ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+        ansible_ssh_user: root
+        groupname: edge-nodes
+      with_items: rax_edge.instances
+      when: rax_cloud_build and rax_edge_count > 0
+
+    - name: "Add the cloud servers to hdp-cluster variable group"
+      local_action:
+        module: add_host
+        hostname: "{{ item.name }}"
+        servicenet_ip: "{{ item.rax_addresses.private[0].addr }}"
+        ansible_ssh_host: "{{ item.rax_accessipv4 }}"
+        ansible_ssh_user: root
+        groupname: hdp-cluster
+      with_items: rax_edge.instances
+      when: rax_cloud_build and rax_edge_count > 0
+
+    - name: "Create CBS Volumes for master nodes"
       local_action:
         module: rax_cbs
         credentials: "{{ rax_credentials_file }}"
-        name: "{{ item }}"
-        volume_type: "{{ rax_cbs_type }}"
-        size: "{{ rax_cbs_size }}"
+        name: "{{ item[0].name }}_{{ item[1] }}"
+        volume_type: "{{ hostvars[groups['master-nodes'][0]]['data_disks_type'] }}"
+        size: "{{ hostvars[groups['master-nodes'][0]]['data_disks_size'] }}"
         region: "{{ rax_region }}"
         state: present
         wait: true
-      register: cbs_volumes
-      with_items: rax_cbs_volumes
-      when: rax_cbs_build|bool and rax_cloud_build|bool
+      with_nested:
+        - rax_master.instances
+        - hostvars[groups['master-nodes'][0]]['data_disks_devices']
+      when: rax_cbs_build|bool and rax_cloud_build|bool and groups['master-nodes']|length>0
 
-    - name: "Attach CBS Volumes"
+    - name: "Attach CBS Volumes to master nodes"
       local_action:
         module: rax_cbs_attachments
         credentials: "{{ rax_credentials_file }}"
-        volume: "{{ item.0 }}"
-        device: "/dev/{{ item.1 }}"
-        server: "{{ rax.instances[0].id }}"
+        volume: "{{ item[0].name }}_{{ item[1] }}"
+        server: "{{ item[0].id }}"
+        region: "{{ rax_region }}"
+        device: "/dev/{{ item[1] }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_master.instances
+        - hostvars[groups['master-nodes'][0]]['data_disks_devices']
+      when: rax_cbs_build|bool and rax_cloud_build|bool and groups['master-nodes']|length>0
+
+    - name: "Create CBS Volumes for slave nodes"
+      local_action:
+        module: rax_cbs
+        credentials: "{{ rax_credentials_file }}"
+        name: "{{ item[0].name }}_{{ item[1] }}"
+        volume_type: "{{ hostvars[groups['slave-nodes'][0]]['data_disks_type'] }}"
+        size: "{{ hostvars[groups['slave-nodes'][0]]['data_disks_size'] }}"
         region: "{{ rax_region }}"
         state: present
         wait: true
-      with_together:
-        - rax_cbs_volumes
-        - hostvars[groups['mbd-cluster'][0]]['mbd_dfs_data_disks']
-      when: rax_cbs_build|bool and rax_cloud_build|bool
+      with_nested:
+        - rax_slave.instances
+        - hostvars[groups['slave-nodes'][0]]['data_disks_devices']
+      when: rax_cbs_build|bool and rax_cloud_build|bool and groups['slave-nodes']|length>0
+
+    - name: "Attach CBS Volumes to slave nodes"
+      local_action:
+        module: rax_cbs_attachments
+        credentials: "{{ rax_credentials_file }}"
+        volume: "{{ item[0].name }}_{{ item[1] }}"
+        server: "{{ item[0].id }}"
+        region: "{{ rax_region }}"
+        device: "/dev/{{ item[1] }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_slave.instances
+        - hostvars[groups['slave-nodes'][0]]['data_disks_devices']
+      when: rax_cbs_build|bool and rax_cloud_build|bool and groups['slave-nodes']|length>0
+
+    - name: "Create CBS Volumes for edge nodes"
+      local_action:
+        module: rax_cbs
+        credentials: "{{ rax_credentials_file }}"
+        name: "{{ item[0].name }}_{{ item[1] }}"
+        volume_type: "{{ hostvars[groups['edge-nodes'][0]]['data_disks_type'] }}"
+        size: "{{ hostvars[groups['edge-nodes'][0]]['data_disks_size'] }}"
+        region: "{{ rax_region }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_edge.instances
+        - hostvars[groups['edge-nodes'][0]]['data_disks_devices']
+      when: rax_cbs_build|bool and rax_cloud_build|bool and groups['edge-nodes']|length>0
+
+    - name: "Attach CBS Volumes to edge nodes"
+      local_action:
+        module: rax_cbs_attachments
+        credentials: "{{ rax_credentials_file }}"
+        volume: "{{ item[0].name }}_{{ item[1] }}"
+        server: "{{ item[0].id }}"
+        region: "{{ rax_region }}"
+        device: "/dev/{{ item[1] }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_edge.instances
+        - hostvars[groups['edge-nodes'][0]]['data_disks_devices']
+      when: rax_cbs_build|bool and rax_cloud_build|bool and groups['edge-nodes']|length>0
+
+
+- name: "Add nodes to required groups"
+  hosts: localhost
+  tasks:
+    - name: "Add the last masternode to ambari-host variable group"
+      local_action:
+        module: add_host
+        hostname: "{{ hostvars[item].inventory_hostname }}"
+        ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
+        ansible_ssh_user: root
+        groupname: ambari-host
+      with_items: groups['master-nodes']|sort|last
 
 - name: "Show debug info"
   hosts: localhost
@@ -90,43 +247,29 @@
   tasks:
     - name: "MBD cluster info"
       debug: var=hostvars[item]
-      with_items: groups['mbd-cluster']
+      with_items: groups['hdp-cluster']
+    - name: "Ambari info"
+      debug: var=hostvars[item]
+      with_items: groups['ambari-host']
 
 - name: "Apply the common role to all cluster nodes"
-  hosts: mbd-cluster
+  hosts: hdp-cluster
   sudo: yes
   sudo_user: root
   roles:
     - common
 
-- name: "Apply the datanode role to the Ambari host"
-  hosts: ambari-server
+- name: "Apply the ambari-agent role to all cluster nodes"
+  hosts: ambari-agent
   sudo: yes
   sudo_user: root
   roles:
-    - datanode
+    - ambari-agent
 
-- name: "Apply the ambari role to the Ambari host"
-  hosts: ambari-server
+- name: "Apply the ambari-server role to the Ambari host"
+  hosts: ambari-host
   sudo: yes
   sudo_user: root
   roles:
-    - ambari
-
-- name: "Set iptables on the Ambari host"
-  hosts: ambari-server
-  handlers:
-  - name: restart iptables
-    service:
-      name=iptables
-      state=restarted
-  tasks:
-    - name: Set iptables
-      lineinfile: dest=/etc/sysconfig/iptables
-                  insertbefore="^-A INPUT"
-                  line="-A INPUT -s {{ item }}/32 -j ACCEPT"
-                  state=present
-      with_items: hostvars[groups['localhost'][0]]['rax_allow_ips']
-      notify: restart iptables
-      when: hostvars[groups['localhost'][0]]['rax_cloud_build']|bool and hostvars[groups['localhost'][0]]['rax_allow_ips']|length>0
+    - ambari-server
 
