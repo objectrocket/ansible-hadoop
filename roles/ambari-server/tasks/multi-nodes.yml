@@ -1,0 +1,15 @@
+---
+- name: Upload 1-masternode blueprint
+  template: src=blueprint-multi-node-1-master.j2 dest=/tmp/cluster_blueprint mode=0644
+  when: groups['master-nodes']|length == 1
+
+- name: Upload 2-masternodes blueprint
+  template: src=blueprint-multi-node-2-masters.j2 dest=/tmp/cluster_blueprint mode=0644
+  when: groups['master-nodes']|length == 2
+
+- name: Upload 3-masternodes blueprint
+  template: src=blueprint-multi-node-3-masters.j2 dest=/tmp/cluster_blueprint mode=0644
+  when: groups['master-nodes']|length > 2
+
+- name: Upload cluster creation template
+  template: src=cluster-template-multi-nodes.j2 dest=/tmp/cluster_template mode=0644

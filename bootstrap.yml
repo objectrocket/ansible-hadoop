@@ -1,0 +1,20 @@
+---
+- name: "Show debug info"
+  hosts: rax
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "MBD cluster info"
+      debug: var=hostvars[item]
+      with_items: groups['master-nodes']
+    - name: "MBD cluster info"
+      debug: var=hostvars[item]
+      with_items: groups['slave-nodes']
+
+
+- name: "Apply the common role to the master nodes"
+  hosts: master-nodes
+  sudo: yes
+  sudo_user: root
+  roles:
+    - common
