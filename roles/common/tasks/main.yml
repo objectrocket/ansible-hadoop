@@ -51,12 +51,31 @@
     - httpd
   ignore_errors: true
 
-- name: Disable MySQL skip-name-resolve
+- name: Disable MySQL skip-name-resolve if present
   lineinfile: dest=/etc/my.cnf
               regexp="^skip[-_]name[-_]resolve"
               state=absent
 
-- name: Load bridge kernel module
+- name: Set nofile limits
+  lineinfile: dest=/etc/security/limits.conf
+              insertbefore="^# End of file"
+              state=present
+              line="{{ item }}"
+  with_items:
+    - "* soft nofile 32768"
+    - "* hard nofile 32768"
+
+- name: Set nproc limits
+  lineinfile: dest=/etc/security/limits.d/90-nproc.conf
+              insertafter=EOF
+              state=present
+              line="{{ item }}"
+              mode=0644
+  with_items:
+    - "* soft nproc 32768"
+    - "* hard nproc 32768"
+
+- name: Load bridge kernel module to fix sysctl errors
   modprobe: name=bridge state=present
 
 - name: Set swappiness to 1
@@ -82,7 +101,7 @@
   register: result
   with_items: grep_result.stdout_lines
 
-- name: Disable Transparent Huge Pages in case the server is not rebooted
+- name: Disable Transparent Huge Pages until reboot
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
   ignore_errors: true
 
@@ -93,25 +112,6 @@
 - name: Reconfigure resolv.conf search
   lineinfile: dest=/etc/resolv.conf regexp='^search\s+(?! {{ ansible_domain }} ).*$' line='search {{ ansible_domain }}'
   when: ansible_domain != ""
-
-- name: Set nofile limits
-  lineinfile: dest=/etc/security/limits.conf
-              insertbefore="^# End of file"
-              state=present
-              line="{{ item }}"
-  with_items:
-    - "* soft nofile 32768"
-    - "* hard nofile 32768"
-
-- name: Set nproc limits
-  lineinfile: dest=/etc/security/limits.d/90-nproc.conf
-              insertafter=EOF
-              state=present
-              line="{{ item }}"
-              mode=0644
-  with_items:
-    - "* soft nproc 32768"
-    - "* hard nproc 32768"
 
 - name: Set hosts file
   template: src=hosts.j2 dest=/etc/hosts mode=0644
