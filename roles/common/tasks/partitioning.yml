@@ -7,11 +7,11 @@
 - name: Disable periodic fsck
   shell: for disk in $(blkid|grep ext[3,4]|cut -f1 -d':'); do tune2fs -c0 -i0 $disk; done
 
-- name: Mount data disk under /hadoop
+- name: Mount single data disk under /hadoop
   mount: state=mounted src="/dev/{{ data_disks_devices[0] }}1" name="/hadoop" fstype=ext4 opts=defaults,noatime dump=0 passno=0
   when: data_disks_devices and data_disks_devices|length == 1
 
-- name: Mount data disks under /disk{}
+- name: Mount multiple data disks under /disk{}
   mount: state=mounted src="/dev/{{ item.1 }}1" name="/disk{{ item.0 + 1 }}" fstype=ext4 opts=defaults,noatime dump=0 passno=0
   with_indexed_items: data_disks_devices
   when: data_disks_devices and data_disks_devices|length > 1
