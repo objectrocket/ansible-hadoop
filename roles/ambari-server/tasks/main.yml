@@ -12,7 +12,7 @@
   register: cluster_blueprint
 
 - name: Make sure the blueprint doesn't already exist
-  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/blueprints/cluster_blueprint
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
        method=DELETE
        force_basic_auth=yes
        user=admin
@@ -22,7 +22,7 @@
   ignore_errors: true
 
 - name: Register the blueprint with the Ambari server
-  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/blueprints/cluster_blueprint
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
        method=POST
        force_basic_auth=yes
        user=admin
@@ -36,7 +36,7 @@
   register: cluster_template
 
 - name: Create the cluster instance
-  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/clusters/{{ hdp_cluster_name }}
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/clusters/{{ cluster_name }}
        method=POST
        force_basic_auth=yes
        user=admin
@@ -46,13 +46,12 @@
        status_code=200,201,202
 
 - name: Change Ambari admin user password
-  uri: url=http://{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}:8080/api/v1/users/admin
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/users/admin
        method=PUT
        force_basic_auth=yes
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       body='{"Users":{ "password":"{{ hdp_new_admin_password }}", "old_password":"admin"}}'
+       body='{"Users":{ "password":"{{ admin_password }}", "old_password":"admin"}}'
        status_code=200,201,202
-  when: hdp_new_admin_password != 'admin'
-  ignore_errors: true
+  when: admin_password != 'admin'

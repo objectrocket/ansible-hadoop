@@ -1,12 +1,12 @@
 {
   "blueprint" : "cluster_blueprint",
-  "default_password" : "{{ hdp_default_password }}",
+  "default_password" : "{{ services_password }}",
   "host_groups" :[
     {
       "name" : "single_node",
       "hosts" : [
         {
-          "fqdn" : "{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}"
+          "fqdn" : "{{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] }}"
         }
       ]
     }

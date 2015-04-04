@@ -1,8 +1,8 @@
 {
   "blueprint" : "cluster_blueprint",
-  "default_password" : "{{ hdp_default_password }}",
+  "default_password" : "{{ services_password }}",
   "host_groups" :[
-    {% if hostvars[groups['localhost'][0]]['rax_slave_count'] > 0 -%}
+    {% if groups['slave-nodes']|length > 0 and not (groups['slave-nodes']|length == 1 and groups['master-nodes']|length == 2) -%}
     {
       "name" : "slavenode_simple",
       "hosts" : [{% for node in groups['slave-nodes']|sort %}{% if groups['master-nodes']|length == 2 %}{% if not loop.first %}
@@ -40,12 +40,12 @@
       "name" : "masternode_3",
       "hosts" : [
         {
-          "fqdn" : "{{ hostvars[groups['ambari-host'][0]]['ansible_fqdn'] }}"
+          "fqdn" : "{{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] }}"
         }
       ]
     },
     {% endif -%}
-    {% if groups['edge-nodes']|length > 0 -%}
+    {% if 'edge-nodes' in groups -%}
     {
       "name" : "edgenode",
       "hosts" : [{% for node in groups['edge-nodes']|sort %}

@@ -3,18 +3,18 @@
       {
       "hdfs-site" : {
         "dfs.datanode.data.dir" : "{% if data_disks_devices %}{% for disk in data_disks_devices %}/disk{{ loop.index }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
-        "dfs.datanode.failed.volumes.tolerated" : "{{ hdp_dfs_failed_volumes_tolerated }}",
-        "dfs.replication" : "{{ hdp_dfs_replication }}"
+        "dfs.datanode.failed.volumes.tolerated" : "{{ hdfs.failed_volumes_tolerated }}",
+        "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
     },
     {
       "hive-site" : {
         "fs.file.impl.disable.cache" : "true",
         "fs.hdfs.impl.disable.cache" : "true",
-        "javax.jdo.option.ConnectionPassword" : "{{ hdp_default_password }}"
+        "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"
       }
     },
-    {% if hdp_install_hbase == "true" and ansible_memtotal_mb > 24000 -%}
+    {% if install_hbase == "true" and ansible_memtotal_mb > 24000 -%}
     {% if ansible_memtotal_mb > 80000 -%}
     {
       "hbase-env" : {
@@ -74,7 +74,7 @@
     {% endif -%}
     {
       "nagios-env" : {
-        "nagios_contact": "{{ hdp_nagios_contact }}"
+        "nagios_contact": "{{ nagios_contact }}"
       }
     }
   ],
@@ -161,7 +161,7 @@
         {
           "name" : "MYSQL_SERVER"
         },
-        {% if hdp_install_hbase == "true" -%}
+        {% if install_hbase == "true" -%}
         {
           "name" : "HBASE_REGIONSERVER"
         },
@@ -172,7 +172,7 @@
           "name" : "HBASE_MASTER"
         },
         {% endif -%}
-        {% if hdp_install_storm == "true" -%}
+        {% if install_storm == "true" -%}
         {
           "name" : "SUPERVISOR"
         },

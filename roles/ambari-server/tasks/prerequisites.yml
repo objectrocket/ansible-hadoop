@@ -1,12 +1,12 @@
 ---
 - name: Install the Ambari server
-  yum: name=ambari-host state=present
+  yum: name=ambari-server state=present
 
 - name: Run Ambari Server setup
-  shell: /usr/sbin/ambari-host setup -s
+  shell: ps aux|grep -q ambari-serve[r] || /usr/sbin/ambari-server setup -s
 
-- name: Enable the ambari-host service
-  service: name=ambari-host state=restarted enabled=yes
+- name: Enable the ambari-server service
+  service: name=ambari-server state=restarted enabled=yes
 
 - name: Pausing to allow the ambari-agents to register
   pause: seconds=60
