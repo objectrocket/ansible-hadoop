@@ -75,7 +75,7 @@
     - "* soft nproc 32768"
     - "* hard nproc 32768"
 
-- name: Load bridge kernel module to fix sysctl errors
+- name: Load bridge kernel module to prevent sysctl errors
   modprobe: name=bridge state=present
 
 - name: Set swappiness to 1
