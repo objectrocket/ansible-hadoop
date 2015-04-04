@@ -168,35 +168,17 @@
         - data_disks_devices
       when: cloud_nodes_count > 0 and build_cbs
 
-
-- name: "Add nodes to required groups"
-  hosts: localhost
-  connection: local
-  gather_facts: False
-  tasks:
-    - name: "Add the last masternode to ambari-host variable group"
-      local_action:
-        module: add_host
-        hostname: "{{ hostvars[item].inventory_hostname }}"
-        ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
-        ansible_ssh_user: root
-        groupname: ambari-host
-      with_items: groups['master-nodes']|sort|last
-
 - name: "Show debug info"
   hosts: localhost
   connection: local
   gather_facts: False
   tasks:
-    - name: "MBD cluster info"
-      debug: var=hostvars[item]
-      with_items: groups['master-nodes']
-    - name: "MBD cluster info"
-      debug: var=hostvars[item]
-      with_items: groups['slave-nodes']
-    - name: "MBD cluster info"
-      debug: var=hostvars[item]
-      with_items: groups['edge-nodes']
-    - name: "Ambari info"
-      debug: var=hostvars[item]
-      with_items: groups['ambari-host']
+    - name: "Show rax_master info"
+      debug: var=rax_master
+      when: debug
+    - name: "Show rax_slave info"
+      debug: var=rax_slave
+      when: debug
+    - name: "Show rax_edge info"
+      debug: var=rax_edge
+      when: debug
