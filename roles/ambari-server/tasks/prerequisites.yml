@@ -3,7 +3,7 @@
   yum: name=ambari-server state=present
 
 - name: Run Ambari Server setup
-  shell: ps aux|grep -q ambari-serve[r] || /usr/sbin/ambari-server setup -s
+  shell: /usr/sbin/ambari-server setup -s
 
 - name: Enable the ambari-server service
   service: name=ambari-server state=restarted enabled=yes
