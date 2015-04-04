@@ -3,7 +3,7 @@ cluster_name: 'hdp-poc'
 install_hbase: false
 install_storm: false
 admin_password: 'admin'
-default_password: 'AsdQwe123'
+services_password: 'AsdQwe123'
 nagios_contact: 'root@localhost.localdomain'
 hdfs:
   dfs_replication: 1
@@ -13,8 +13,10 @@ cloud_config:
   rax_credentials_file: '~/.raxpub'
   rax_region: 'LON'
   domain: 'localnet'
-  allowed_external_ips:
-    - '127.0.0.1'
+  allowed_external_ips: ['127.0.0.1']
   ssh:
     keyname: 'hadoop-ssh-key'
     keyfile: '~/.ssh/id_rsa.pub'
+
+# set to true to show host variables
+debug: true

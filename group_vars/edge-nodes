@@ -11,8 +11,7 @@ ansible_ssh_user: 'root'
 build_cbs: true
 cbs_disks_size: 100
 cbs_disks_type: 'SATA'
-data_disks_devices:
-  - 'xvde'
+data_disks_devices: ['xvde']
 
 ###########
 # onmetal #
@@ -26,13 +25,12 @@ data_disks_devices:
 # build_cbs: false
 # cbs_disks_size:
 # cbs_disks_type:
-# data_disks_devices:
-#   - 'sda'
+# data_disks_devices: ['sda']
 
 #############
 # dedicated #
 #############
 
 # cluster_interface: 'ansible_bond0'
-# data_disks_devices:
-#   - 'sdb'
+# ansible_ssh_user: 'rack'
+# data_disks_devices: ['sdb']
