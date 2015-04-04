@@ -1,4 +1,4 @@
 127.0.0.1 localhost.localdomain localhost
-{% for server in groups['hdp-cluster'] %}
-{{ hostvars[server][hdp_cluster_interface]['ipv4']['address'] }} {{ hostvars[server]['ansible_fqdn'] }} {{ hostvars[server]['ansible_hostname'] }}
+{% for node in groups['hadoop-cluster'] %}
+{{ hostvars[node][cluster_interface]['ipv4']['address'] }} {{ hostvars[node]['ansible_fqdn'] }} {{ hostvars[node]['ansible_hostname'] }}
 {% endfor %}

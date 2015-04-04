@@ -2,17 +2,17 @@
 - name: Set iptables between cluster nodes
   lineinfile: dest=/etc/sysconfig/iptables
               insertbefore="^-A INPUT"
-              line="-A INPUT -s {{ hostvars[item][hdp_cluster_interface]['ipv4']['address'] }}/32 -j ACCEPT"
+              line="-A INPUT -s {{ hostvars[item][cluster_interface]['ipv4']['address'] }}/32 -j ACCEPT"
               state=present
-  with_items: groups['hdp-cluster']
+  with_items: play_hosts
   notify: Restart iptables
 
-- name: "Set iptables to allow external IPs"
+- name: "Set iptables to allow cluster access from external IPs"
   lineinfile: dest=/etc/sysconfig/iptables
               insertbefore="^-A INPUT"
               line="-A INPUT -s {{ item }}/32 -j ACCEPT"
               state=present
-  with_items: hostvars[groups['localhost'][0]]['rax_allow_ips']
-  notify: restart iptables
-  when: hostvars[groups['localhost'][0]]['rax_cloud_build']|bool and hostvars[groups['localhost'][0]]['rax_allow_ips']|length>0
+  with_items: cloud_config.allowed_external_ips
+  notify: Restart iptables
+  when: cloud_nodes_count and cloud_nodes_count > 0
 
