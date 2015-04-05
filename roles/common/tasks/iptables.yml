@@ -2,7 +2,7 @@
 - name: Set iptables between cluster nodes
   lineinfile: dest=/etc/sysconfig/iptables
               insertbefore="^-A INPUT"
-              line="-A INPUT -s {{ hostvars[item][cluster_interface]['ipv4']['address'] }}/32 -j ACCEPT"
+              line="-A INPUT -s {{ hostvars[item][hostvars[item]['cluster_interface']]['ipv4']['address'] }}/32 -j ACCEPT"
               state=present
   with_items: play_hosts
   notify: Restart iptables
