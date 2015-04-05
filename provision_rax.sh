@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ansible-playbook -i inventory/localhost provision_rax.yml
+ansible-playbook -i inventory/localhost playbooks/provision_rax.yml

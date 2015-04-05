@@ -7,12 +7,12 @@ You can pre-build a Rackspace cloud environment or run the playbooks against an 
 
 ## Configuration files
 
-To customize, change the variables under `group_vars` folder:
+To customize, change the variables under `playbooks/group_vars` folder:
 
-1. **group_vars/all**: contains global cluster and cloud settings
-1. **group_vars/master-nodes**: master-nodes configuration
-1. **group_vars/slave-nodes**: slave-nodes configuration
-1. **group_vars/edge-nodes**: edge-nodes configuration
+1. **playbooks/group_vars/all**: contains global cluster and cloud settings
+1. **playbooks/group_vars/master-nodes**: master-nodes configuration
+1. **playbooks/group_vars/slave-nodes**: slave-nodes configuration
+1. **playbooks/group_vars/edge-nodes**: edge-nodes configuration
 
 For a one-node cluster, set `cloud_nodes_count` in master-nodes to 1 and `cloud_nodes_count` in slave-nodes to 0.
 
@@ -39,7 +39,7 @@ By default, the file is expected to be: `~/.raxpub`
 
 ####`provision_rax.sh`
 
-To provision a cloud environment, run the `provision_rax.sh` script after you've customized the variables under group_vars:
+To provision a cloud environment, run the `provision_rax.sh` script after you've customized the variables under `playbooks/group_vars`:
 ````
 bash provision_rax.sh
 ````
@@ -59,7 +59,7 @@ For dedicated / prebuilt environments, you'll need to manually add the nodes in 
 
 You can also provision a Rackspace Cloud Big Data cluster (http://www.rackspace.com/cloud/big-data) by running this script.
 
-Customize it via the **group_vars/cbd** file.
+Customize it via the `playbooks/group_vars/cbd` file.
 ````
 bash provision_cbd.sh
 ````

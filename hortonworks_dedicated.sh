@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ansible-playbook -i inventory/static hortonworks.yml
+ansible-playbook -i inventory/static playbooks/hortonworks.yml

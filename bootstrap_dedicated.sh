@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ansible-playbook -i inventory/static bootstrap.yml
+ansible-playbook -i inventory/static playbooks/bootstrap.yml

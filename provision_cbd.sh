@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ansible-playbook -i inventory/localhost provision_cbd.yml
+ansible-playbook -i inventory/localhost playbooks/provision_cbd.yml
