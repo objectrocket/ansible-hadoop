@@ -57,7 +57,7 @@ For dedicated / prebuilt environments, you'll need to manually add the nodes in 
 
 ####`provision_cbd.sh`
 
-You can also provision a Rackspace Cloud Big Data cluster (http://www.rackspace.com/cloud/big-data) by running this script.
+Provision a Rackspace Cloud Big Data cluster (http://www.rackspace.com/cloud/big-data) by running this script.
 
 Customize it via the `playbooks/group_vars/cbd` file.
 ````
