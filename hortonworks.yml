@@ -7,7 +7,6 @@
     - name: "Add all cluster nodes to the hadoop-cluster group"
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
-        ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: hadoop-cluster
       with_flattened:
         - groups['master-nodes']|default([])
@@ -16,7 +15,6 @@
     - name: "Add the last masternode to ambari-node variable group"
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
-        ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: ambari-node
       with_items: groups['master-nodes']|sort|last
 
