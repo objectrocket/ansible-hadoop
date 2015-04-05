@@ -117,5 +117,6 @@
   template: src=hosts.j2 dest=/etc/hosts mode=0644
 
 - include: iptables.yml
+  when: cloud_nodes_count and cloud_nodes_count > 0
 
 - include: partitioning.yml
