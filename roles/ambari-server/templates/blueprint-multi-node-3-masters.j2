@@ -196,7 +196,7 @@
       ],
       "cardinality" : "1"
     },
-    {% if groups['edge-nodes']|length > 0 -%}
+    {% if 'edge-nodes' in groups -%}
     {
       "name" : "edgenode",
       "configurations" : [ ],
