@@ -2,7 +2,7 @@
   "configurations" : [
       {
       "hdfs-site" : {
-        "dfs.datanode.data.dir" : "{% if data_disks_devices and data_disks_devices|length > 1 %}{% for disk in data_disks_devices %}/disk{{ loop.index }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
+        "dfs.datanode.data.dir" : "{% if data_disks_devices is defined and data_disks_devices and data_disks_devices|length > 1 %}{% for disk in data_disks_devices %}/disk{{ loop.index }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
         "dfs.datanode.failed.volumes.tolerated" : "{{ hdfs.failed_volumes_tolerated }}",
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
