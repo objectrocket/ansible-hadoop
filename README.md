@@ -1,9 +1,9 @@
-mbd-poc - deploys a Hadoop cluster
+ansible-hadoop
 ---------
 
-This Ansible playbook will build a Hadoop cluster that can be used as a poc for MBD.
+These Ansible playbooks will build a Hadoop cluster (Hortonworks Data Platform).
 
-You can build a cloud environment or run it against an existing one.
+You can pre-build a Rackspace cloud environment or run the playbooks against an existing environment.
 
 ## Configuration files
 
@@ -21,7 +21,7 @@ For a one-node cluster, set `cloud_nodes_count` in master-nodes to 1 and `cloud_
 - Requires Ansible 1.8 or newer
 - Expects CentOS/RHEL 6.x hosts
 
-Building the cloud environment requires `pyrax` Python module so make sure you have it installed: https://github.com/rackspace/pyrax 
+Building the cloud environment requires `pyrax` Python module: https://github.com/rackspace/pyrax 
 
 Also recommended is to run `pip install oslo.config netifaces`.
 
@@ -37,16 +37,29 @@ By default, the file is expected to be: `~/.raxpub`
 
 ## Scripts
 
+####`provision_rax.sh`
+
 To provision a cloud environment, run the `provision_rax.sh` script after you've customized the variables under group_vars:
 ````
 bash provision_rax.sh
 ````
-Similarly, run the bootstrap and hortonworks scripts (in this order), depending what type of environment you have.
 
-For dedicated / prebuilt environments, you'll need to manually add the nodes in the `inventory/static` file.
+####`bootstrap* and hortonworks*`
+
+Similarly, run the bootstrap and hortonworks scripts (in this order), depending what type of environment you have.
 
 Example for a cloud environment:
 ````
 bash bootstrap_rax.sh
 bash hortonworks_rax.sh
+````
+For dedicated / prebuilt environments, you'll need to manually add the nodes in the `inventory/static` file.
+
+####`provision_cbd.sh`
+
+You can also provision a Rackspace Cloud Big Data cluster (http://www.rackspace.com/cloud/big-data) by running this script.
+
+Customize it via the **group_vars/cbd** file.
+````
+bash provision_cbd.sh
 ````
