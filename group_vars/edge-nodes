@@ -17,7 +17,7 @@ data_disks_devices: ['xvde']
 # onmetal #
 ###########
 
-# cluster_interface: 'ansible_bond1.101'
+# cluster_interface: 'ansible_bond0.401'
 # cloud_nodes_count: 0
 # cloud_image: 'OnMetal - CentOS 6'
 # cloud_flavor: 'onmetal-io1'

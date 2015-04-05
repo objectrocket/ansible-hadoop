@@ -4,7 +4,7 @@
 ###################
 
 cluster_interface: 'ansible_eth1'
-cloud_nodes_count: 1
+cloud_nodes_count: 3
 cloud_image: 'CentOS 6 (PVHVM)'
 cloud_flavor: 'general1-8'
 ansible_ssh_user: 'root'
@@ -17,7 +17,7 @@ data_disks_devices: ['xvde', 'xvdf']
 # onmetal #
 ###########
 
-# cluster_interface: 'ansible_bond1.101'
+# cluster_interface: 'ansible_bond0.401'
 # cloud_nodes_count: 3
 # cloud_image: 'OnMetal - CentOS 6'
 # cloud_flavor: 'onmetal-io1'
