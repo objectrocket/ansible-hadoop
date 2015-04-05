@@ -1,0 +1,10 @@
+[master-nodes]
+192.168.0.2 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
+#192.168.0.2 ansible_ssh_user=root ansible_ssh_pass=<root password>
+
+[slave-nodes]
+192.168.0.3 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
+192.168.0.4 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
+
+[edge-nodes]
+#192.168.0.4 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
