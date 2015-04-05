@@ -45,7 +45,7 @@
       ]
     },
     {% endif -%}
-    {% if 'edge-nodes' in groups -%}
+    {% if 'edge-nodes' in groups and groups['edge-nodes']|length > 0 -%}
     {
       "name" : "edgenode",
       "hosts" : [{% for node in groups['edge-nodes']|sort %}
