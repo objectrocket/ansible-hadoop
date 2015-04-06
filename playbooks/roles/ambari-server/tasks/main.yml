@@ -18,7 +18,7 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       status_code=200,201,202
+       status_code=200,201,202,404
   ignore_errors: true
 
 - name: Register the blueprint with the Ambari server
