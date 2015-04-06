@@ -1,0 +1,184 @@
+---
+- name: "Build the environment"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Create the SSH keypair
+      local_action:
+        module: rax_keypair
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "{{ cloud_config.ssh.keyname }}"
+        public_key: "{{ lookup('file', cloud_config.ssh.keyfile) }}"
+        region: "{{ cloud_config.rax_region }}"
+
+    - name: Include master-nodes group variables
+      include_vars: group_vars/master-nodes
+
+    - name: "Create master nodes"
+      local_action:
+        module: rax
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "master-%02d.{{ cloud_config.domain }}"
+        image: "{{ cloud_image }}"
+        flavor: "{{ cloud_flavor }}"
+        count: "{{ cloud_nodes_count }}"
+        region: "{{ cloud_config.rax_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        exact_count: yes
+        auto_increment: true
+        group: master-nodes
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax_master
+      when: cloud_nodes_count > 0
+
+    - name: "Create CBS Volumes for master nodes"
+      local_action:
+        module: rax_cbs
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "{{ item[0].name }}_{{ item[1] }}"
+        volume_type: "{{ cbs_disks_type }}"
+        size: "{{ cbs_disks_size }}"
+        region: "{{ cloud_config.rax_region }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_master.instances
+        - data_disks_devices
+      when: cloud_nodes_count > 0 and build_cbs
+
+    - name: "Attach CBS Volumes to master nodes"
+      local_action:
+        module: rax_cbs_attachments
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        volume: "{{ item[0].name }}_{{ item[1] }}"
+        server: "{{ item[0].id }}"
+        region: "{{ cloud_config.rax_region }}"
+        device: "/dev/{{ item[1] }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_master.instances
+        - data_disks_devices
+      when: cloud_nodes_count > 0 and build_cbs
+
+    - name: Include slave-nodes group variables
+      include_vars: group_vars/slave-nodes
+
+    - name: "Create slave nodes"
+      local_action:
+        module: rax
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "slave-%02d.{{ cloud_config.domain }}"
+        image: "{{ cloud_image }}"
+        flavor: "{{ cloud_flavor }}"
+        count: "{{ cloud_nodes_count }}"
+        region: "{{ cloud_config.rax_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        exact_count: yes
+        auto_increment: true
+        group: slave-nodes
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax_slave
+      when: cloud_nodes_count > 0
+
+    - name: "Create CBS Volumes for slave nodes"
+      local_action:
+        module: rax_cbs
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "{{ item[0].name }}_{{ item[1] }}"
+        volume_type: "{{ cbs_disks_type }}"
+        size: "{{ cbs_disks_size }}"
+        region: "{{ cloud_config.rax_region }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_slave.instances
+        - data_disks_devices
+      when: cloud_nodes_count > 0 and build_cbs
+
+    - name: "Attach CBS Volumes to slave nodes"
+      local_action:
+        module: rax_cbs_attachments
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        volume: "{{ item[0].name }}_{{ item[1] }}"
+        server: "{{ item[0].id }}"
+        region: "{{ cloud_config.rax_region }}"
+        device: "/dev/{{ item[1] }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_slave.instances
+        - data_disks_devices
+      when: cloud_nodes_count > 0 and build_cbs
+
+    - name: Include edge-nodes group variables
+      include_vars: group_vars/edge-nodes
+
+    - name: "Create edge nodes"
+      local_action:
+        module: rax
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "edge-%02d.{{ cloud_config.domain }}"
+        image: "{{ cloud_image }}"
+        flavor: "{{ cloud_flavor }}"
+        count: "{{ cloud_nodes_count }}"
+        region: "{{ cloud_config.rax_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        exact_count: yes
+        auto_increment: true
+        group: edge-nodes
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax_edge
+      when: cloud_nodes_count > 0
+
+    - name: "Create CBS Volumes for edge nodes"
+      local_action:
+        module: rax_cbs
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "{{ item[0].name }}_{{ item[1] }}"
+        volume_type: "{{ cbs_disks_type }}"
+        size: "{{ cbs_disks_size }}"
+        region: "{{ cloud_config.rax_region }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_edge.instances
+        - data_disks_devices
+      when: cloud_nodes_count > 0 and build_cbs
+
+    - name: "Attach CBS Volumes to edge nodes"
+      local_action:
+        module: rax_cbs_attachments
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        volume: "{{ item[0].name }}_{{ item[1] }}"
+        server: "{{ item[0].id }}"
+        region: "{{ cloud_config.rax_region }}"
+        device: "/dev/{{ item[1] }}"
+        state: present
+        wait: true
+      with_nested:
+        - rax_edge.instances
+        - data_disks_devices
+      when: cloud_nodes_count > 0 and build_cbs
+
+- name: "Show debug info"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Show rax_master info"
+      debug: var=rax_master
+      when: debug
+    - name: "Show rax_slave info"
+      debug: var=rax_slave
+      when: debug
+    - name: "Show rax_edge info"
+      debug: var=rax_edge
+      when: debug

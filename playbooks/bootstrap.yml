@@ -1,0 +1,30 @@
+---
+- name: "Add nodes to required groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add all cluster nodes to the hadoop-cluster group"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        groups: hadoop-cluster
+      with_flattened:
+        - groups['master-nodes']|default([])
+        - groups['slave-nodes']|default([])
+        - groups['edge-nodes']|default([])
+
+- name: "Show debug info"
+  hosts: hadoop-cluster
+  sudo: yes
+  sudo_user: root
+  tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+- name: "Apply the common role to all nodes"
+  hosts: hadoop-cluster
+  sudo: yes
+  sudo_user: root
+  roles:
+    - common

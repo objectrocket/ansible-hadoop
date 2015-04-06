@@ -1,0 +1,10 @@
+---
+cluster_type: 'HADOOP_HDP2_2'
+cluster_flavor: 'hadoop1-7'
+cbd_nodes: 2
+
+profile_username: 'my-test-user'
+profile_password: 'AsdQwe!23'
+
+postinit_script: 'http://fc595594b219777a4395-110c851fb29b5fda459c89608b6c18ea.r82.cf3.rackcdn.com/cbd_postinstall_swift_timeouts.sh'
+

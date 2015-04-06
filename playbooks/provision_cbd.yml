@@ -1,0 +1,62 @@
+---
+- name: "Build the environment"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Include cbd group variables
+      include_vars: group_vars/cbd
+
+    - name: "Create cbd cluster"
+      local_action:
+        module: rax_cbd
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "{{ cluster_name }}"
+        type: "{{ cluster_type }}"
+        flavor: "{{ cluster_flavor }}"
+        nodes: "{{ cbd_nodes }}"
+        profile_username: "{{ profile_username }}"
+        profile_password: "{{ profile_password }}"
+        postinit_script: "{{ postinit_script }}"
+        sshkeyname: "{{ cloud_config.ssh.keyname }}"
+        sshkeyfile: "{{ cloud_config.ssh.keyfile }}"
+        region: "{{ cloud_config.rax_region }}"
+        state: present
+        wait: true
+        wait_timeout: 40
+      register: my_cbd
+
+    - name: "Add gateway to groups"
+      add_host:
+        name: "{{ my_cbd.cluster.gateway.name }}"
+        ansible_ssh_host: "{{ my_cbd.cluster.gateway.public_v4_address }}"
+        ansible_ssh_user: "{{ my_cbd.cluster.credentials.profile_username }}"
+        groups: cbd, gateway
+      when: my_cbd.cluster.status == 'ACTIVE'
+
+    - name: "Add namenode to groups"
+      add_host:
+        name: "{{ my_cbd.cluster.namenode.name }}"
+        ansible_ssh_host: "{{ my_cbd.cluster.namenode.public_v4_address }}"
+        ansible_ssh_user: "{{ my_cbd.cluster.credentials.profile_username }}"
+        groupname: cbd, nodes
+      when: my_cbd.cluster.status == 'ACTIVE'
+
+    - name: "Add datanodes to groups"
+      add_host:
+        name: "{{ item.name }}"
+        ansible_ssh_host: "{{ item.public_v4_address }}"
+        ansible_ssh_user: "{{ my_cbd.cluster.credentials.profile_username }}"
+        groupname: cbd, nodes
+      with_items: my_cbd.cluster.datanodes
+      when: my_cbd.cluster.status == 'ACTIVE'
+
+- name: "Show debug info"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Show cbd group"
+      debug: var=hostvars[item]
+      with_items: groups['cbd']
+      when: debug

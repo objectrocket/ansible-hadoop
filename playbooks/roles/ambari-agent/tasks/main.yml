@@ -1,0 +1,14 @@
+---
+- include: repositories.yml
+
+- name: Install the Ambari agent
+  yum: name=ambari-agent state=present
+
+- name: Configure the Ambari agent
+  lineinfile: dest=/etc/ambari-agent/conf/ambari-agent.ini
+              regexp='^hostname='
+              line='hostname={{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] }}'
+              state=present
+
+- name: Enable the ambari-agent service
+  service: name=ambari-agent state=started enabled=yes

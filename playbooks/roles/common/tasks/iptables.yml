@@ -1,0 +1,16 @@
+---
+- name: Set iptables between cluster nodes
+  lineinfile: dest=/etc/sysconfig/iptables
+              insertbefore="^-A INPUT"
+              line="-A INPUT -s {{ hostvars[item][hostvars[item]['cluster_interface']]['ipv4']['address'] }}/32 -j ACCEPT"
+              state=present
+  with_items: play_hosts
+  notify: Restart iptables
+
+- name: "Set iptables to allow cluster access from external IPs"
+  lineinfile: dest=/etc/sysconfig/iptables
+              insertbefore="^-A INPUT"
+              line="-A INPUT -s {{ item }}/32 -j ACCEPT"
+              state=present
+  with_items: cloud_config.allowed_external_ips
+  notify: Restart iptables
