@@ -14,7 +14,7 @@
         "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"
       }
     },
-    {% if install_hbase == "true" and hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
+    {% if install_hbase == true and hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
     {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 80000 -%}
     {
       "hbase-env" : {
@@ -84,11 +84,24 @@
       "configurations" : [ ],
       "components" : [
         {
+          "name" : "ZOOKEEPER_CLIENT"
+        },
+        {
           "name" : "NODEMANAGER"
         },
         {
           "name" : "DATANODE"
         },
+        {% if install_hbase == true -%}
+        {
+          "name" : "HBASE_REGIONSERVER"
+        },
+        {% endif -%}
+        {% if install_storm == true -%}
+        {
+          "name" : "SUPERVISOR"
+        },
+        {% endif -%}
         {
           "name" : "GANGLIA_MONITOR"
         }
@@ -100,31 +113,49 @@
       "configurations" : [ ],
       "components" : [
         {
-          "name" : "ZOOKEEPER_SERVER"
-        },
-        {
           "name" : "ZOOKEEPER_CLIENT"
         },
         {
           "name" : "PIG"
         },
         {
-          "name" : "HISTORYSERVER"
-        },
-        {
           "name" : "OOZIE_CLIENT"
         },
         {
+          "name" : "SQOOP"
+        },
+        {
+          "name" : "HIVE_CLIENT"
+        },
+        {
+          "name" : "HDFS_CLIENT"
+        },
+        {
+          "name" : "YARN_CLIENT"
+        },
+        {
           "name" : "HCAT"
+        },
+        {
+          "name" : "MAPREDUCE2_CLIENT"
+        },
+        {
+          "name" : "TEZ_CLIENT"
+        },
+        {
+          "name" : "SLIDER"
+        },
+        {
+          "name" : "ZOOKEEPER_SERVER"
+        },
+        {
+          "name" : "HISTORYSERVER"
         },
         {
           "name" : "NAGIOS_SERVER"
         },
         {
           "name" : "SECONDARY_NAMENODE"
-        },
-        {
-          "name" : "TEZ_CLIENT"
         },
         {
           "name" : "AMBARI_SERVER"
@@ -136,25 +167,18 @@
           "name" : "GANGLIA_SERVER"
         },
         {
-          "name" : "SQOOP"
+          "name" : "RESOURCEMANAGER"
+        },
+        {% if install_hbase == true -%}
+        {
+          "name" : "HBASE_CLIENT"
         },
         {
-          "name" : "HDFS_CLIENT"
+          "name" : "HBASE_MASTER"
         },
-        {
-          "name" : "HIVE_CLIENT"
-        },
-        {
-          "name" : "YARN_CLIENT"
-        },
-        {
-          "name" : "MAPREDUCE2_CLIENT"
-        },
+        {% endif -%}
         {
           "name" : "GANGLIA_MONITOR"
-        },
-        {
-          "name" : "RESOURCEMANAGER"
         }
       ],
       "cardinality" : "1"
@@ -164,16 +188,52 @@
       "configurations" : [ ],
       "components" : [
         {
-          "name" : "ZOOKEEPER_SERVER"
-        },
-        {
           "name" : "ZOOKEEPER_CLIENT"
         },
         {
           "name" : "PIG"
         },
         {
+          "name" : "OOZIE_CLIENT"
+        },
+        {
+          "name" : "SQOOP"
+        },
+        {
+          "name" : "HIVE_CLIENT"
+        },
+        {
+          "name" : "HDFS_CLIENT"
+        },
+        {
+          "name" : "YARN_CLIENT"
+        },
+        {
+          "name" : "HCAT"
+        },
+        {
+          "name" : "MAPREDUCE2_CLIENT"
+        },
+        {
+          "name" : "TEZ_CLIENT"
+        },
+        {
+          "name" : "SLIDER"
+        },
+        {
+          "name" : "ZOOKEEPER_SERVER"
+        },
+        {
           "name" : "HIVE_SERVER"
+        },
+        {
+          "name" : "HIVE_METASTORE"
+        },
+        {
+          "name" : "WEBHCAT_SERVER"
+        },
+        {
+          "name" : "MYSQL_SERVER"
         },
         {
           "name" : "NAMENODE"
@@ -181,32 +241,37 @@
         {
           "name" : "OOZIE_SERVER"
         },
+        {% if install_hbase == true -%}
         {
-          "name" : "TEZ_CLIENT"
+          "name" : "HBASE_CLIENT"
+        },
+        {% endif -%}
+        {% if install_storm == true -%}
+        {
+          "name" : "STORM_UI_SERVER"
         },
         {
-          "name" : "HIVE_METASTORE"
+          "name" : "DRPC_SERVER"
         },
         {
-          "name" : "HDFS_CLIENT"
+          "name" : "NIMBUS"
+        },
+        {% endif -%}
+        {% if install_kafka == true -%}
+        {
+          "name" : "KAFKA_BROKER"
+        },
+        {% endif -%}
+        {% if install_falcon == true -%}
+        {
+          "name" : "FALCON_SERVER"
         },
         {
-          "name" : "HIVE_CLIENT"
+          "name" : "FALCON_CLIENT"
         },
-        {
-          "name" : "YARN_CLIENT"
-        },
-        {
-          "name" : "MAPREDUCE2_CLIENT"
-        },
-        {
-          "name" : "MYSQL_SERVER"
-        },
+        {% endif -%}
         {
           "name" : "GANGLIA_MONITOR"
-        },
-        {
-          "name" : "WEBHCAT_SERVER"
         }
       ],
       "cardinality" : "1"
@@ -247,6 +312,24 @@
           "name" : "TEZ_CLIENT"
         },
         {
+          "name" : "SLIDER"
+        },
+        {% if install_hbase == true -%}
+        {
+          "name" : "HBASE_CLIENT"
+        },
+        {% endif -%}
+        {% if install_storm == true -%}
+        {
+          "name" : "SUPERVISOR"
+        },
+        {% endif -%}
+        {% if install_falcon == true -%}
+        {
+          "name" : "FALCON_CLIENT"
+        },
+        {% endif -%}
+        {
           "name" : "GANGLIA_MONITOR"
         }
       ],
@@ -258,6 +341,9 @@
       "configurations" : [ ],
       "components" : [
         {
+          "name" : "ZOOKEEPER_CLIENT"
+        },
+        {
           "name" : "ZOOKEEPER_SERVER"
         },
         {
@@ -266,6 +352,16 @@
         {
           "name" : "DATANODE"
         },
+        {% if install_hbase == true -%}
+        {
+          "name" : "HBASE_REGIONSERVER"
+        },
+        {% endif -%}
+        {% if install_storm == true -%}
+        {
+          "name" : "SUPERVISOR"
+        },
+        {% endif -%}
         {
           "name" : "GANGLIA_MONITOR"
         }

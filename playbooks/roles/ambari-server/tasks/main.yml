@@ -2,10 +2,10 @@
 - include: prerequisites.yml
 
 - include: single-node.yml
-  when: groups['master-nodes']|length == 1 and 'slave-nodes' not in groups
+  when: groups['master-nodes']|length == 1 and ('slave-nodes' not in groups or groups['slave-nodes']|length == 0)
 
 - include: multi-nodes.yml
-  when: groups['master-nodes']|length > 0 and 'slave-nodes' in groups
+  when: groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
 
 - name: Slurp the hdp repo
   slurp: src=/tmp/hdprepo
@@ -32,7 +32,7 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       status_code=200,201,202
+       status_code=200,201,202,404
   ignore_errors: true
 
 - name: Register the blueprint with the Ambari server

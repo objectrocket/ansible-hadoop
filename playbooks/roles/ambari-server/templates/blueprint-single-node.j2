@@ -14,7 +14,7 @@
         "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"
       }
     },
-    {% if install_hbase == "true" and ansible_memtotal_mb > 24000 -%}
+    {% if install_hbase == true and ansible_memtotal_mb > 24000 -%}
     {% if ansible_memtotal_mb > 80000 -%}
     {
       "hbase-env" : {
@@ -84,25 +84,16 @@
       "configurations" : [ ],
       "components" : [
         {
-          "name" : "PIG"
+          "name" : "ZOOKEEPER_CLIENT"
         },
         {
-          "name" : "HISTORYSERVER"
+          "name" : "PIG"
         },
         {
           "name" : "OOZIE_CLIENT"
         },
         {
-          "name" : "NAMENODE"
-        },
-        {
-          "name" : "HCAT"
-        },
-        {
-          "name" : "AMBARI_SERVER"
-        },
-        {
-          "name" : "APP_TIMELINE_SERVER"
+          "name" : "SQOOP"
         },
         {
           "name" : "HIVE_CLIENT"
@@ -111,28 +102,25 @@
           "name" : "HDFS_CLIENT"
         },
         {
-          "name" : "NODEMANAGER"
+          "name" : "YARN_CLIENT"
         },
         {
-          "name" : "DATANODE"
+          "name" : "HCAT"
         },
         {
-          "name" : "RESOURCEMANAGER"
+          "name" : "MAPREDUCE2_CLIENT"
         },
         {
-          "name" : "WEBHCAT_SERVER"
+          "name" : "TEZ_CLIENT"
+        },
+        {
+          "name" : "SLIDER"
         },
         {
           "name" : "ZOOKEEPER_SERVER"
         },
         {
-          "name" : "ZOOKEEPER_CLIENT"
-        },
-        {
-          "name" : "HIVE_SERVER"
-        },
-        {
-          "name" : "OOZIE_SERVER"
+          "name" : "HISTORYSERVER"
         },
         {
           "name" : "NAGIOS_SERVER"
@@ -141,27 +129,42 @@
           "name" : "SECONDARY_NAMENODE"
         },
         {
-          "name" : "TEZ_CLIENT"
+          "name" : "AMBARI_SERVER"
         },
         {
-          "name" : "HIVE_METASTORE"
+          "name" : "APP_TIMELINE_SERVER"
         },
         {
           "name" : "GANGLIA_SERVER"
         },
         {
-          "name" : "SQOOP"
+          "name" : "RESOURCEMANAGER"
         },
         {
-          "name" : "YARN_CLIENT"
+          "name" : "HIVE_SERVER"
         },
         {
-          "name" : "MAPREDUCE2_CLIENT"
+          "name" : "HIVE_METASTORE"
+        },
+        {
+          "name" : "WEBHCAT_SERVER"
         },
         {
           "name" : "MYSQL_SERVER"
         },
-        {% if install_hbase == "true" -%}
+        {
+          "name" : "NAMENODE"
+        },
+        {
+          "name" : "OOZIE_SERVER"
+        },
+        {
+          "name" : "NODEMANAGER"
+        },
+        {
+          "name" : "DATANODE"
+        },
+        {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"
         },
@@ -172,7 +175,7 @@
           "name" : "HBASE_MASTER"
         },
         {% endif -%}
-        {% if install_storm == "true" -%}
+        {% if install_storm == true -%}
         {
           "name" : "SUPERVISOR"
         },
@@ -184,6 +187,19 @@
         },
         {
           "name" : "NIMBUS"
+        },
+        {% endif -%}
+        {% if install_kafka == true -%}
+        {
+          "name" : "KAFKA_BROKER"
+        },
+        {% endif -%}
+        {% if install_falcon == true -%}
+        {
+          "name" : "FALCON_SERVER"
+        },
+        {
+          "name" : "FALCON_CLIENT"
         },
         {% endif -%}
         {

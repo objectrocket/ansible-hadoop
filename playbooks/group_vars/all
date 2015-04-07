@@ -3,6 +3,8 @@ ansible_ssh_user: 'root'
 cluster_name: 'hdp-poc'
 install_hbase: false
 install_storm: false
+install_kafka: false
+install_falcon: false
 admin_password: 'admin'
 services_password: 'AsdQwe123'
 nagios_contact: 'root@localhost.localdomain'
