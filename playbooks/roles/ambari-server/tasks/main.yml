@@ -7,19 +7,20 @@
 - include: multi-nodes.yml
   when: groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
 
-- name: Slurp the hdp repo
-  slurp: src=/tmp/hdprepo
-  register: hdprepo
-
-- name: modify repo base_url
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/stacks2/HDP/versions/2.2/operatingSystems/redhat6/repositories/HDP-2.2
-       method=PUT
-       force_basic_auth=yes
-       user=admin
-       password=admin
-       HEADER_X-Requested-By="ambari"
-       body="{{ hdprepo.content | b64decode }}"
-       status_code=200,201,202
+#TEMPORARILY DISABLED UNTIL LOCAL REPOS ARE FUNCTIONAL
+#- name: Slurp the hdp repo
+#  slurp: src=/tmp/hdprepo
+#  register: hdprepo
+#
+#- name: modify repo base_url
+#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/stacks2/HDP/versions/2.2/operatingSystems/redhat6/repositories/HDP-2.2
+#       method=PUT
+#       force_basic_auth=yes
+#       user=admin
+#       password=admin
+#       HEADER_X-Requested-By="ambari"
+#       body="{{ hdprepo.content | b64decode }}"
+#       status_code=200,201,202
 
 - name: Slurp the blueprint
   slurp: src=/tmp/cluster_blueprint
