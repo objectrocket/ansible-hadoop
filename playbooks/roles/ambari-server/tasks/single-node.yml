@@ -4,3 +4,6 @@
 
 - name: Upload single-node cluster creation template
   template: src=cluster-template-single-node.j2 dest=/tmp/cluster_template mode=0644
+
+- name: Upload HDP Repo
+  template: src=hdprepo.j2 dest=/tmp/hdprepo mode=0644
