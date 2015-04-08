@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ansible-hadoop
 ---------
 
@@ -67,4 +66,3 @@ bash provision_cbd.sh
 =======
 # ansible-hadoop
 Best practice hadoop implementation using Ansible
->>>>>>> a28ffe396680ff01f1607dc0366bb526bd506a88
