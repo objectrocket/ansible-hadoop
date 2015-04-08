@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ansible-hadoop
 ---------
 
@@ -63,3 +64,7 @@ Customize it via the `playbooks/group_vars/cbd` file.
 ````
 bash provision_cbd.sh
 ````
+=======
+# ansible-hadoop
+Best practice hadoop implementation using Ansible
+>>>>>>> a28ffe396680ff01f1607dc0366bb526bd506a88
