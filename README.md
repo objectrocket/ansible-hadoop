@@ -63,6 +63,25 @@ Customize it via the `playbooks/group_vars/cbd` file.
 ````
 bash provision_cbd.sh
 ````
-=======
-# ansible-hadoop
-Best practice hadoop implementation using Ansible
+## Ansible-Hadoop History
+
+As with many projects this code is the end result of a lot of effort from individuals not propoerly represented by a simple commit history. 
+
+Rackspace started deploying Hadoop on dedicated gear for customers more than a year ago in a very manual process. This process landed with myself and these Rockstars:
+
+[Joe Engel](https://github.com/Joeskyyy)
+
+[Mark Lessel](https://github.com/magglass1)
+
+[Alexandru Anghel](https://github.com/alexandruanghel)
+
+All of whom wrote a lot of the automation for deploying Hadoop on customer gear at Rackspace.
+
+Today with a pile of customers under our belt and many more all the time, we wanted to share our efforts with the world by publishing this code which you can also use to deploy Hadoop in various ways at Rackspace.
+
+This of course is only the begininning! 
+
+I hope this project evolves and inspires even more Rockstars to find ways to contribute.
+
+
+
