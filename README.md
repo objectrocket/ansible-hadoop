@@ -58,7 +58,9 @@ For dedicated / prebuilt environments, you'll need to manually add the nodes in 
 ##### Accessing Ambari
 Once you are at this point you can see progress by accessing the Ambari interface. The provided Ansible scripts do not open the firewall for access by default. You can access Ambari by either opening the firewall manually or by opening a socks proxy with the following command:
 
+````
 ssh -D 12345 root@ambari-ip
+````
 
 You will need to modify your browser settings to use socks proxy localhost and port 12345. 
 
