@@ -87,6 +87,11 @@
         {
           "name" : "DATANODE"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"

@@ -87,6 +87,11 @@
         {
           "name" : "DATANODE"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"
@@ -338,7 +343,30 @@
         {
           "name" : "ZOOKEEPER_SERVER"
         }
-      ],
+        {
+          "name" : "NODEMANAGER"
+        },
+        {
+          "name" : "DATANODE"
+        },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
+        {% if install_hbase == true -%}
+        {
+          "name" : "HBASE_REGIONSERVER"
+        },
+        {% endif -%}
+        {% if install_storm == true -%}
+        {
+          "name" : "SUPERVISOR"
+        },
+        {% endif -%}
+        {
+          "name" : "METRICS_MONITOR"
+        }      ],
       "cardinality" : "1"
     }
   ],
