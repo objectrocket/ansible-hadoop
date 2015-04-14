@@ -7,13 +7,6 @@
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
     },
-    {
-      "hive-site" : {
-        "fs.file.impl.disable.cache" : "true",
-        "fs.hdfs.impl.disable.cache" : "true",
-        "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"
-      }
-    },
     {% if install_hbase == true and hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
     {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 80000 -%}
     {
@@ -73,8 +66,10 @@
     },
     {% endif -%}
     {
-      "nagios-env" : {
-        "nagios_contact": "{{ nagios_contact }}"
+      "hive-site" : {
+        "fs.file.impl.disable.cache" : "true",
+        "fs.hdfs.impl.disable.cache" : "true",
+        "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"
       }
     }
   ],
@@ -103,7 +98,7 @@
         },
         {% endif -%}
         {
-          "name" : "GANGLIA_MONITOR"
+          "name" : "METRICS_MONITOR"
         }
       ],
       "cardinality" : "{{ groups['slave-nodes']|length }}"
@@ -162,7 +157,7 @@
         },
         {% endif -%}
         {
-          "name" : "GANGLIA_MONITOR"
+          "name" : "METRICS_MONITOR"
         }
       ],
       "cardinality" : "{{ groups['edge-nodes']|length }}"
@@ -212,9 +207,6 @@
           "name" : "HISTORYSERVER"
         },
         {
-          "name" : "NAGIOS_SERVER"
-        },
-        {
           "name" : "SECONDARY_NAMENODE"
         },
         {
@@ -224,7 +216,7 @@
           "name" : "APP_TIMELINE_SERVER"
         },
         {
-          "name" : "GANGLIA_SERVER"
+          "name" : "METRICS_COLLECTOR"
         },
         {
           "name" : "RESOURCEMANAGER"
@@ -280,7 +272,7 @@
         },
         {% endif -%}
         {
-          "name" : "GANGLIA_MONITOR"
+          "name" : "METRICS_MONITOR"
         }
       ],
       "cardinality" : "1"
