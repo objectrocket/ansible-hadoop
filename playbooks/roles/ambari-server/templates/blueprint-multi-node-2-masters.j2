@@ -166,6 +166,11 @@
         {
           "name" : "RESOURCEMANAGER"
         },
+        {% if install_spark == true -%}
+        {
+          "name" : "SPARK_CLIENT"
+        },
+        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_CLIENT"
@@ -178,6 +183,7 @@
           "name" : "METRICS_MONITOR"
         }
       ],
+        },
       "cardinality" : "1"
     },
     {
@@ -238,6 +244,14 @@
         {
           "name" : "OOZIE_SERVER"
         },
+        {% if install_spark == true -%}
+        {
+          "name" : "SPARK_JOBHISTORYSERVER"
+        },
+        {
+          "name" : "SPARK_CLIENT"
+        },
+        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_CLIENT"
@@ -311,6 +325,11 @@
         {
           "name" : "SLIDER"
         },
+        {% if install_spark == true -%}
+        {
+          "name" : "SPARK_CLIENT"
+        },
+        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_CLIENT"
