@@ -161,6 +161,14 @@
           "name" : "FLUME_HANDLER"
         },
         {% endif -%}
+        {% if install_spark == true -%}
+        {
+          "name" : "SPARK_JOBHISTORYSERVER"
+        },
+        {
+          "name" : "SPARK_CLIENT"
+        },
+        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"

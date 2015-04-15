@@ -1,6 +1,7 @@
 ---
 ansible_ssh_user: 'root'
 cluster_name: 'hadoop-poc'
+install_spark: false
 install_flume: false
 install_hbase: false
 install_storm: false
