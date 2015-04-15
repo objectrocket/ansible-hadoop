@@ -1,4 +1,4 @@
 ---
 - name: Download the Ambari repo
-  get_url: url=http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/1.7.0/ambari.repo dest=/etc/yum.repos.d/
+  get_url: url=http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.0.0/ambari.repo dest=/etc/yum.repos.d/
 
