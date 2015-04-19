@@ -25,6 +25,23 @@
 #       body="{{ hdprepo.content | b64decode }}"
 #       status_code=200,201,202
 
+- name: Upload the alert_targets payload
+  template: src=alert_targets.j2 dest=/tmp/alert_targets mode=0644
+
+- name: Slurp the alert_targets payload
+  slurp: src=/tmp/alert_targets
+  register: alert_targets
+
+- name: Register the alert_targets with the Ambari server
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
+       method=POST
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{{ alert_targets.content | b64decode }}'
+       status_code=200,201,202
+
 - name: Slurp the blueprint
   slurp: src=/tmp/cluster_blueprint
   register: cluster_blueprint

@@ -1,0 +1,16 @@
+{
+  "AlertTarget": {
+    "name" : "Initial Notification",
+    "description" : "Notification created during cluster installing",
+    "notification_type" : "EMAIL",
+    "global" : true,
+    "properties" : {
+      "ambari.dispatch.recipients" : ["{{ alerts_contact }}"],
+      "mail.smtp.host" : "localhost",
+      "mail.smtp.port" : "25",
+      "mail.smtp.auth" : "false",
+      "mail.smtp.starttls.enable" : "false",
+      "mail.smtp.from" : "ambari@{{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] }}"
+    }
+  }
+}
