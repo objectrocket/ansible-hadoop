@@ -8,6 +8,9 @@
   when: groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
 
 #TEMPORARILY DISABLED UNTIL LOCAL REPOS ARE FUNCTIONAL
+#- name: Upload HDP Repo
+#  template: src=hdprepo.j2 dest=/tmp/hdprepo mode=0644
+#
 #- name: Slurp the hdp repo
 #  slurp: src=/tmp/hdprepo
 #  register: hdprepo
