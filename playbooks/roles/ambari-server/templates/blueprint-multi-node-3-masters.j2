@@ -131,9 +131,6 @@
         },
         {% if install_spark == true -%}
         {
-          "name" : "SPARK_JOBHISTORYSERVER"
-        },
-        {
           "name" : "SPARK_CLIENT"
         },
         {% endif -%}
@@ -389,6 +386,9 @@
           "name" : "RESOURCEMANAGER"
         },
         {% if install_spark == true -%}
+        {
+          "name" : "SPARK_JOBHISTORYSERVER"
+        },
         {
           "name" : "SPARK_CLIENT"
         },
