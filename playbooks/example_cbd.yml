@@ -1,0 +1,51 @@
+---
+- include: provision_cbd.yml
+
+- name: "Upload to Cloud Files"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Download the file first"
+      get_url:
+        url: 'https://www.gutenberg.org/cache/epub/47180/pg47180.txt'
+        dest: '/tmp/test_file.txt'
+        validate_certs: no
+
+    - name: "Create the container"
+      rax_files:
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        region: "{{ cloud_config.rax_region }}"
+        container: 'my-test-container'
+
+    - name: "Upload the file to the Cloud Files container"
+      rax_files_objects:
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        region: "{{ cloud_config.rax_region }}"
+        container: 'my-test-container'
+        method: put
+        src: '/tmp/test_file.txt'
+
+
+- name: "Run MR job"
+  hosts: gateway
+  tasks:
+    - command: hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar wordcount swift://my-test-container.rack-{{ cloud_config.rax_region|lower }}/test_file.txt swift://my-test-container.rack-{{ cloud_config.rax_region|lower }}/results-output
+      when: cluster_type != "HADOOP_HDP2_2"
+    - command: hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples.jar wordcount swift://my-test-container.rack-{{ cloud_config.rax_region|lower }}/test_file.txt swift://my-test-container.rack-{{ cloud_config.rax_region|lower }}/results-output
+      when: cluster_type == "HADOOP_HDP2_2"
+
+
+- name: "Download from cloud files"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Download results file from test container"
+      rax_files_objects:
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        region: "{{ cloud_config.rax_region }}"
+        container: 'my-test-container'
+        method: get
+        src: 'results-output/part-r-00000'
+        dest: '/tmp/'

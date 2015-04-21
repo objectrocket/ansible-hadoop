@@ -9,7 +9,7 @@ install_kafka: false
 install_falcon: false
 admin_password: 'admin'
 services_password: 'AsdQwe123'
-nagios_contact: 'root@localhost.localdomain'
+alerts_contact: 'root@localhost.localdomain'
 hdfs:
   dfs_replication: 3
   failed_volumes_tolerated: 0
