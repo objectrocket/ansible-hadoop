@@ -1,3 +1,10 @@
 ---
 - name: Restart iptables
   service: name=iptables state=restarted enabled=yes
+
+- name: Restart networking
+  service: name=network state=restarted
+
+- name: Run depmod
+  command: depmod
+

@@ -30,4 +30,5 @@ data_disks_devices: ['xvde', 'xvdf']
 #############
 
 # cluster_interface: 'ansible_bond0'
+# bond_interfaces: ['eth4', 'eth6']
 # data_disks_devices: ['sdb', 'sdc', 'sdd', 'sde', 'sdf', 'sdg']

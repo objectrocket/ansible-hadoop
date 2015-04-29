@@ -1,0 +1,8 @@
+DEVICE=bond0
+IPADDR={{ bondip }}
+NETMASK={{ bondnm }}
+NETWORK=
+BROADCAST=
+ONBOOT=yes
+BOOTPROTO=none
+USERCTL=no
