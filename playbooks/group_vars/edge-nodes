@@ -31,4 +31,5 @@ data_disks_devices: ['xvde']
 
 # cluster_interface: 'ansible_bond0'
 # bond_interfaces: ['eth4', 'eth6']
+# bond_netmask: '255.255.255.0'
 # data_disks_devices: ['sdb']

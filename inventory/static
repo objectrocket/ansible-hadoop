@@ -1,10 +1,10 @@
 [master-nodes]
-master01 ansible_ssh_host=192.168.0.2 bondip=172.16.0.2 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
-#master02 ansible_ssh_host=192.168.0.2 bondip=172.16.0.2 ansible_ssh_user=root ansible_ssh_pass=<root password>
+master01 ansible_ssh_host=192.168.0.2 bond_ip=172.16.0.2 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
+#master02 ansible_ssh_host=192.168.0.2 bond_ip=172.16.0.2 ansible_ssh_user=root ansible_ssh_pass=<root password>
 
 [slave-nodes]
-slave01 ansible_ssh_host=192.168.0.3 bondip=172.16.0.3 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
-slave02 ansible_ssh_host=192.168.0.4 bondip=172.16.0.4 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
+slave01 ansible_ssh_host=192.168.0.3 bond_ip=172.16.0.3 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
+slave02 ansible_ssh_host=192.168.0.4 bond_ip=172.16.0.4 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
 
 [edge-nodes]
-#edge01 ansible_ssh_host=192.168.0.5 bondip=172.16.0.5 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
+#edge01 ansible_ssh_host=192.168.0.5 bond_ip=172.16.0.5 ansible_ssh_user=rack ansible_sudo_pass="{{ ansible_ssh_pass }}" ansible_ssh_pass=<rack password>
