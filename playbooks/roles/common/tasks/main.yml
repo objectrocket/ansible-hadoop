@@ -113,6 +113,10 @@
   lineinfile: dest=/etc/resolv.conf regexp='^search\s+(?! {{ ansible_domain }} ).*$' line='search {{ ansible_domain }}'
   when: ansible_domain != ""
 
+- name: Configure bonding
+  include: bonding.yml
+  when: bond_interfaces is defined
+
 - name: Set hosts file
   template: src=hosts.j2 dest=/etc/hosts mode=0644
 

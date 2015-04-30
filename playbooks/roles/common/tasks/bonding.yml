@@ -1,0 +1,23 @@
+---
+- name: Write bonding.conf file
+  copy: src=bonding.conf dest=/etc/modprobe.d/
+  notify: Run depmod
+
+- meta: flush_handlers
+
+- name: Write ifcfg files for bonded interfaces
+  template: src=ifcfg-eth dest=/etc/sysconfig/network-scripts/ifcfg-{{ item }}
+  with_items: bond_interfaces
+  notify: Restart networking
+
+- name: Write ifcfg file for bond0 interface
+  template: src=ifcfg-bond0 dest=/etc/sysconfig/network-scripts/
+  notify: Restart networking
+
+- meta: flush_handlers
+
+- name: Ping between all hosts on bond0 to verify network connectivity
+  command: /bin/ping -q -c 5 -i 0.2 -W 1 {{ hostvars[item]['bond_ip'] }}
+  when: bond_ip is defined and hostvars[item]['bond_ip'] is defined
+  with_items: groups['all']
+  changed_when: 0
