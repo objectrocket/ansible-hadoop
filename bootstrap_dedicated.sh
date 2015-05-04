@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ansible-playbook -i inventory/static playbooks/bootstrap.yml
+ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -f 20 -i inventory/static playbooks/bootstrap.yml
