@@ -8,6 +8,9 @@
 - name: Enable the ambari-server service
   service: name=ambari-server state=restarted enabled=yes
 
+- name: Waiting for ambari-server to start listening on port 8080
+  wait_for: host={{ansible_fqdn}} port=8080
+
 - name: Waiting for ambari-agents to register
   uri: url=http://{{ ansible_fqdn }}:8080/api/v1/hosts/{{ hostvars[item]['ansible_fqdn'] }}
        method=GET
