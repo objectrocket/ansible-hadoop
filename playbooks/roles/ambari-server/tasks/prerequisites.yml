@@ -15,7 +15,9 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       status_code=200,201,202
+       status_code=200,201,202,404
   with_items: groups['hadoop-cluster']
+  register: result
+  until: "result.status != 404"
   retries: 200
-  delay: 3
+  delay: 5
