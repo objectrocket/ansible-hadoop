@@ -1,6 +1,6 @@
 ---
 - name: Write bonding.conf file
-  copy: src=bonding.conf dest=/etc/modprobe.d/
+  lineinfile: dest=/etc/modprobe.d/bonding.conf line='alias bond0 bonding' state=present create=yes mode=0664 owner=root group=root
   notify: Run depmod
 
 - meta: flush_handlers
