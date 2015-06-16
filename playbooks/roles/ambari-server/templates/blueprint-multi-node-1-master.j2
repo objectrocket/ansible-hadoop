@@ -1,30 +1,30 @@
 {
   "configurations" : [
-      {
+    {
       "hdfs-site" : {
         "dfs.datanode.data.dir" : "{% if hostvars[groups['slave-nodes'][0]]['data_disks_devices'] is defined and hostvars[groups['slave-nodes'][0]]['data_disks_devices'] and hostvars[groups['slave-nodes'][0]]['data_disks_devices']|length > 1 %}{% for disk in hostvars[groups['slave-nodes'][0]]['data_disks_devices'] %}/disk{{ loop.index }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
         "dfs.datanode.failed.volumes.tolerated" : "{{ hdfs.failed_volumes_tolerated }}",
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
     },
-    {% if install_hbase == true and hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
-    {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 80000 -%}
+    {% if install_hbase == true -%}
     {
       "hbase-env" : {
+        {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 80000 -%}
         "hbase_master_heapsize" : "2048m",
-        "hbase_regionserver_heapsize" : "4096m",
-        "hbase_regionserver_xmn_max" : "768"
-      }
-    },
-    {% else -%}
-    {
-      "hbase-env" : {
+        "hbase_regionserver_heapsize" : "8192m",
+        "hbase_regionserver_xmn_max" : "2048"
+        {% elif hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
         "hbase_master_heapsize" : "1024m",
-        "hbase_regionserver_heapsize" : "2048m",
+        "hbase_regionserver_heapsize" : "4096m",
+        "hbase_regionserver_xmn_max" : "1024"
+        {% else -%}
+        "hbase_master_heapsize" : "1024m",
+        "hbase_regionserver_heapsize" : "1024m",
         "hbase_regionserver_xmn_max" : "512"
+        {% endif -%}
       }
     },
-    {% endif -%}
     {% endif -%}
     {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
     {
