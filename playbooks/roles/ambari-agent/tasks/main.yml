@@ -1,6 +1,6 @@
 ---
 - name: Download the Ambari repo
-  get_url: url=http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.0.1/ambari.repo dest=/etc/yum.repos.d/
+  get_url: url={{ ambari_repo }} dest=/etc/yum.repos.d/
 
 - name: Install the Ambari agent
   yum: name=ambari-agent state=present
