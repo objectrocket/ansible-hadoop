@@ -7,23 +7,25 @@
 - include: multi-nodes.yml
   when: groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
 
-#TEMPORARILY DISABLED UNTIL LOCAL REPOS ARE FUNCTIONAL
-#- name: Upload HDP Repo
-#  template: src=hdprepo.j2 dest=/tmp/hdprepo mode=0644
-#
-#- name: Slurp the hdp repo
-#  slurp: src=/tmp/hdprepo
-#  register: hdprepo
-#
-#- name: modify repo base_url
-#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/stacks2/HDP/versions/2.2/operatingSystems/redhat6/repositories/HDP-2.2
-#       method=PUT
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       body="{{ hdprepo.content | b64decode }}"
-#       status_code=200,201,202
+- name: Upload HDP Repo
+  template: src=hdprepo.j2 dest=/tmp/hdprepo mode=0644
+  when: custom_repo
+
+- name: Slurp the hdp repo
+  slurp: src=/tmp/hdprepo
+  register: hdprepo
+  when: custom_repo
+
+- name: modify repo base_url
+  uri: url=http://{{ ansible_fqdn }}:8080{{ custom_repo_target }}
+       method=PUT
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body="{{ hdprepo.content | b64decode }}"
+       status_code=200,201,202
+  when: custom_repo
 
 - name: Upload the alert_targets payload
   template: src=alert_targets.j2 dest=/tmp/alert_targets mode=0644
@@ -53,6 +55,10 @@
        body='{{ alert_targets.content | b64decode }}'
        status_code=200,201,202
   when: '"AlertTarget" not in current_alert_targets.content'
+
+- name: Get Tachyon Service
+  git: repo=https://github.com/seraphin/tachyon-service.git dest=/var/lib/ambari-server/resources/stacks/HDP/2.2/services/tachyon-service/
+  when: tachyon_service
 
 - name: Slurp the blueprint
   slurp: src=/tmp/cluster_blueprint
