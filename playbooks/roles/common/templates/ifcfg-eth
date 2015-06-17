@@ -1,0 +1,6 @@
+DEVICE={{ item }} 
+ONBOOT=yes
+BOOTPROTO=none
+USERCTL=no
+MASTER=bond0
+SLAVE=yes

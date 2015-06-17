@@ -8,5 +8,19 @@
 - name: Enable the ambari-server service
   service: name=ambari-server state=restarted enabled=yes
 
-- name: Pausing to allow the ambari-agents to register
-  pause: seconds=60
+- name: Waiting for ambari-server to start listening on port 8080
+  wait_for: host={{ansible_fqdn}} port=8080
+
+- name: Waiting for ambari-agents to register
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/hosts/{{ hostvars[item]['ansible_fqdn'] }}
+       method=GET
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202,404
+  with_items: groups['hadoop-cluster']
+  register: result
+  until: "result.status != 404"
+  retries: 200
+  delay: 5

@@ -38,6 +38,17 @@
   register: alert_targets
   ignore_errors: yes
 
+- name: Check if alert_targets already exists
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
+       method=GET
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202,404
+       return_content=yes
+  register: current_alert_targets
+
 - name: Register the alert_targets with the Ambari server
   uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
        method=POST
@@ -47,7 +58,7 @@
        HEADER_X-Requested-By="ambari"
        body='{{ alert_targets.content | b64decode }}'
        status_code=200,201,202
-  ignore_errors: yes
+  when: '"AlertTarget" not in current_alert_targets.content'
 
 - name: Slurp the blueprint
   slurp: src=/tmp/cluster_blueprint
