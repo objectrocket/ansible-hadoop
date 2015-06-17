@@ -19,6 +19,7 @@ alerts_contact: 'root@localhost.localdomain'
 hdfs:
   dfs_replication: 3
   failed_volumes_tolerated: 0
+custom_blueprint: false
 
 cloud_config:
   rax_credentials_file: '~/.raxpub'

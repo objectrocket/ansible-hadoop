@@ -2,10 +2,13 @@
 - include: prerequisites.yml
 
 - include: single-node.yml
-  when: groups['master-nodes']|length == 1 and ('slave-nodes' not in groups or groups['slave-nodes']|length == 0)
+  when: not custom_blueprint and groups['master-nodes']|length == 1 and ('slave-nodes' not in groups or groups['slave-nodes']|length == 0)
 
 - include: multi-nodes.yml
-  when: groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
+  when: not custom_blueprint and groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
+
+- include: custom.yml
+  when: custom_blueprint
 
 - name: Upload HDP Repo
   template: src=hdprepo.j2 dest=/tmp/hdprepo mode=0644
