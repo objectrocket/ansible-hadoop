@@ -1,0 +1,6 @@
+---
+- name: Upload custom blueprint
+  template: src=blueprint-custom.j2 dest=/tmp/cluster_blueprint mode=0644
+
+- name: Upload custom cluster creation template
+  template: src=cluster-template-custom.j2 dest=/tmp/cluster_template mode=0644

@@ -1,30 +1,61 @@
 {
   "configurations" : [
-      {
+    {
+      "core-site": {
+        {% if hdfs.ha_namenode -%}
+        "fs.defaultFS" : "hdfs://{{ cluster_name }}",
+        {% endif -%}
+        "ha.zookeeper.quorum" : "%HOSTGROUP::masternode_1%:2181,%HOSTGROUP::masternode_2%:2181,%HOSTGROUP::slavenode_zookeeper%:2181"
+      }
+    },
+    {
       "hdfs-site" : {
+        {% if hdfs.ha_namenode -%}
+        "dfs.client.failover.proxy.provider.{{ cluster_name }}" : "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider",
+        "dfs.ha.automatic-failover.enabled" : "true",
+        "dfs.ha.fencing.methods" : "shell(/bin/true)",
+        "dfs.ha.namenodes.{{ cluster_name }}" : "nn1,nn2",
+        "dfs.namenode.http-address" : "%HOSTGROUP::masternode_1%:50070",
+        "dfs.namenode.http-address.{{ cluster_name }}.nn1" : "%HOSTGROUP::masternode_2%:50070",
+        "dfs.namenode.http-address.{{ cluster_name }}.nn2" : "%HOSTGROUP::masternode_1%:50070",
+        "dfs.namenode.https-address" : "%HOSTGROUP::masternode_1%:50470",
+        "dfs.namenode.https-address.{{ cluster_name }}.nn1" : "%HOSTGROUP::masternode_2%:50470",
+        "dfs.namenode.https-address.{{ cluster_name }}.nn2" : "%HOSTGROUP::masternode_1%:50470",
+        "dfs.namenode.rpc-address.{{ cluster_name }}.nn1" : "%HOSTGROUP::masternode_2%:8020",
+        "dfs.namenode.rpc-address.{{ cluster_name }}.nn2" : "%HOSTGROUP::masternode_1%:8020",
+        "dfs.namenode.shared.edits.dir" : "qjournal://%HOSTGROUP::masternode_1%:8485;%HOSTGROUP::masternode_2%:8485;%HOSTGROUP::slavenode_zookeeper%:8485/{{ cluster_name }}",
+        "dfs.nameservices" : "{{ cluster_name }}",
+        {% endif -%}
         "dfs.datanode.data.dir" : "{% if hostvars[groups['slave-nodes'][0]]['data_disks_devices'] is defined and hostvars[groups['slave-nodes'][0]]['data_disks_devices'] and hostvars[groups['slave-nodes'][0]]['data_disks_devices']|length > 1 %}{% for disk in hostvars[groups['slave-nodes'][0]]['data_disks_devices'] %}/disk{{ loop.index }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
         "dfs.datanode.failed.volumes.tolerated" : "{{ hdfs.failed_volumes_tolerated }}",
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
     },
-    {% if install_hbase == true and hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
-    {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 80000 -%}
+    {% if install_hbase == true -%}
+    {% if hdfs.ha_namenode -%}
     {
-      "hbase-env" : {
-        "hbase_master_heapsize" : "2048m",
-        "hbase_regionserver_heapsize" : "4096m",
-        "hbase_regionserver_xmn_max" : "768"
-      }
-    },
-    {% else -%}
-    {
-      "hbase-env" : {
-        "hbase_master_heapsize" : "1024m",
-        "hbase_regionserver_heapsize" : "2048m",
-        "hbase_regionserver_xmn_max" : "512"
+      "hbase-site" : {
+        "hbase.rootdir": "hdfs://{{ cluster_name }}/apps/hbase/data"
       }
     },
     {% endif -%}
+    {
+      "hbase-env" : {
+        {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 80000 -%}
+        "hbase_master_heapsize" : "2048m",
+        "hbase_regionserver_heapsize" : "8192m",
+        "hbase_regionserver_xmn_max" : "2048"
+        {% elif hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
+        "hbase_master_heapsize" : "1024m",
+        "hbase_regionserver_heapsize" : "4096m",
+        "hbase_regionserver_xmn_max" : "1024"
+        {% else -%}
+        "hbase_master_heapsize" : "1024m",
+        "hbase_regionserver_heapsize" : "1024m",
+        "hbase_regionserver_xmn_max" : "512"
+        {% endif -%}
+      }
+    },
     {% endif -%}
     {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
     {
@@ -151,9 +182,21 @@
         {
           "name" : "HISTORYSERVER"
         },
+        {% if hdfs.ha_namenode -%}
+        {
+          "name" : "JOURNALNODE"
+        },
+        {
+          "name" : "ZKFC"
+        },
+        {
+          "name" : "NAMENODE"
+        },
+        {% else %}
         {
           "name" : "SECONDARY_NAMENODE"
         },
+        {% endif -%}
         {
           "name" : "AMBARI_SERVER"
         },
@@ -240,6 +283,14 @@
         {
           "name" : "MYSQL_SERVER"
         },
+        {% if hdfs.ha_namenode -%}
+        {
+          "name" : "JOURNALNODE"
+        },
+        {
+          "name" : "ZKFC"
+        },
+        {% endif -%}
         {
           "name" : "NAMENODE"
         },
@@ -367,6 +418,11 @@
         {
           "name" : "DATANODE"
         },
+        {% if hdfs.ha_namenode -%}
+        {
+          "name" : "JOURNALNODE"
+        },
+        {% endif -%}
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
