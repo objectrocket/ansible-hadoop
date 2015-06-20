@@ -1,6 +1,14 @@
 {
   "configurations" : [
     {
+      "core-site": {
+        "hadoop.proxyuser.hcat.groups" : "*",
+        "hadoop.proxyuser.hcat.hosts" : "*",
+        "hadoop.proxyuser.hue.groups" : "*",
+        "hadoop.proxyuser.hue.hosts" : "*"
+      }
+    },
+    {
       "hdfs-site" : {
         "dfs.datanode.data.dir" : "{% if hostvars[groups['slave-nodes'][0]]['data_disks_devices'] is defined and hostvars[groups['slave-nodes'][0]]['data_disks_devices'] and hostvars[groups['slave-nodes'][0]]['data_disks_devices']|length > 1 %}{% for disk in hostvars[groups['slave-nodes'][0]]['data_disks_devices'] %}/disk{{ loop.index }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
         "dfs.datanode.failed.volumes.tolerated" : "{{ hdfs.failed_volumes_tolerated }}",
@@ -65,6 +73,18 @@
       }
     },
     {% endif -%}
+    {
+      "oozie-site" : {
+        "oozie.service.ProxyUserService.proxyuser.hue.groups" : "*",
+        "oozie.service.ProxyUserService.proxyuser.hue.hosts" : "*"
+      }
+    },
+    {
+      "webhcat-site" : {
+        "webhcat.proxyuser.hue.groups" : "*",
+        "webhcat.proxyuser.hue.hosts" : "*"
+      }
+    },
     {
       "hive-site" : {
         "fs.file.impl.disable.cache" : "true",

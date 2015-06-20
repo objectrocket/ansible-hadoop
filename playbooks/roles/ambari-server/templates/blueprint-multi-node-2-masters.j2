@@ -4,8 +4,12 @@
       "core-site": {
         {% if hdfs.ha_namenode -%}
         "fs.defaultFS" : "hdfs://{{ cluster_name }}",
+        "ha.zookeeper.quorum" : "%HOSTGROUP::masternode_1%:2181,%HOSTGROUP::masternode_2%:2181,%HOSTGROUP::slavenode_zookeeper%:2181",
         {% endif -%}
-        "ha.zookeeper.quorum" : "%HOSTGROUP::masternode_1%:2181,%HOSTGROUP::masternode_2%:2181,%HOSTGROUP::slavenode_zookeeper%:2181"
+        "hadoop.proxyuser.hcat.groups" : "*",
+        "hadoop.proxyuser.hcat.hosts" : "*",
+        "hadoop.proxyuser.hue.groups" : "*",
+        "hadoop.proxyuser.hue.hosts" : "*"
       }
     },
     {
@@ -96,6 +100,18 @@
       }
     },
     {% endif -%}
+    {
+      "oozie-site" : {
+        "oozie.service.ProxyUserService.proxyuser.hue.groups" : "*",
+        "oozie.service.ProxyUserService.proxyuser.hue.hosts" : "*"
+      }
+    },
+    {
+      "webhcat-site" : {
+        "webhcat.proxyuser.hue.groups" : "*",
+        "webhcat.proxyuser.hue.hosts" : "*"
+      }
+    },
     {
       "hive-site" : {
         "fs.file.impl.disable.cache" : "true",
