@@ -98,6 +98,13 @@
       }
     },
     {% endif -%}
+    {% if install_kafka == true -%}
+    {
+      "kafka-broker" : {
+        "log.dirs" : "/hadoop/kafka-logs"
+      }
+    },
+    {% endif -%}
     {
       "oozie-site" : {
         "oozie.service.ProxyUserService.proxyuser.hue.groups" : "*",
