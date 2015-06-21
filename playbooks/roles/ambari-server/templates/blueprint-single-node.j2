@@ -86,6 +86,17 @@
         {% endif -%}
       }
     },
+    {
+      "tez-site" : {
+        {% if ansible_memtotal_mb > 60000 -%}
+        "tez.am.resource.memory.mb" : "4096",
+        "tez.task.resource.memory.mb" : "4096"
+        {% else -%}
+        "tez.am.resource.memory.mb" : "2048",
+        "tez.task.resource.memory.mb" : "2048"
+        {% endif -%}
+      }
+    },
     {% endif -%}
     {
       "oozie-site" : {
