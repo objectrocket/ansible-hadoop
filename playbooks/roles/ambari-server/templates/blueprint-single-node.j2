@@ -25,8 +25,8 @@
         "dfs.datanode.balance.bandwidthPerSec" : "12500000",
         "dfs.datanode.max.transfer.threads": "2048",
         {% endif -%}
-        "dfs.datanode.failed.volumes.tolerated" : "{{ hdfs.failed_volumes_tolerated }}",
-        "dfs.replication" : "{{ hdfs.dfs_replication }}"
+        "dfs.datanode.failed.volumes.tolerated" : "0",
+        "dfs.replication" : "1"
       }
     },
     {% if install_hbase == true -%}
