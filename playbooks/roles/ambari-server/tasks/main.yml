@@ -59,6 +59,10 @@
        status_code=200,201,202
   when: '"AlertTarget" not in current_alert_targets.content'
 
+- name: Install git
+  yum: name=git state=latest
+  when: tachyon_service
+
 - name: Get Tachyon Service
   git: repo=https://github.com/seraphin/tachyon-service.git dest=/var/lib/ambari-server/resources/stacks/HDP/2.2/services/tachyon-service/
   when: tachyon_service
