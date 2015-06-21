@@ -64,7 +64,7 @@
   when: tachyon_service
 
 - name: Get Tachyon Service
-  git: repo=https://github.com/seraphin/tachyon-service.git dest=/var/lib/ambari-server/resources/stacks/HDP/2.2/services/tachyon-service/
+  git: repo=https://github.com/seraphin/tachyon-service.git dest=/var/lib/ambari-server/resources/stacks/HDP/2.2/services/tachyon-service/ force=yes
   when: tachyon_service
 
 - name: Slurp the blueprint
