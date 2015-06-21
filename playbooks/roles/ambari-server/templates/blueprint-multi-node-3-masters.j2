@@ -5,6 +5,8 @@
         {% if hdfs.ha_namenode -%}
         "fs.defaultFS" : "hdfs://{{ cluster_name }}",
         "ha.zookeeper.quorum" : "%HOSTGROUP::masternode_1%:2181,%HOSTGROUP::masternode_2%:2181,%HOSTGROUP::masternode_3%:2181",
+        "hadoop.proxyuser.httpfs.groups" : "*",
+        "hadoop.proxyuser.httpfs.hosts" : "*",
         {% endif -%}
         "hadoop.proxyuser.hcat.groups" : "*",
         "hadoop.proxyuser.hcat.hosts" : "*",
