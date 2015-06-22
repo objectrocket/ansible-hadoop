@@ -11,7 +11,7 @@
   mount: state=mounted src="/dev/{{ data_disks_devices[0] }}1" name="/hadoop" fstype=ext4 opts=defaults,noatime dump=0 passno=0
   when: data_disks_devices is defined and data_disks_devices and data_disks_devices|length == 1
 
-- name: Mount multiple data disks under /disk{}
-  mount: state=mounted src="/dev/{{ item.1 }}1" name="/disk{{ item.0 + 1 }}" fstype=ext4 opts=defaults,noatime dump=0 passno=0
+- name: Mount multiple data disks under /grid/{0..n}
+  mount: state=mounted src="/dev/{{ item.1 }}1" name="/grid/{{ item.0 }}" fstype=ext4 opts=defaults,noatime dump=0 passno=0
   with_indexed_items: data_disks_devices
   when: data_disks_devices is defined and data_disks_devices and data_disks_devices|length > 1
