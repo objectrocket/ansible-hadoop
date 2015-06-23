@@ -2,5 +2,5 @@ DEVICE={{ item }}
 ONBOOT=yes
 BOOTPROTO=none
 USERCTL=no
-MASTER=bond0
+MASTER={{ cluster_interface }}
 SLAVE=yes
