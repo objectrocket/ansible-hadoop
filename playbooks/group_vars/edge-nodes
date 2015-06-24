@@ -3,7 +3,7 @@
 ## cloud servers ##
 ###################
 
-cluster_interface: 'ansible_eth1'
+cluster_interface: 'eth1'
 cloud_nodes_count: 0
 cloud_image: 'CentOS 6 (PVHVM)'
 cloud_flavor: 'general1-2'
@@ -16,7 +16,7 @@ data_disks_devices: ['xvde']
 # onmetal #
 ###########
 
-# cluster_interface: 'ansible_bond0.401'
+# cluster_interface: 'bond0.401'
 # cloud_nodes_count: 0
 # cloud_image: 'OnMetal - CentOS 6'
 # cloud_flavor: 'onmetal-io1'
@@ -29,7 +29,7 @@ data_disks_devices: ['xvde']
 # dedicated #
 #############
 
-# cluster_interface: 'ansible_bond0'
+# cluster_interface: 'bond0'
 # bond_interfaces: ['eth4', 'eth6']
 # bond_netmask: '255.255.255.0'
 # data_disks_devices: ['sdb']
