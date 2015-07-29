@@ -2,5 +2,4 @@
 ::1 localhost6.localdomain6 localhost6
 {% for node in groups['hadoop-cluster'] %}
 {{ hostvars[node][['ansible_', hostvars[node]['cluster_interface']]|join]['ipv4']['address'] }} {{ hostvars[node]['ansible_fqdn'] }} {{ hostvars[node]['ansible_hostname'] }}
-
 {% endfor %}
