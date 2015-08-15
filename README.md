@@ -88,7 +88,7 @@ As with many projects this code is the end result of a lot of effort from indivi
 
 Rackspace started deploying Hadoop on dedicated gear for customers more than a year ago in a very manual process. This process landed with myself and these Rockstars:
 
-[Joe Engel](https://github.com/Joeskyyy)
+[Joe Engel](https://github.com/Joeskyyy) (Racker Emeritus)
 
 [Mark Lessel](https://github.com/magglass1)
 
