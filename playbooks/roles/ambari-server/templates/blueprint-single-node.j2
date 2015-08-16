@@ -102,6 +102,24 @@
         {% endif -%}
       }
     },
+    {
+      "spark-defaults" : {
+        {% if ansible_memtotal_mb > 60000 -%}
+        "spark.executor.instances" : 1,
+        "spark.executor.memory" : "7808m",
+        "spark.driver.memory" : "3712m",
+        "spark.yarn.am.memory" : "3712m",
+        {% else -%}
+        "spark.executor.instances" : 1,
+        "spark.executor.memory" : "3712m",
+        "spark.driver.memory" : "1638m",
+        "spark.yarn.am.memory" : "1638m",
+        {% endif -%}
+        "spark.yarn.executor.memoryOverhead" : "384",
+        "spark.yarn.driver.memoryOverhead" : "384",
+        "spark.yarn.am.memoryOverhead" : "384"
+        }
+    },
     {% endif -%}
     {% if install_kafka == true -%}
     {
