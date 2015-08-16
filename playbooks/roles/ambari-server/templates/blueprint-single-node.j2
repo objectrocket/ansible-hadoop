@@ -31,6 +31,11 @@
     },
     {% if install_hbase == true -%}
     {
+      "hbase-site" : {
+        "zookeeper.recovery.retry" : "10"
+      }
+    },
+    {
       "hbase-env" : {
         {% if ansible_memtotal_mb > 80000 -%}
         "hbase_master_heapsize" : "2048m",
@@ -107,6 +112,7 @@
     {% endif -%}
     {
       "storm-site" : {
+        "storm.zookeeper.retry.times": "20",
         "logviewer.port" : "8005"
       }
     },
