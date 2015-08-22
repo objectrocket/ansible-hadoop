@@ -41,10 +41,10 @@
       "yarn-site" : {
         {% if install_hbase == true -%}
         "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 25000 - ansible_memtotal_mb//6)//2048)*2048 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb  - 25000 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb  - 25000 - 2048 - ansible_memtotal_mb//6)//2048)*2048 }}",
         {% else -%}
         "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 20000 - ansible_memtotal_mb//6)//2048)*2048 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 20000 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 20000 - 2048 - ansible_memtotal_mb//6)//2048)*2048 }}",
         {% endif -%}
         "yarn.scheduler.minimum-allocation-mb" : "2048"
       }
@@ -91,10 +91,10 @@
       "yarn-site" : {
         {% if install_hbase == true -%}
         "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 15000)//1024)*1024 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 15000)//1024)*1024 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 15000 - 1024)//1024)*1024 }}",
         {% else -%}
         "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 13000)//1024)*1024 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 13000)//1024)*1024 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 13000 - 1024)//1024)*1024 }}",
         {% endif -%}
         "yarn.scheduler.minimum-allocation-mb" : "1024"
       }
