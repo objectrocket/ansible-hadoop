@@ -61,14 +61,13 @@
       }
     },
     {% if install_hbase == true -%}
+    {% if hdfs.ha_namenode -%}
     {
       "hbase-site" : {
-        {% if hdfs.ha_namenode -%}
-        "hbase.rootdir": "hdfs://{{ cluster_name }}/apps/hbase/data",
-        {% endif -%}
-        "zookeeper.recovery.retry" : "10"
+        "hbase.rootdir": "hdfs://{{ cluster_name }}/apps/hbase/data"
       }
     },
+    {% endif -%}
     {% endif -%}
     {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 59000 -%}
     {
@@ -180,7 +179,6 @@
     {% endif -%}
     {
       "storm-site" : {
-        "storm.zookeeper.retry.times": "20",
         "logviewer.port" : "8005"
       }
     },

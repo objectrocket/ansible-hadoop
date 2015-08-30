@@ -29,13 +29,6 @@
         "dfs.replication" : "1"
       }
     },
-    {% if install_hbase == true -%}
-    {
-      "hbase-site" : {
-        "zookeeper.recovery.retry" : "10"
-      }
-    },
-    {% endif -%}
     {% if ansible_memtotal_mb > 59000 -%}
     {
       "yarn-site" : {
@@ -146,7 +139,6 @@
     {% endif -%}
     {
       "storm-site" : {
-        "storm.zookeeper.retry.times": "20",
         "logviewer.port" : "8005"
       }
     },
