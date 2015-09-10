@@ -44,13 +44,6 @@
 - name: Start ntpd
   service: name=ntpd state=started enabled=yes
 
-- name: Stop unneeded services
-  service: name={{ item }} state=stopped enabled=no
-  with_items:
-    - mysqld
-    - httpd
-  ignore_errors: true
-
 - name: Disable MySQL skip-name-resolve if present
   lineinfile: dest=/etc/my.cnf
               regexp="^skip[-_]name[-_]resolve"
