@@ -29,7 +29,7 @@ data_disks_devices: ['xvde']
 # dedicated #
 #############
 
-# cluster_interface: 'bond0'
+# cluster_interface: 'bond1'
 # bond_interfaces: ['eth4', 'eth6']
 # bond_netmask: '255.255.255.0'
 # data_disks_devices: ['sdb']

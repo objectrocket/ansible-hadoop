@@ -19,7 +19,7 @@ services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
 hdfs:
   dfs_replication: 3
-  failed_volumes_tolerated: 0
+  failed_volumes_tolerated: 1
   ha_namenode: true
 
 cloud_config:
@@ -32,4 +32,4 @@ cloud_config:
     keyfile: '~/.ssh/id_rsa.pub'
 
 # set to true to show host variables
-debug: true
+debug: false
