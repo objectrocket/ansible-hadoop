@@ -6,7 +6,7 @@
   shell: /usr/sbin/ambari-server setup -s
 
 - name: Enable the ambari-server service
-  service: name=ambari-server state=restarted enabled=yes
+  service: name=ambari-server state=started enabled=yes
 
 - name: Waiting for ambari-server to start listening on port 8080
   wait_for: host={{ansible_fqdn}} port=8080
