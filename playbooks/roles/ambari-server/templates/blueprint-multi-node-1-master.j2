@@ -34,7 +34,7 @@
         "dfs.datanode.balance.bandwidthPerSec" : "12500000",
         "dfs.datanode.max.transfer.threads": "4096",
         {% endif -%}
-        "dfs.datanode.failed.volumes.tolerated" : "{{ hdfs.failed_volumes_tolerated }}",
+        "dfs.datanode.failed.volumes.tolerated" : "{% if hostvars[groups['slave-nodes'][0]]['data_disks_devices'] is defined and hostvars[groups['slave-nodes'][0]]['data_disks_devices'] and hostvars[groups['slave-nodes'][0]]['data_disks_devices']|length > 1 %}{{ hdfs.failed_volumes_tolerated }}{% else %}0{% endif %}",
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
     },
