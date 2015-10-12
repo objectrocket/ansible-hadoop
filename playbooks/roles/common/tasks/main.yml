@@ -74,12 +74,6 @@
 - name: Set swappiness to 1
   sysctl: name=vm.swappiness value=1 state=present
 
-- name: Disable IPv6
-  sysctl: name=net.ipv6.conf.all.disable_ipv6 value=1 state=present
-
-- name: Disable IPv6
-  sysctl: name=net.ipv6.conf.default.disable_ipv6 value=1 state=present
-
 - name: Get number of kernels in grub.conf
   shell: grep -E "^[[:blank:]]*kernel" /boot/grub/grub.conf | grep -v transparent_hugepage
   register: grep_result
