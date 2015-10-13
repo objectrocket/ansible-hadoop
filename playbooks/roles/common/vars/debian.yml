@@ -1,0 +1,43 @@
+package_info:
+  pkg_mgr: apt
+  args:
+    pkg: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 600
+    state: latest
+  pkgs:
+    - python-simplejson
+    - python-httplib2
+    - man-db
+    - vim
+    - sysstat
+    - lsof
+    - telnet
+    - netcat
+    - python-selinux
+    - ntp
+    - parted
+    - mc
+    - perl
+    - iotop
+    - links
+    - unzip
+    - curl
+    - wget
+    - ifenslave
+
+update_info:
+  pkg_mgr: apt
+  args:
+    upgrade: dist
+    update_cache: yes
+    cache_valid_time: 600
+    state: latest
+
+ntp_service: ntp
+
+resolv_conf: "/etc/resolvconf/resolv.conf.d/tail"
+
+networking_path: "/etc/network/interfaces.d"
+networking_eth: "debian-ifcfg-eth.j2"
+networking_bond: "debian-ifcfg-bond.j2"

@@ -1,48 +1,35 @@
 ---
-- name: "Install epel"
+- name: Install epel
   yum: name=http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm state=present
+  when: ansible_os_family == "RedHat"
+
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
 
 - name: Ensure required packages are installed
-  yum: name={{ item }} state=present
-  with_items:
-    - python-simplejson
-    - python-httplib2
-    - man
-    - man-pages
-    - vim-enhanced
-    - sysstat
-    - lsof
-    - jwhois
-    - telnet
-    - nc
-    - libselinux-python
-    - ntp
-    - parted
-    - mc
-    - perl
-    - openssh-clients
-    - util-linux-ng
-    - vim-enhanced
-    - iotop
-    - links
-    - unzip
-    - curl
-    - wget
-
-- name: Disable yum excludes
-  lineinfile: dest=/etc/yum.conf backrefs=yes regexp='^exclude=(.*)$' line='#exclude=\1'
+  action: "{{ package_info.pkg_mgr }}"
+  args: package_info.args
+  with_items: package_info.pkgs
+  when: package_info.pkgs|length > 0
 
 - name: Update all packages
-  yum: name=* state=latest
+  action: "{{ update_info.pkg_mgr }}"
+  args: update_info.args
 
-- name: Make sure ntpd is stopped
-  service: name=ntpd state=stopped
+- name: Make sure ntp service is stopped
+  service: name={{ ntp_service }} state=stopped
 
-- name: Start ntpdate
-  service: name=ntpdate state=started
+- name: Force ntp sync
+  shell: ntpd -gq
 
-- name: Start ntpd
-  service: name=ntpd state=started enabled=yes
+- name: Start ntp service
+  service: name={{ ntp_service }} state=started enabled=yes
 
 - name: Disable MySQL skip-name-resolve if present
   lineinfile: dest=/etc/my.cnf
@@ -62,6 +49,7 @@
   lineinfile: dest=/etc/security/limits.d/90-nproc.conf
               insertafter=EOF
               state=present
+              create=yes
               line="{{ item }}"
               mode=0644
   with_items:
@@ -79,7 +67,7 @@
   register: grep_result
   ignore_errors: true
 
-- name: Disable Transparent Huge Pages
+- name: Disable Transparent Huge Pages in RedHat
   lineinfile: dest=/boot/grub/grub.conf
               backrefs=True
               state=present
@@ -87,18 +75,39 @@
               line='\1 transparent_hugepage=never'
   register: result
   with_items: grep_result.stdout_lines
+  when: ansible_os_family == "RedHat"
+
+- name: Disable Transparent Huge Pages in Debian
+  lineinfile: dest=/etc/default/grub
+              state=present
+              line='GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
+  when: ansible_os_family == "Debian"
+
+- name: Run update-grub
+  shell: update-grub
+  when: ansible_os_family == "Debian"
 
 - name: Disable Transparent Huge Pages until reboot
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
   ignore_errors: true
 
 - name: Reconfigure resolv.conf domain
-  lineinfile: dest=/etc/resolv.conf regexp='^domain\s+(?! {{ ansible_domain }} ).*$' line='domain {{ ansible_domain }}'
+  lineinfile: dest={{ resolv_conf }}
+              create=yes
+              regexp='^domain\s+(?! {{ ansible_domain }} ).*$'
+              line='domain {{ ansible_domain }}'
   when: ansible_domain != ""
 
 - name: Reconfigure resolv.conf search
-  lineinfile: dest=/etc/resolv.conf regexp='^search\s+(?! {{ ansible_domain }} ).*$' line='search {{ ansible_domain }}'
+  lineinfile: dest={{ resolv_conf }}
+              create=yes
+              regexp='^search\s+(?! {{ ansible_domain }} ).*$'
+              line='search {{ ansible_domain }}'
   when: ansible_domain != ""
+
+- name: Run resolvconf
+  shell: resolvconf -u
+  when: ansible_os_family == "Debian"
 
 - name: Configure bonding
   include: bonding.yml
@@ -107,7 +116,7 @@
 - name: Set hosts file
   template: src=hosts.j2 dest=/etc/hosts mode=0644
 
-- include: iptables.yml
+- include: firewall.yml
   when: cloud_nodes_count is defined and cloud_nodes_count > 0
 
 - include: partitioning.yml

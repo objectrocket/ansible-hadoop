@@ -1,9 +1,23 @@
 ---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
 - name: Download the Ambari repo
-  get_url: url={{ ambari_repo }} dest=/etc/yum.repos.d/
+  get_url: url={{ ambari_repo }} dest={{ ambari_repo_file }}
+
+- name: Add apt key
+  apt_key: keyserver=keyserver.ubuntu.com id={{ ambari_repo_key }}
+  when: ansible_os_family == "Debian"
 
 - name: Install the Ambari agent
-  yum: name=ambari-agent state=present
+  action: "{{ package_info.pkg_mgr }}"
+  args: package_info.args
 
 - name: Configure the Ambari agent
   lineinfile: dest=/etc/ambari-agent/conf/ambari-agent.ini

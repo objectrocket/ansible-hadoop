@@ -5,14 +5,21 @@
 
 - meta: flush_handlers
 
+- name: Make sure the interfaces.d files are included
+  lineinfile: line="source /etc/network/interfaces.d/ifcfg-*"
+              dest=/etc/network/interfaces
+              state=present
+              insertafter=EOF
+  when: ansible_os_family == "Debian"
+
 - name: Write ifcfg files for bonded interfaces
-  template: src=ifcfg-eth dest=/etc/sysconfig/network-scripts/ifcfg-{{ item }}
+  template: src={{ ansible_os_family|lower }}-ifcfg-eth.j2 dest={{ networking_path }}/ifcfg-{{ item }}
   with_items: bond_interfaces
-  notify: Restart networking
+  notify: Restart network interfaces
 
 - name: Write ifcfg file for bond interface
-  template: src=ifcfg-bond dest=/etc/sysconfig/network-scripts/ifcfg-{{ cluster_interface }}
-  notify: Restart networking
+  template: src={{ ansible_os_family|lower }}-ifcfg-bond.j2 dest={{ networking_path }}/ifcfg-{{ cluster_interface }}
+  notify: Restart network interfaces
 
 - meta: flush_handlers
 

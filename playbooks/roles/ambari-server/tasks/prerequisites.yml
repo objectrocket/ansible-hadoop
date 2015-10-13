@@ -1,6 +1,16 @@
 ---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
 - name: Install the Ambari server
-  yum: name=ambari-server state=present
+  action: "{{ package_info.pkg_mgr }}"
+  args: package_info.args
 
 - name: Run Ambari Server setup
   shell: /usr/sbin/ambari-server setup -s
