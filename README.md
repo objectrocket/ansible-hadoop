@@ -18,9 +18,9 @@ For a one-node cluster, set `cloud_nodes_count` in master-nodes to 1 and `cloud_
 
 ## [Requirements] (id:requirements)
 
-- Requires Ansible 1.8 or newer
+- Requires Ansible 1.9 or newer
 
-- Expects CentOS/RHEL 6.x hosts
+- Expects CentOS/RHEL 6.x or Ubuntu 14 hosts
 
 - Building the cloud environment requires the `pyrax` Python module: https://github.com/rackspace/pyrax
 
