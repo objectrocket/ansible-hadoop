@@ -1,0 +1,43 @@
+package_info:
+  pkg_mgr: yum
+  args:
+    name: "{{ item }}"
+    state: present
+  pkgs:
+    - python-simplejson
+    - python-httplib2
+    - man
+    - man-pages
+    - vim-enhanced
+    - sysstat
+    - lsof
+    - jwhois
+    - telnet
+    - nc
+    - libselinux-python
+    - ntp
+    - parted
+    - mc
+    - perl
+    - openssh-clients
+    - util-linux-ng
+    - iotop
+    - links
+    - unzip
+    - curl
+    - wget
+
+update_info:
+  pkg_mgr: yum
+  args:
+    pkg: "*"
+    state: latest
+    update_cache: yes
+
+ntp_service: ntpd
+
+resolv_conf: "/etc/resolv.conf"
+
+networking_path: "/etc/sysconfig/network-scripts"
+networking_eth: "redhat-ifcfg-eth.j2"
+networking_bond: "redhat-ifcfg-bond.j2"

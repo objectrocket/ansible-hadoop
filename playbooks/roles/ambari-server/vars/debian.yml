@@ -1,0 +1,7 @@
+package_info:
+  pkg_mgr: apt
+  args:
+    pkg: "ambari-server"
+    update_cache: yes
+    cache_valid_time: 600
+    state: latest

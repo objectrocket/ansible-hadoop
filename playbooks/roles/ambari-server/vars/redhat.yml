@@ -1,0 +1,6 @@
+package_info:
+  pkg_mgr: yum
+  args:
+    pkg: "ambari-server"
+    state: latest
+    update_cache: yes

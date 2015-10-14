@@ -2,8 +2,11 @@
 - name: Restart iptables
   service: name=iptables state=restarted enabled=yes
 
-- name: Restart networking
-  service: name=network state=restarted
+- name: Restart network interfaces
+  shell: ifdown {{ item }}; ifup {{ item }}; ifup {{ cluster_interface }}
+  with_flattened:
+    - cluster_interface
+    - bond_interfaces
   notify: Gather facts
 
 - name: Gather facts
@@ -11,4 +14,3 @@
 
 - name: Run depmod
   command: depmod
-

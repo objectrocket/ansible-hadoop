@@ -6,6 +6,7 @@
 cluster_interface: 'eth1'
 cloud_nodes_count: 0
 cloud_image: 'CentOS 6 (PVHVM)'
+# cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
 cloud_flavor: 'general1-2'
 build_cbs: true
 cbs_disks_size: 100

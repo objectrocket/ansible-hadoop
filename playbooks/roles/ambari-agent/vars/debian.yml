@@ -1,0 +1,9 @@
+package_info:
+  pkg_mgr: apt
+  args:
+    pkg: "ambari-agent"
+    update_cache: yes
+    state: latest
+ambari_repo: "http://public-repo-1.hortonworks.com/ambari/{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}/2.x/updates/{{ ambari_version }}/ambari.list"
+ambari_repo_file: "/etc/apt/sources.list.d/ambari.list"
+ambari_repo_key: "B9733A7A07513CAD"
