@@ -1,10 +1,10 @@
 package_info:
   pkg_mgr: apt
   args:
-    pkg: "{{ item }}"
+    name: "{{ item }}"
     update_cache: yes
     cache_valid_time: 600
-    state: latest
+    state: present
   pkgs:
     - python-simplejson
     - python-httplib2

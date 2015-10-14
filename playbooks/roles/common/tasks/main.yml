@@ -1,6 +1,6 @@
 ---
 - name: Install epel
-  yum: name=http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm state=present
+  yum: name=http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm state=present update_cache=yes
   when: ansible_os_family == "RedHat"
 
 - name: Load OS specific variables

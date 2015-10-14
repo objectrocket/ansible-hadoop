@@ -1,9 +1,8 @@
 package_info:
   pkg_mgr: yum
   args:
-    pkg: "{{ item }}"
-    state: latest
-    update_cache: yes
+    name: "{{ item }}"
+    state: present
   pkgs:
     - python-simplejson
     - python-httplib2
