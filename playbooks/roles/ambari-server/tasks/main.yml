@@ -20,7 +20,7 @@
   when: custom_repo
 
 - name: modify repo base_url
-  uri: url=http://{{ ansible_fqdn }}:8080{{ custom_repo_target }}
+  uri: url=http://{{ ansible_fqdn }}:8080/{{ custom_repo_target }}
        method=PUT
        force_basic_auth=yes
        user=admin
