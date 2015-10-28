@@ -33,6 +33,8 @@
   sudo_user: root
   roles:
     - ambari-agent
+  tags:
+    - ambari-agent-only
 
 - name: "Apply the ambari-server role to ambari-node group"
   hosts: ambari-node
@@ -40,3 +42,5 @@
   sudo_user: root
   roles:
     - ambari-server
+  tags:
+    - ambari-server-only
