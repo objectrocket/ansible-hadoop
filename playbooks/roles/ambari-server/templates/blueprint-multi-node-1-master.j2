@@ -182,6 +182,56 @@
           "name" : "ZOOKEEPER_CLIENT"
         },
         {
+          "name" : "PIG"
+        },
+        {
+          "name" : "OOZIE_CLIENT"
+        },
+        {
+          "name" : "SQOOP"
+        },
+        {
+          "name" : "HIVE_CLIENT"
+        },
+        {
+          "name" : "HDFS_CLIENT"
+        },
+        {
+          "name" : "YARN_CLIENT"
+        },
+        {
+          "name" : "HCAT"
+        },
+        {
+          "name" : "MAPREDUCE2_CLIENT"
+        },
+        {
+          "name" : "TEZ_CLIENT"
+        },
+        {
+          "name" : "SLIDER"
+        },
+        {% if install_spark == true -%}
+        {
+          "name" : "SPARK_CLIENT"
+        },
+        {% endif -%}
+        {% if install_hbase == true -%}
+        {
+          "name" : "HBASE_CLIENT"
+        },
+        {% endif -%}
+        {% if install_storm == true -%}
+        {
+          "name" : "SUPERVISOR"
+        },
+        {% endif -%}
+        {% if install_falcon == true -%}
+        {
+          "name" : "FALCON_CLIENT"
+        },
+        {% endif -%}
+        {
           "name" : "NODEMANAGER"
         },
         {
@@ -195,11 +245,6 @@
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"
-        },
-        {% endif -%}
-        {% if install_storm == true -%}
-        {
-          "name" : "SUPERVISOR"
         },
         {% endif -%}
         {
