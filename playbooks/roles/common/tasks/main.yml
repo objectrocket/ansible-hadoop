@@ -26,7 +26,8 @@
   service: name={{ ntp_service }} state=stopped
 
 - name: Force ntp sync
-  shell: ntpd -gq
+  command: /usr/sbin/ntpd -gq
+  ignore_errors: yes
 
 - name: Start ntp service
   service: name={{ ntp_service }} state=started enabled=yes
