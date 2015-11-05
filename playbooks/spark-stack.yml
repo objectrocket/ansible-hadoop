@@ -1,0 +1,42 @@
+---
+- name: "Add nodes to required groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add all cluster nodes to the hadoop-cluster group"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        groups: hadoop-cluster
+      with_flattened:
+        - groups['master-nodes']|default([])
+        - groups['slave-nodes']|default([])
+        - groups['edge-nodes']|default([])
+    - name: "Add the last masternode to ambari-node variable group"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        groups: ambari-node
+      with_items: groups['master-nodes']|sort|last
+
+- name: "Show debug info"
+  hosts: hadoop-cluster
+  sudo: yes
+  sudo_user: root
+  tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+- name: "Apply the ambari-agent role to all nodes"
+  hosts: hadoop-cluster
+  sudo: yes
+  sudo_user: root
+  roles:
+    - ambari-agent
+
+- name: "Apply the ambari-server role to ambari-node group"
+  hosts: ambari-node
+  sudo: yes
+  sudo_user: root
+  roles:
+    - ambari-server

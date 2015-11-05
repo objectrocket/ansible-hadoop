@@ -6,7 +6,8 @@ custom_repo: false
 custom_repo_url: ''
 custom_repo_target: 'api/v1/stacks/HDP/versions/2.3/operating_systems/redhat6/repositories/HDP-2.3'
 ambari_version: '2.1.2'
-install_spark: true
+spark_stack: true
+install_spark: false
 install_flume: false
 install_hbase: false
 install_storm: false

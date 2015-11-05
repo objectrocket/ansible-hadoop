@@ -1,0 +1,5 @@
+- name: Ensure required packages are installed
+  action: "{{ package_info.pkg_mgr }}"
+  args: package_info.args
+  with_items: package_info.sprk_pkgs
+  when: package_info.sprk_pkgs|length > 0
