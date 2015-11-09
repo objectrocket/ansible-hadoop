@@ -18,13 +18,17 @@
   notify: Restart iptables
 
 - name: Set firewalld rules between cluster nodes
-  firewalld: source={{ hostvars[item][['ansible_', hostvars[item]['cluster_interface']]|join]['ipv4']['address'] }} state=enabled
+  command: firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="{{ hostvars[item][['ansible_', hostvars[item]['cluster_interface']]|join]['ipv4']['address'] }}" accept'
+#  firewalld: source={{ hostvars[item][['ansible_', hostvars[item]['cluster_interface']]|join]['ipv4']['address'] }} state=enabled
   with_items: play_hosts
+  notify: reload firewalld
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Set firewalld to allow cluster access from external IPs
-  firewalld: source={{ item }} state=enabled
+  command: firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="{{ item }}" accept'
+#  firewalld: source={{ item }} state=enabled
   with_items: cloud_config.allowed_external_ips
+  notify: reload firewalld
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Set UFW rules between cluster nodes
