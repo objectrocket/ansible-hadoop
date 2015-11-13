@@ -2,6 +2,10 @@
 - name: Restart iptables
   service: name=iptables state=restarted enabled=yes
 
+- name: reload firewalld
+  command: firewall-cmd --reload
+  notify: Gather facts
+
 - name: Restart network interfaces
   shell: ifdown {{ item }}; ifup {{ item }}; ifup {{ cluster_interface }}
   with_flattened:

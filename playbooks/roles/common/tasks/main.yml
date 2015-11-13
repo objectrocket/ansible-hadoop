@@ -1,16 +1,17 @@
 ---
-- name: Install epel
-  yum: name=http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm state=present update_cache=yes
-  when: ansible_os_family == "RedHat"
-
 - name: Load OS specific variables
   include_vars: "{{ item }}"
   with_first_found:
     - files:
         - "{{ ansible_os_family|lower }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ansible_distribution_major_version }}.yml"
         - defaults.yml
       paths:
         - ../vars
+
+- name: Install epel
+  yum: name={{ epel_url }} state=present update_cache=yes
+  when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed
   action: "{{ package_info.pkg_mgr }}"
@@ -22,13 +23,13 @@
   action: "{{ update_info.pkg_mgr }}"
   args: update_info.args
 
-- name: Make sure ntp service is stopped
+- name: Make sure the NTP service is stopped
   service: name={{ ntp_service }} state=stopped
 
-- name: Force ntp sync
-  shell: ntpd -gq
+- name: Force NTP sync
+  command: "{{ ntp_sync }}"
 
-- name: Start ntp service
+- name: Start the NTP service
   service: name={{ ntp_service }} state=started enabled=yes
 
 - name: Disable MySQL skip-name-resolve if present
@@ -62,12 +63,23 @@
 - name: Set swappiness to 1
   sysctl: name=vm.swappiness value=1 state=present
 
+- name: Set the tuned profile
+  copy: src=tuned.conf
+        dest=/etc/tuned/hadoop/
+        mode=0755
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: Activate the tuned profile
+  shell: tuned-adm profile hadoop
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
 - name: Get number of kernels in grub.conf
   shell: grep -E "^[[:blank:]]*kernel" /boot/grub/grub.conf | grep -v transparent_hugepage
   register: grep_result
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
   ignore_errors: true
 
-- name: Disable Transparent Huge Pages in RedHat
+- name: Disable Transparent Huge Pages in Grub 1
   lineinfile: dest=/boot/grub/grub.conf
               backrefs=True
               state=present
@@ -75,17 +87,17 @@
               line='\1 transparent_hugepage=never'
   register: result
   with_items: grep_result.stdout_lines
-  when: ansible_os_family == "RedHat"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
 
-- name: Disable Transparent Huge Pages in Debian
+- name: Disable Transparent Huge Pages in Grub 2
   lineinfile: dest=/etc/default/grub
               state=present
               line='GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
-  when: ansible_os_family == "Debian"
+  when: "{{ ansible_distribution_major_version|int }} > 6"
 
-- name: Run update-grub
-  shell: update-grub
-  when: ansible_os_family == "Debian"
+- name: Run update-grub in Grub 2
+  shell: "{{ update_grub }}"
+  when: "{{ ansible_distribution_major_version|int }} > 6"
 
 - name: Disable Transparent Huge Pages until reboot
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag

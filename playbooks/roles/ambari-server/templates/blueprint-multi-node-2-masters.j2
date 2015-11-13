@@ -266,11 +266,6 @@
         {
           "name" : "DATANODE"
         },
-        {% if install_flume == true -%}
-        {
-          "name" : "FLUME_HANDLER"
-        },
-        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"
@@ -352,6 +347,11 @@
         {
           "name" : "RESOURCEMANAGER"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_JOBHISTORYSERVER"
@@ -440,6 +440,11 @@
         {
           "name" : "OOZIE_SERVER"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -518,6 +523,11 @@
         {
           "name" : "SLIDER"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -614,11 +624,6 @@
         {% if hdfs.ha_namenode -%}
         {
           "name" : "JOURNALNODE"
-        },
-        {% endif -%}
-        {% if install_flume == true -%}
-        {
-          "name" : "FLUME_HANDLER"
         },
         {% endif -%}
         {% if install_hbase == true -%}

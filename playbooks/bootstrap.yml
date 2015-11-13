@@ -24,6 +24,7 @@
 
 - name: "Apply the common role to all nodes"
   hosts: hadoop-cluster
+  any_errors_fatal: true
   sudo: yes
   sudo_user: root
   roles:

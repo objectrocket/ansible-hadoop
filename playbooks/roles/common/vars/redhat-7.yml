@@ -15,7 +15,8 @@ package_info:
     - telnet
     - nc
     - libselinux-python
-    - ntp
+    - ntpdate
+    - chrony
     - parted
     - mc
     - perl
@@ -34,7 +35,12 @@ update_info:
     state: latest
     update_cache: yes
 
-ntp_service: ntpd
+update_grub: 'grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'
+
+ntp_service: chronyd
+ntp_sync: "systemctl restart ntpdate"
+
+epel_url: "https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm"
 
 resolv_conf: "/etc/resolv.conf"
 
