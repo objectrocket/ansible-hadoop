@@ -68,6 +68,73 @@
         "tez.task.resource.memory.mb" : "4096"
       }
     },
+    {% if spark_stack == true -%}
+    {
+      "tachyon-env" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "tachyon_worker_memory" : "{{ spark_stack_config.tachyon_worker_memory }}",
+          "tachyon_ram_folder" : "/mnt/ramdisk",
+          "tachyon_underfs_root" : "/apps/tachyon",
+          "content" : "\n#!/usr/bin/env bash\n\n# This file contains environment variables required to run Tachyon. Copy it as tachyon-env.sh and\n# edit that to configure Tachyon for your site. At a minimum,\n# the following variables should be set:\n#\n# - JAVA_HOME, to point to your JAVA installation\n# - TACHYON_MASTER_ADDRESS, to bind the master to a different IP address or hostname\n# - TACHYON_UNDERFS_ADDRESS, to set the under filesystem address.\n# - TACHYON_WORKER_MEMORY_SIZE, to set how much memory to use (e.g. 1000mb, 2gb) per worker\n# - TACHYON_RAM_FOLDER, to set where worker stores in memory data\n# - TACHYON_UNDERFS_HDFS_IMPL, to set which HDFS implementation to use (e.g. com.mapr.fs.MapRFileSystem,\n#   org.apache.hadoop.hdfs.DistributedFileSystem)\n\nexport TACHYON_MASTER_ADDRESS={{tachyon_master_address}}\nexport TACHYON_WORKER_MEMORY_SIZE={{tachyon_worker_memory}}\nexport TACHYON_UNDERFS_ADDRESS={{tachyon_underfs_address}}\nexport TACHYON_RAM_FOLDER={{tachyon_ram_folder}}\nexport TACHYON_UNDERFS_HDFS_IMPL=org.apache.hadoop.hdfs.DistributedFileSystem\nexport TACHYON_WORKER_MAX_WORKER_THREADS=2048\nexport TACHYON_MASTER_MAX_WORKER_THREADS=2048\n\nTACHYON_DATA_DIR=\"/var/lib/tachyon\"\nTACHYON_UNDERFS_ROOT={{tachyon_underfs_root}}\nTACHYON_CONF=\"/etc/tachyon/conf\"\n\nexport TACHYON_JAVA_OPTS+=\"\n  -Dlog4j.configuration=file:$TACHYON_CONF/log4j.properties\n  -Dtachyon.debug=false\n  -Dtachyon.worker.tierdstore.level.max=1\n  -Dtachyon.worker.tierdstore.level0.alias=MEM\n  -Dtachyon.worker.tierdstore.level0.dirs.path=$TACHYON_RAM_FOLDER\n  -Dtachyon.worker.tierdstore.level0.dirs.quota=$TACHYON_WORKER_MEMORY_SIZE\n  -Dtachyon.underfs.address=$TACHYON_UNDERFS_ADDRESS\n  -Dtachyon.underfs.hdfs.impl=$TACHYON_UNDERFS_HDFS_IMPL\n  -Dtachyon.data.folder=$TACHYON_UNDERFS_ADDRESS/$TACHYON_UNDERFS_ROOT/data\n  -Dtachyon.worker.max.worker.threads=$TACHYON_WORKER_MAX_WORKER_THREADS\n  -Dtachyon.workers.folder=$TACHYON_UNDERFS_ADDRESS/$TACHYON_UNDERFS_ROOT/workers\n  -Dtachyon.worker.memory.size=$TACHYON_WORKER_MEMORY_SIZE\n  -Dtachyon.worker.data.folder=/tachyonworker/\n  -Dtachyon.master.max.worker.threads=$TACHYON_MASTER_MAX_WORKER_THREADS\n  -Dtachyon.master.worker.timeout.ms=60000\n  -Dtachyon.master.hostname=$TACHYON_MASTER_ADDRESS\n  -Dtachyon.master.journal.folder=$TACHYON_DATA_DIR/journal/\n  -Dtachyon.web.resources=$TACHYON_HOME/webapp\n  -Dorg.apache.jasper.compiler.disablejsr199=true\n  -Djava.net.preferIPv4Stack=true\n\"\n\n# Master specific parameters. Default to TACHYON_JAVA_OPTS.\nexport TACHYON_MASTER_JAVA_OPTS=\"$TACHYON_JAVA_OPTS\"\n\n# Worker specific parameters that will be shared to all workers. Default to TACHYON_JAVA_OPTS.\nexport TACHYON_WORKER_JAVA_OPTS=\"$TACHYON_JAVA_OPTS\""
+        }
+      }
+    },
+    {
+      "zeppelin-env" : {
+        "properties_attributes" : { },
+      "zeppelin-env" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "spark_cores_max" : "{{ spark_stack_config.zeppelin_spark_cores_max }}",
+          "spark_executor_memory" : "{{ spark_stack_config.zeppelin_spark_executor_memory }}",
+          "content" : "\n#!/bin/bash\n#\n# Licensed to the Apache Software Foundation (ASF) under one or more\n# contributor license agreements.  See the NOTICE file distributed with\n# this work for additional information regarding copyright ownership.\n# The ASF licenses this file to You under the Apache License, Version 2.0\n# (the \"License\"); you may not use this file except in compliance with\n# the License.  You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\n\n# Spark Configs\nexport MASTER=spark://{{spark_master}}:7077\nexport ZEPPELIN_SPARK_USEHIVECONTEXT=false\nexport SPARK_HOME=/usr/lib/spark\n\n# Zeppelin Configs\nexport ZEPPELIN_HOME=/usr/lib/zeppelin\nexport ZEPPELIN_NOTEBOOK_DIR={{zeppelin_notebook}}\n\nexport ZEPPELIN_LOG_DIR=/var/log/zeppelin\nexport ZEPPELIN_PID_DIR=/var/run/zeppelin\nexport ZEPPELIN_JAVA_OPTS=\"-Dspark.executor.memory={{spark_executor_memory}} -Dspark.cores.max={{spark_cores_max}}\""
+        }
+      }
+    },
+    {
+      "zeppelin-site" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "zeppelin.notebook.dir" : "{{zeppelin_notebook}}",
+          "zeppelin.ssl.keystore.type" : "JKS",
+          "zeppelin.ssl.truststore.path" : "truststore",
+          "zeppelin.interpreters" : "org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter",
+          "zeppelin.server.port" : "8090",
+          "zeppelin.ssl" : "false",
+          "zeppelin.notebook.storage" : "org.apache.zeppelin.notebook.repo.VFSNotebookRepo",
+          "zeppelin.interpreter.connect.timeout" : "30000",
+          "zeppelin.interpreter.dir" : "/usr/lib/zeppelin/interpreter",
+          "zeppelin.ssl.truststore.type" : "JKS",
+          "zeppelin.ssl.keystore.path" : "keystore",
+          "zeppelin.websocket.addr" : "0.0.0.0",
+          "zeppelin.server.addr" : "0.0.0.0",
+          "zeppelin.ssl.client.auth" : "false",
+          "zeppelin.websocket.port" : "-1"
+        }
+      }
+    },
+      "spark-env" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "content" : "\n#!/usr/bin/env bash\n\n# Options read when launching programs locally with\n# ./bin/run-example or ./bin/spark-submit\n# - HADOOP_CONF_DIR, to point Spark towards Hadoop configuration files\n# - SPARK_LOCAL_IP, to set the IP address Spark binds to on this node\n# - SPARK_PUBLIC_DNS, to set the public dns name of the driver program\n# - SPARK_CLASSPATH, default classpath entries to append\n\n# Options read by executors and drivers running inside the cluster\nSPARK_LOCAL_IP={{node_hostname}}\n# - SPARK_PUBLIC_DNS, to set the public DNS name of the driver program\n# - SPARK_CLASSPATH, default classpath entries to append\nSPARK_LOCAL_DIRS={{spark_local_dirs}}\n\n# Options for the daemons used in the standalone deploy mode\nSPARK_MASTER_IP={{spark_master}}\n# - SPARK_MASTER_PORT / SPARK_MASTER_WEBUI_PORT, to use non-default ports for the master\n# - SPARK_MASTER_OPTS, to set config properties only for the master (e.g. \"-Dx=y\")\n# - SPARK_WORKER_CORES, to set the number of cores to use on this machine\n# - SPARK_WORKER_MEMORY, to set how much total memory workers have to give executors (e.g. 1000m, 2g)\n# - SPARK_WORKER_PORT / SPARK_WORKER_WEBUI_PORT, to use non-default ports for the worker\n# - SPARK_WORKER_INSTANCES, to set the number of worker processes per node\nSPARK_WORKER_DIR=/var/lib/spark/\n# - SPARK_WORKER_OPTS, to set config properties only for the worker (e.g. \"-Dx=y\")\n# - SPARK_DAEMON_MEMORY, to allocate to the master, worker and history server themselves (default: 1g).\n# - SPARK_HISTORY_OPTS, to set config properties only for the history server (e.g. \"-Dx=y\")\n# - SPARK_SHUFFLE_OPTS, to set config properties only for the external shuffle service (e.g. \"-Dx=y\")\nSPARK_DAEMON_JAVA_OPTS=\"-XX:+UseCompressedOops -Dspark.deploy.recoveryMode=FILESYSTEM -Dspark.deploy.recoveryDirectory=/var/lib/spark\"\nSPARK_PUBLIC_DNS={{node_hostname}}\n\n# Generic options for the daemons used in the standalone deploy mode\nSPARK_CONF_DIR=/etc/spark/conf\nSPARK_LOG_DIR=/var/log/spark\nSPARK_PID_DIR=/var/run/spark\n# - SPARK_IDENT_STRING  A string representing this instance of spark. (Default: $USER)\n# - SPARK_NICENESS      The scheduling priority for daemons. (Default: 0)\n\n# Misc configs\nSPARK_SCALA_VERSION=2.10",
+          "spark_local_dirs" : "/data1/spark"
+        }
+      }
+    },
+    {
+      "spark-defaults" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "spark_exector_memory" : "{{ spark_stack_config.spark_exector_memory }}",
+          "spark_driver_memory" : "{{ spark_stack_config.spark_driver_memory }}",
+          "spark_driver_maxResultSize" : "{{ spark_stack_config.spark_driver_maxResultSize }}",
+          "content" : "\n# Default system properties included when running spark-submit.\n# This is useful for setting default environmental settings.\n\n# Core\nspark.master                     spark://{{spark_master}}:7077\nspark.serializer                 org.apache.spark.serializer.KryoSerializer\n\n\n# Driver\nspark.driver.memory              {{spark_driver_memory}}\nspark.driver.maxResultSize       {{spark_driver_maxResultSize}}\nspark.driver.host                {{node_hostname}}\n\n# Executors\nspark.executor.memory              {{spark_exector_memory}}\n# spark.executor.extraJavaOptions  -XX:+PrintGCDetails -Dkey=value -Dnumbers=\"one two three\"\n# spark.rdd.compress               false\n\n# Storage\nspark.externalBlockStore.blockManager  org.apache.spark.storage.TachyonBlockManager\nspark.externalBlockStore.url           tachyon://{{tachyon_master}}:19998\nspark.externalBlockStore.baseDir       /spark\n\n# History\nspark.eventLog.enabled           true\nspark.eventLog.dir               {{hdfs_root}}/{{spark_events}}\nspark.history.fs.logDirectory    {{hdfs_root}}/{{spark_events}}\n# spark.eventLog.compress          false\n\n# Shuffle Options\nspark.shuffle.consolidateFiles   true"
+        }	
+      }
+    },
+    {% endif -%}
+    {% if install_spark == true -%}
     {
       "spark-defaults" : {
         "spark.executor.instances" : "{{ groups['slave-nodes']|length }}",
@@ -79,6 +146,7 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
+    {% endif -%}
     {% if install_hbase == true -%}
     {
       "hbase-env" : {
@@ -118,6 +186,7 @@
         "tez.task.resource.memory.mb" : "2048"
       }
     },
+    {% if install_spark == true -%}
     {
       "spark-defaults" : {
         "spark.executor.instances" : "{{ groups['slave-nodes']|length }}",
@@ -129,6 +198,7 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
+    {% endif -%}
     {% if install_hbase == true -%}
     {
       "hbase-env" : {
@@ -211,6 +281,20 @@
         {
           "name" : "SLIDER"
         },
+        {% if spark_stack == true -%}
+        {
+          "name" : "SPARKS_CLIENT"
+        },
+        {
+          "name" : "SPARKS_SLAVE"
+        },
+        {
+          "name" : "TACHYON_WORKER"
+        },
+        {
+          "name" : "TACHYON_CLIENT"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -289,6 +373,14 @@
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
+        {% if spark_stack == true -%}
+        {
+          "name" : "SPARKS_CLIENT"
+        },
+        {
+          "name" : "TACHYON_CLIENT"
         },
         {% endif -%}
         {% if install_spark == true -%}
@@ -397,6 +489,26 @@
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
+        {% if spark_stack == true -%}
+        {
+          "name" : "TACHYON_MASTER"
+        },
+        {
+          "name" : "TACHYON_CLIENT"
+        },
+        {
+          "name" : "SPARKS_HISTORY_SERVER"
+        },
+        {
+          "name" : "SPARKS_SLAVE"
+        },
+        {
+          "name" : "SPARKS_MASTER"
+        },
+        {
+          "name" : "ZEPPELIN_SERVER"
         },
         {% endif -%}
         {% if install_spark == true -%}
