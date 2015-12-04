@@ -266,6 +266,11 @@
         {
           "name" : "NAMENODE"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -306,24 +311,64 @@
           "name" : "ZOOKEEPER_CLIENT"
         },
         {
-          "name" : "NODEMANAGER"
+          "name" : "PIG"
         },
         {
-          "name" : "DATANODE"
+          "name" : "OOZIE_CLIENT"
         },
-        {% if install_flume == true -%}
         {
-          "name" : "FLUME_HANDLER"
+          "name" : "SQOOP"
+        },
+        {
+          "name" : "HIVE_CLIENT"
+        },
+        {
+          "name" : "HDFS_CLIENT"
+        },
+        {
+          "name" : "YARN_CLIENT"
+        },
+        {
+          "name" : "HCAT"
+        },
+        {
+          "name" : "MAPREDUCE2_CLIENT"
+        },
+        {
+          "name" : "TEZ_CLIENT"
+        },
+        {
+          "name" : "SLIDER"
+        },
+        {% if install_spark == true -%}
+        {
+          "name" : "SPARK_CLIENT"
         },
         {% endif -%}
         {% if install_hbase == true -%}
         {
-          "name" : "HBASE_REGIONSERVER"
+          "name" : "HBASE_CLIENT"
         },
         {% endif -%}
         {% if install_storm == true -%}
         {
           "name" : "SUPERVISOR"
+        },
+        {% endif -%}
+        {% if install_falcon == true -%}
+        {
+          "name" : "FALCON_CLIENT"
+        },
+        {% endif -%}
+        {
+          "name" : "NODEMANAGER"
+        },
+        {
+          "name" : "DATANODE"
+        },
+        {% if install_hbase == true -%}
+        {
+          "name" : "HBASE_REGIONSERVER"
         },
         {% endif -%}
         {
@@ -386,6 +431,11 @@
         {
           "name" : "OOZIE_SERVER"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -448,6 +498,11 @@
         {
           "name" : "SLIDER"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -539,6 +594,11 @@
         {
           "name" : "RESOURCEMANAGER"
         },
+        {% if install_flume == true -%}
+        {
+          "name" : "FLUME_HANDLER"
+        },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_JOBHISTORYSERVER"

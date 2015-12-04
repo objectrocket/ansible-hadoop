@@ -19,99 +19,99 @@
   register: hdprepo
   when: custom_repo
 
-#- name: modify repo base_url
-#  uri: url=http://{{ ansible_fqdn }}:8080{{ custom_repo_target }}
-#       method=PUT
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       body="{{ hdprepo.content | b64decode }}"
-#       status_code=200,201,202
-#  when: custom_repo
-#
-#- name: Upload the alert_targets payload
-#  template: src=alert_targets.j2 dest=/tmp/alert_targets mode=0644
-#
-#- name: Slurp the alert_targets payload
-#  slurp: src=/tmp/alert_targets
-#  register: alert_targets
-#
-#- name: Check if alert_targets already exists
-#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
-#       method=GET
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       status_code=200,201,202,404
-#       return_content=yes
-#  register: current_alert_targets
-#
-#- name: Register the alert_targets with the Ambari server
-#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
-#       method=POST
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       body='{{ alert_targets.content | b64decode }}'
-#       status_code=200,201,202
-#  when: '"AlertTarget" not in current_alert_targets.content'
-#
-#- name: Install git
-#  yum: name=git state=latest
-#  when: tachyon_service
-#
-#- name: Get Tachyon Service
-#  git: repo=https://github.com/seraphin/tachyon-service.git dest=/var/lib/ambari-server/resources/stacks/HDP/2.2/services/tachyon-service/ force=yes
-#  when: tachyon_service
-#
-#- name: Slurp the blueprint
-#  slurp: src=/tmp/cluster_blueprint
-#  register: cluster_blueprint
-#
-#- name: Make sure the blueprint doesn't already exist
-#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
-#       method=DELETE
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       status_code=200,201,202,404
-#  ignore_errors: true
-#
-#- name: Register the blueprint with the Ambari server
-#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
-#       method=POST
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       body='{{ cluster_blueprint.content | b64decode }}'
-#       status_code=200,201,202
-#
-#- name: Slurp the cluster creation template
-#  slurp: src=/tmp/cluster_template
-#  register: cluster_template
-#
-#- name: Create the cluster instance
-#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/clusters/{{ cluster_name }}
-#       method=POST
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       body='{{ cluster_template.content | b64decode }}'
-#       status_code=200,201,202
-#
-#- name: Change Ambari admin user password
-#  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/users/admin
-#       method=PUT
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       HEADER_X-Requested-By="ambari"
-#       body='{"Users":{ "password":"{{ admin_password }}", "old_password":"admin"}}'
-#       status_code=200,201,202
-#  when: admin_password != 'admin'
+- name: modify repo base_url
+  uri: url=http://{{ ansible_fqdn }}:8080/{{ custom_repo_target }}
+       method=PUT
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body="{{ hdprepo.content | b64decode }}"
+       status_code=200,201,202
+  when: custom_repo
+
+- name: Upload the alert_targets payload
+  template: src=alert_targets.j2 dest=/tmp/alert_targets mode=0644
+
+- name: Slurp the alert_targets payload
+  slurp: src=/tmp/alert_targets
+  register: alert_targets
+
+- name: Check if alert_targets already exists
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
+       method=GET
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202,404
+       return_content=yes
+  register: current_alert_targets
+
+- name: Register the alert_targets with the Ambari server
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
+       method=POST
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{{ alert_targets.content | b64decode }}'
+       status_code=200,201,202
+  when: '"AlertTarget" not in current_alert_targets.content'
+
+- name: Install git
+  yum: name=git state=latest
+  when: tachyon_service
+
+- name: Get Tachyon Service
+  git: repo=https://github.com/seraphin/tachyon-service.git dest=/var/lib/ambari-server/resources/stacks/HDP/2.2/services/tachyon-service/ force=yes
+  when: tachyon_service
+
+- name: Slurp the blueprint
+  slurp: src=/tmp/cluster_blueprint
+  register: cluster_blueprint
+
+- name: Make sure the blueprint doesn't already exist
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
+       method=DELETE
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202,404
+  ignore_errors: true
+
+- name: Register the blueprint with the Ambari server
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
+       method=POST
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{{ cluster_blueprint.content | b64decode }}'
+       status_code=200,201,202
+
+- name: Slurp the cluster creation template
+  slurp: src=/tmp/cluster_template
+  register: cluster_template
+
+- name: Create the cluster instance
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/clusters/{{ cluster_name }}
+       method=POST
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{{ cluster_template.content | b64decode }}'
+       status_code=200,201,202
+
+- name: Change Ambari admin user password
+  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/users/admin
+       method=PUT
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body='{"Users":{ "password":"{{ admin_password }}", "old_password":"admin"}}'
+       status_code=200,201,202
+  when: admin_password != 'admin'

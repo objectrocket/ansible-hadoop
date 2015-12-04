@@ -29,10 +29,13 @@
 
 - name: "Apply the ambari-agent role to all nodes"
   hosts: hadoop-cluster
+  any_errors_fatal: true
   sudo: yes
   sudo_user: root
   roles:
     - ambari-agent
+  tags:
+    - ambari-agent-only
 
 - name: "Apply the ambari-server role to ambari-node group"
   hosts: ambari-node
@@ -40,3 +43,5 @@
   sudo_user: root
   roles:
     - ambari-server
+  tags:
+    - ambari-server-only
