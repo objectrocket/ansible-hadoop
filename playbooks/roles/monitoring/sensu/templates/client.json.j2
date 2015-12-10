@@ -1,0 +1,7 @@
+{
+   "client": {
+      "name": "{{ sensu_client_hostname }}",
+      "address": "{{ sensu_client_address }}",
+      "subscriptions": [ "{{ "\",\"".join(sensu_client_subscription_names) }}" ]
+   }
+}
