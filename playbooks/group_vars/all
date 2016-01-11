@@ -26,6 +26,7 @@ spark_stack_config:
   spark_driver_maxResultSize: '512M'
   zeppelin_spark_executor_memory: '1g'
   zeppelin_spark_cores_max: '1'
+  default_user: 'dgrier'
 
 hdfs:
   dfs_replication: 3

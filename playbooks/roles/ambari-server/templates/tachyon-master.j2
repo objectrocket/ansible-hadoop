@@ -1,0 +1,87 @@
+import os
+
+from resource_management.core.base import Fail
+from resource_management.core.exceptions import ComponentIsNotRunning
+from resource_management.core.resources.system import Execute, File
+from resource_management.core.source import InlineTemplate
+from resource_management.libraries.script.script import Script
+
+
+# pylint: disable=no-init,unused-argument
+
+
+class Master(Script):
+
+    def install(self, env):
+        """
+        Install packages listed in metainfo.xml and additionally setup the configuraiton files.
+        """
+        import params
+
+        self.install_packages(env)
+        env.set_params(params)
+        Execute('systemctl enable tachyon-master')
+
+    def configure(self, env):
+        """
+        Setup the required configuration files and update the user provided values.
+        """
+        import params
+
+        env.set_params(params)
+        File('{0}/tachyon-env.sh'.format(params.tachyon_conf_dir),
+             owner=params.tachyon_user,
+             group=params.tachyon_user,
+             content=InlineTemplate(params.tachyon_env_content))
+
+        # Setup the required underfs directories
+        data_dir = os.path.join(params.tachyon_underfs_root, 'data')
+        worker_dir = os.path.join(params.tachyon_underfs_root, 'workers')
+
+        if params.tachyon_underfs_address.startswith('hdfs'):
+            Execute('hdfs dfs -mkdir -p {0}'.format(data_dir), user=params.hdfs_user)
+            Execute('hdfs dfs -mkdir -p {0}'.format(worker_dir), user=params.hdfs_user)
+            # chown -R doesn't seem to work with hdfs even though it supports it
+            Execute('hdfs dfs -chown {0}:{1} {2}'.format(params.tachyon_user,
+                                                         params.hdfs_group,
+                                                         params.tachyon_underfs_root),
+                    user=params.hdfs_user)
+            Execute('hdfs dfs -chown {0}:{1} {2}'.format(params.tachyon_user,
+                                                         params.users_group,
+                                                         data_dir),
+                    user=params.hdfs_user)
+            Execute('hdfs dfs -chmod 775 {0}'.format(worker_dir),
+                    user=params.hdfs_user)
+            Execute('hdfs dfs -chown {0}:{1} {2}'.format(params.tachyon_user,
+                                                         params.users_group,
+                                                         worker_dir),
+                    user=params.hdfs_user)
+        elif (params.tachyon_underfs_address.startswith('file') or
+              params.tachyon_underfs_address.startswith('/')):
+            Execute('mkdir -p {0}'.format(data_dir))
+            Execute('mkdir -p {0}'.format(worker_dir))
+            Execute('chown -R {0}:{1} {2}'.format(params.tachyon_user,
+                                                  params.users_group,
+                                                  data_dir))
+            Execute('chmod 777 {1}'.format(worker_dir))
+
+        # Format underfs
+        Execute('tachyon format', user=params.tachyon_user)
+
+    def start(self, env):
+        self.configure(env)
+        Execute('systemctl start tachyon-master.service')
+
+    def stop(self, env):
+        Execute('systemctl stop tachyon-master.service')
+
+    def status(self, env):
+        try:
+            Execute('systemctl status tachyon-master.service')
+        except Fail:
+            raise ComponentIsNotRunning()
+
+
+if __name__ == "__main__":
+    Master().execute()
+
