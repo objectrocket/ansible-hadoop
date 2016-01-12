@@ -65,7 +65,6 @@
     - "{{ sensu_key_file_name }}"
   when: not sensu_server_rabbitmq_insecure
   notify:
-    - restart sensu server
     - restart sensu client
 
 - name: generate rabbitmq.json

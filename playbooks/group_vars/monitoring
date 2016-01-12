@@ -11,6 +11,8 @@ sensu_settings: {}
 
 sensu_embedded_ruby: "true"
 
+#Note!! certs are not included here! please refer to your deployment documentation for the certs to include here
+
 # Sensu Certificates
 sensu_cert_dir:       files
 sensu_cert_file_name: sensu_client_cert.pem
@@ -22,10 +24,10 @@ sensu_client_address:            "{{ ansible_default_ipv4.address }}"
 sensu_client_subscription_names: [el7,hp]
 
 sensu_server_rabbitmq_vhost:    "/sensu"
-sensu_server_rabbitmq_hostname: "23.253.230.21"
+sensu_server_rabbitmq_hostname: "23.253.238.146"
 # This is the RabbitMQ TLS port, if you choose to not use a secure
 # connection, change that and the following boolean to true.
 sensu_server_rabbitmq_port:     "5671"
 sensu_server_rabbitmq_insecure: false
 sensu_server_rabbitmq_user:     "sensu"
-sensu_server_rabbitmq_password: "placeholder"
+sensu_server_rabbitmq_password: "sensu"
