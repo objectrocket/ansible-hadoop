@@ -1,0 +1,37 @@
+import socket
+
+from resource_management.libraries.script.script import Script
+
+
+# config object that holds the configurations declared under the configurations folder
+config = Script.get_config()
+
+spark_master = config['clusterHostInfo']['sparks_master_hosts'][0]
+tachyon_master_hosts = config['clusterHostInfo'].get('tachyon_master_hosts', [])
+if len(tachyon_master_hosts) > 0:
+    tachyon_master = config['clusterHostInfo']['tachyon_master_hosts'][0]
+else:
+    tachyon_master = "localhost"
+hdfs_root = 'hdfs://{{ hostvars[groups['master-nodes'][1]]['ansible_hostname'] }}'
+
+node_hostname = socket.getfqdn()
+
+# spark-env.sh configs
+spark_local_dirs = config['configurations']['spark-env']['spark_local_dirs']
+
+# Content of spark-env.sh
+spark_env_content = config['configurations']['spark-env']['content']
+
+# Content of spark-defaults.conf
+spark_defaults_content = config['configurations']['spark-defaults']['content']
+spark_executor_memory = config['configurations']['spark-defaults']['spark_executor_memory']
+spark_driver_memory = config['configurations']['spark-defaults']['spark_driver_memory']
+spark_driver_maxResultSize = config['configurations']['spark-defaults']['spark_driver_maxResultSize']
+
+
+spark_conf_dir = "/etc/spark/conf"
+spark_user = 'spark'
+spark_events = '/apps/spark/events'
+hdfs_user = hdfs_group = 'hdfs'
+users_group = 'users'
+

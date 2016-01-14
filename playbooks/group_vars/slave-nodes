@@ -10,7 +10,7 @@ cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
 cloud_flavor: 'general1-8'
 build_cbs: true
-cbs_disks_size: 100
+cbs_disks_size: 200
 cbs_disks_type: 'SATA'
 data_disks_devices: ['xvde', 'xvdf']
 

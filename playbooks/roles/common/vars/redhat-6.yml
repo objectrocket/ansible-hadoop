@@ -26,6 +26,9 @@ package_info:
     - unzip
     - curl
     - wget
+  sprk_pkgs:
+    - spark-stack-ambari
+    - hue-ambari
 
 update_info:
   pkg_mgr: yum

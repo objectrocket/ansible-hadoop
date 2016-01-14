@@ -1,0 +1,25 @@
+from resource_management.libraries.script.script import Script
+
+
+# config object that holds the configurations declared under the configurations folder
+config = Script.get_config()
+
+# tachyon master address
+tachyon_master_address =  config['clusterHostInfo']['tachyon_master_hosts'][0]
+
+# tachyon underfs address
+tachyon_underfs_address = 'hdfs://{{ hostvars[groups['master-nodes'][1]]['ansible_hostname'] }}'
+tachyon_underfs_root = config['configurations']['tachyon-env']['tachyon_underfs_root']
+
+# tachyon worker memory alotment
+tachyon_worker_memory = config['configurations']['tachyon-env']['tachyon_worker_memory']
+tachyon_ram_folder = config['configurations']['tachyon-env']['tachyon_ram_folder']
+
+# Content of tachyon-env.sh
+tachyon_env_content = config['configurations']['tachyon-env']['content']
+
+tachyon_conf_dir = "/etc/tachyon/conf"
+hdfs_user = hdfs_group = 'hdfs'
+tachyon_user = 'tachyon'
+users_group = 'users'
+

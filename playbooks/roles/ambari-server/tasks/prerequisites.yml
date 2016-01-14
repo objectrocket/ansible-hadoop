@@ -11,12 +11,17 @@
 - name: Install the Ambari server
   action: "{{ package_info.pkg_mgr }}"
   args: package_info.args
+  with_items: package_info.pkgs
+  when: package_info.pkgs|length > 0
+
+- include: spark_stack.yml
+  when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Run Ambari Server setup
   shell: /usr/sbin/ambari-server setup -s
 
 - name: Enable the ambari-server service
-  service: name=ambari-server state=restarted enabled=yes
+  service: name=ambari-server state=started enabled=yes
 
 - name: Waiting for ambari-server to start listening on port 8080
   wait_for: host={{ansible_fqdn}} port=8080
