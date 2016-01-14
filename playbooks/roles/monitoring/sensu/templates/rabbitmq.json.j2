@@ -1,0 +1,15 @@
+{
+  "rabbitmq": {
+    {% if not sensu_server_rabbitmq_insecure | bool %}
+      "ssl": {
+        "private_key_file": "/etc/sensu/ssl/{{ sensu_key_file_name }}",
+        "cert_chain_file": "/etc/sensu/ssl/{{ sensu_cert_file_name }}"
+      },
+    {% endif %}
+    "port": {{ sensu_server_rabbitmq_port }},
+    "host": "{{ sensu_server_rabbitmq_hostname }}",
+    "user": "{{ sensu_server_rabbitmq_user }}",
+    "password": "{{sensu_server_rabbitmq_password}}",
+    "vhost": "{{ sensu_server_rabbitmq_vhost }}"
+  }
+}

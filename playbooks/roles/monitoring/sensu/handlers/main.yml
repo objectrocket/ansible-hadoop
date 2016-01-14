@@ -1,0 +1,5 @@
+---
+- name: restart sensu client
+  service: name=sensu-client state=restarted
+  when: sensu_install_client
+

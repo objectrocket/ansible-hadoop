@@ -19,6 +19,9 @@ admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
 
+#monitoring
+install_sensu: false
+
 spark_stack_config:
   tachyon_worker_memory: '1GB'
   spark_exector_memory: '1g'

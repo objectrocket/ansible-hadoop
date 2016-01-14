@@ -1,0 +1,7 @@
+---
+- include_vars: group_vars/monitoring
+
+- include: common.yml
+
+- include: client.yml
+  when: sensu_install_client
