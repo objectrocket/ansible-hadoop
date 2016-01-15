@@ -20,6 +20,9 @@
 - name: Run Ambari Server setup
   shell: /usr/sbin/ambari-server setup -s
 
+- name: because packaging is hard
+  copy: src=ambari-server.service  dest=/usr/lib/systemd/system/ambari-server.service
+
 - name: Enable the ambari-server service
   service: name=ambari-server state=started enabled=yes
 
