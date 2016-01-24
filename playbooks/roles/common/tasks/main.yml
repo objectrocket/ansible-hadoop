@@ -131,6 +131,9 @@
 - name: Set hosts file
   template: src=hosts.j2 dest=/etc/hosts mode=0644
 
+- include: unbound-dns.yml 
+  when: use_dns
+
 - include: firewall.yml
   when: cloud_nodes_count is defined and cloud_nodes_count > 0
 
