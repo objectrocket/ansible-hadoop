@@ -32,14 +32,14 @@
 
 - name: Update resolv.conf file with local nameserver
   lineinfile: dest={{ resolv_conf }}
-              regexp="^nameserver 127.0.0.1"
-              insertbefore="^nameserver "
+              regexp=''
+              insertbefore=BOF
               line="nameserver 127.0.0.1"
 
 - name: Update resolv.conf file with master node nameserver
   lineinfile: dest={{ resolv_conf }}
               regexp="^nameserver {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}"
-              insertbefore="^nameserver "
+              insertafter="^nameserver 127.0.0.1"
               line="nameserver {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}"
 
 - name: Run resolvconf
