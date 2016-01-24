@@ -13,6 +13,9 @@
     - bond_interfaces
   notify: Gather facts
 
+- name: Restart unbound
+  service: name=unbound state=restarted enabled=yes
+
 - name: Gather facts
   action: setup
 
