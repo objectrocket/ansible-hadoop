@@ -1,13 +1,19 @@
 ---
+- name: Install unbound package
+  action: "{{ package_info.pkg_mgr }}"
+  args: package_info.args
+  with_items:
+        - unbound
+
 - name: Start the unbound service
   service: name=unbound state=restarted enabled=yes
 
 - name: Rearrange Ubuntu unbound configuration to match default RHEL
   shell: sed -i 's/unbound\.conf\.d/conf\.d/g' /etc/unbound/unbound.conf;
- 		 mv /etc/unbound/unbound.conf.d /etc/unbound/conf.d;
- 		 mkdir /etc/unbound/local.d;
- 		 grep -q -F '/etc/unbound/local.d/*.conf' /etc/unbound/unbound.conf || echo "include{{ ":" }} \"/etc/unbound/local.d/*.conf\"" >> /etc/unbound/unbound.conf;
-   		 sed -i 's/RESOLVCONF_FORWARDERS=true/RESOLVCONF_FORWARDERS=false/g' /etc/default/unbound
+         mv /etc/unbound/unbound.conf.d /etc/unbound/conf.d;
+         mkdir /etc/unbound/local.d;
+         grep -q -F '/etc/unbound/local.d/*.conf' /etc/unbound/unbound.conf || echo "include{{ ":" }} \"/etc/unbound/local.d/*.conf\"" >> /etc/unbound/unbound.conf;
+         sed -i 's/RESOLVCONF_FORWARDERS=true/RESOLVCONF_FORWARDERS=false/g' /etc/default/unbound
   when: ansible_os_family == "Debian"
 
 - name: Configure unbound service
@@ -26,12 +32,16 @@
 
 - name: Update resolv.conf file with local nameserver
   lineinfile: dest={{ resolv_conf }}
- 			  regexp="^nameserver 127.0.0.1"
- 			  insertbefore="^nameserver "
- 			  line="nameserver 127.0.0.1"
+              regexp="^nameserver 127.0.0.1"
+              insertbefore="^nameserver "
+              line="nameserver 127.0.0.1"
 
 - name: Update resolv.conf file with master node nameserver
   lineinfile: dest={{ resolv_conf }}
- 			  regexp="^nameserver {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}"
- 			  insertbefore="^nameserver "
- 			  line="nameserver {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}"
+              regexp="^nameserver {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}"
+              insertbefore="^nameserver "
+              line="nameserver {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}"
+
+- name: Run resolvconf
+  shell: resolvconf -u
+  when: ansible_os_family == "Debian"
