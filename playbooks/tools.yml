@@ -12,6 +12,11 @@
         - groups['master-nodes']|default([])
         - groups['slave-nodes']|default([])
         - groups['edge-nodes']|default([])
+    - name: "Add the last masternode to ambari-node variable group"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        groups: ambari-node
+      with_items: groups['master-nodes']|sort|last
 
 - name: "Show debug info"
   hosts: hadoop-cluster
@@ -29,3 +34,14 @@
   sudo_user: root
   roles:
     - monitoring/sensu
+  tags:
+    - all-servers
+
+- name: "Apply the ambari-server role to ambari-node group"
+  hosts: ambari-node
+  sudo: yes
+  sudo_user: root
+  roles:
+    - monitoring/sensu
+  tags:
+    - ambari-server

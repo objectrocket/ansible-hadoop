@@ -6,6 +6,8 @@
     owner="{{ sensu_user }}"
     group="{{ sensu_group }}"
     mode=0750
+  tags:
+    - all-servers
 
 - name: Install dependencies for adding new Ruby Gems
   yum: name={{ item }} state=installed
@@ -14,6 +16,8 @@
     - gcc-c++
     - make
   when: ansible_os_family == "RedHat"
+  tags:
+    - all-servers
 
 - name: Install Sensu Community Monitoring Gems
   gem: name={{ item }} state=latest executable=/opt/sensu/embedded/bin/gem user_install=no
@@ -24,17 +28,48 @@
     - sensu-plugins-process-checks
     - sensu-plugins-network-checks
     - sensu-plugins-raid-checks
+  tags:
+    - all-servers
 
 - name: Install Gems Dependencies for Custom Checks
   gem: name={{ item }} state=latest executable=/opt/sensu/embedded/bin/gem user_install=no
   with_items:
     - rest-client
     - json
+  tags:
+    - all-servers
 
-#- name: Install Custom Gems
-#  gem: name={{ item }} state=latest executable=/opt/sensu/embedded/bin/gem gem_source=custom_gems/{{ item }} user_install=no
-#  with_items:
-#    - sensu-plugins-opscenter-0.1.0.gem
+- name: Copy Gems to local disk
+  copy:
+    src=custom_gems/{{ item }}
+    dest=/tmp/{{ item }}
+    owner=sensu
+    group=sensu
+    mode=0640
+  with_items:
+    - sensu-plugins-ambari-0.1.0.gem
+  tags:
+    - ambari-server
+
+- name: Install Custom Gems
+  gem: name={{ item }} state=present executable=/opt/sensu/embedded/bin/gem gem_source=/tmp/{{ item }} user_install=no
+  with_items:
+    - sensu-plugins-ambari-0.1.0.gem
+  tags:
+    - ambari-server
+
+- name: generate ambari plugin json
+  template:
+    src=check-alerts.json.j2
+    dest=/etc/sensu/conf.d/check-alerts.json
+    owner=sensu
+    group=sensu
+    mode=0640
+    backup=yes
+  notify:
+    - restart sensu client
+  tags:
+    - ambari-server
 
 - name: generate config files
   template:
@@ -46,9 +81,13 @@
     backup=yes
   notify:
     - restart sensu client
+  tags:
+    - all-servers
 
 - name: enable sensu-client to survive reboot
   service:
     name=sensu-client
     enabled=yes
     state=started
+  tags:
+    - all-servers
