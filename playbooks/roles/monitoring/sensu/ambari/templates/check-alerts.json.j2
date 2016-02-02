@@ -1,0 +1,9 @@
+{
+  "checks": {
+    "check-alerts": {
+      "command": "/opt/sensu/embedded/bin/check-alerts.rb -u {{ monitor_user }} -p {{ monitor_pass }}",
+      "interval": 30,
+      "standalone": true
+    }
+  }
+}

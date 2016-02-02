@@ -22,7 +22,7 @@ sensu_key_file_name:  sensu_client_key.pem
 # Sensu client variable
 sensu_client_hostname:           "{{ ansible_hostname }}"
 sensu_client_address:            "{{ ansible_default_ipv4.address }}"
-sensu_client_subscription_names: [el7,linux,ambari]
+sensu_client_subscription_names: [el7,linux]
 
 sensu_server_rabbitmq_vhost:    "/sensu"
 sensu_server_rabbitmq_hostname: "111.111.111.111"
