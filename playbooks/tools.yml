@@ -34,14 +34,10 @@
   sudo_user: root
   roles:
     - monitoring/sensu
-  tags:
-    - all-servers
 
 - name: "Apply the ambari-server role to ambari-node group"
   hosts: ambari-node
   sudo: yes
   sudo_user: root
   roles:
-    - monitoring/sensu
-  tags:
-    - ambari-server
+    - monitoring/sensu/ambari

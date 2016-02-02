@@ -20,7 +20,9 @@ services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
 
 #monitoring
-install_sensu: false
+#read only ambari user for monitorin
+monitor_user: sensu
+monitor_pass: sensu
 
 spark_stack_config:
   tachyon_worker_memory: '1GB'
@@ -38,7 +40,7 @@ hdfs:
 
 cloud_config:
   rax_credentials_file: '~/.raxpub'
-  rax_region: 'DFW'
+  rax_region: 'ORD'
   domain: 'localnet'
   allowed_external_ips: ['127.0.0.1']
   ssh:
