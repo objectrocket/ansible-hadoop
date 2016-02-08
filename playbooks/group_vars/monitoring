@@ -12,6 +12,29 @@ sensu_settings: {}
 
 sensu_embedded_ruby: "true"
 
+#Setup Check Settings thresholds
+#Ambari user for propogating metrics
+ambari:
+  user: sensu
+  pass: sensu
+#Ram percentage
+ram:
+  warn_perc: 5
+  crit_perc: 1
+#Load Averages
+cpu:
+  warn_1: 16
+  warn_5: 20
+  warn_15: 24
+  crit_1: 20
+  crit_5: 24
+  crit_15: 30
+#Disk percentage full
+disk:
+  warning: 80
+  critical: 90
+
+
 #Note!! certs are not included here! please refer to your deployment documentation for the certs to include here
 
 # Sensu Certificates

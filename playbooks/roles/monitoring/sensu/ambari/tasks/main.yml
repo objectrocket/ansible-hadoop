@@ -21,13 +21,20 @@
   with_items:
     - sensu-plugins-ambari-0.1.0.gem
 
-- name: generate ambari plugin json
+- name: generate config files
   template:
-    src=check-alerts.json.j2
-    dest=/etc/sensu/conf.d/check-alerts.json
+    src=client.json.j2
+    dest=/etc/sensu/conf.d/client.json
     owner=sensu
     group=sensu
     mode=0640
     backup=yes
   notify:
     - restart sensu client
+
+- name: enable sensu-client to survive reboot
+  service:
+    name=sensu-client
+    enabled=yes
+    state=started
+
