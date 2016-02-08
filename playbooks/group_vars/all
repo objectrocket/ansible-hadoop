@@ -19,10 +19,6 @@ admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
 
-#monitoring
-#read only ambari user for monitorin
-monitor_user: sensu
-monitor_pass: sensu
 
 spark_stack_config:
   tachyon_worker_memory: '1GB'
