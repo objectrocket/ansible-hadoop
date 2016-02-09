@@ -6,8 +6,6 @@
     owner="{{ sensu_user }}"
     group="{{ sensu_group }}"
     mode=0750
-  tags:
-    - all-servers
 
 - name: Install dependencies for adding new Ruby Gems
   yum: name={{ item }} state=installed
@@ -16,8 +14,6 @@
     - gcc-c++
     - make
   when: ansible_os_family == "RedHat"
-  tags:
-    - all-servers
 
 - name: Install Sensu Community Monitoring Gems
   gem: name={{ item }} state=latest executable=/opt/sensu/embedded/bin/gem user_install=no
@@ -28,8 +24,6 @@
     - sensu-plugins-process-checks
     - sensu-plugins-network-checks
     - sensu-plugins-raid-checks
-  tags:
-    - all-servers
 
 - name: generate config files
   template:
@@ -41,13 +35,9 @@
     backup=yes
   notify:
     - restart sensu client
-  tags:
-    - all-servers
 
 - name: enable sensu-client to survive reboot
   service:
     name=sensu-client
     enabled=yes
     state=started
-  tags:
-    - all-servers
