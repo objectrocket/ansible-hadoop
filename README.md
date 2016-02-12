@@ -5,26 +5,18 @@ These Ansible playbooks will build a Hadoop cluster (Hortonworks Data Platform).
 
 You can pre-build a Rackspace cloud environment or run the playbooks against an existing environment.
 
-## [Configuration files] (id:configuration)
+## [Installation] (id:installation)
 
-To customize, change the variables under `playbooks/group_vars` folder:
+See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
 
-1. **`playbooks/group_vars/all`**: contains global cluster and cloud settings
-1. **`playbooks/group_vars/master-nodes`**: master-nodes configuration
-1. **`playbooks/group_vars/slave-nodes`**: slave-nodes configuration
-1. **`playbooks/group_vars/edge-nodes`**: edge-nodes configuration
-
-For a one-node cluster, set `cloud_nodes_count` in master-nodes to 1 and `cloud_nodes_count` in slave-nodes to 0.
 
 ## [Requirements] (id:requirements)
 
 - Requires Ansible 1.9 or newer
 
-- Expects CentOS/RHEL 6.x or Ubuntu 14 hosts
+- Expects CentOS/RHEL6/7 or Ubuntu 14 hosts
 
 - Building the cloud environment requires the `pyrax` Python module: https://github.com/rackspace/pyrax
-
-  Also recommended is to run `pip install oslo.config netifaces`.
 
 - The cloud environment requires the standard pyrax credentials file that looks like this:
   ````
@@ -36,6 +28,19 @@ For a one-node cluster, set `cloud_nodes_count` in master-nodes to 1 and `cloud_
   This file will be referenced in `playbooks/group_vars/all` (the `rax_credentials_file` variable).
 
   By default, the file is expected to be: `~/.raxpub`
+
+
+## [Configuration files] (id:configuration)
+
+To customize, change the variables under `playbooks/group_vars` folder:
+
+1. **`playbooks/group_vars/all`**: contains global cluster and cloud settings
+1. **`playbooks/group_vars/master-nodes`**: master-nodes configuration
+1. **`playbooks/group_vars/slave-nodes`**: slave-nodes configuration
+1. **`playbooks/group_vars/edge-nodes`**: edge-nodes configuration
+
+For a one-node cluster, set `cloud_nodes_count` in master-nodes to 1 and `cloud_nodes_count` in slave-nodes to 0.
+
 
 ## [Scripts] (id:scripts)
 
@@ -57,7 +62,7 @@ bash hortonworks_rax.sh
 ````
 For dedicated / prebuilt environments, you'll need to manually add the nodes in the `inventory/static` file.
 
-#### Accessing Ambari
+## [Accessing Ambari] (id:ambari)
 
 Once you are at this point you can see progress by accessing the Ambari interface (the `ambari-node` will be the last host that ran a play). 
 
