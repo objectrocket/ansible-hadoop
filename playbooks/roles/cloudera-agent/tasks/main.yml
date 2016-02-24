@@ -1,0 +1,34 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: ../vars/defaults.yml
+- include_vars: ../vars/{{ ansible_os_family|lower }}.yml
+- include_vars: group_vars/cloudera
+
+- name: Download the cloudera repo
+  get_url: url={{ cloudera_repo }} dest={{ cloudera_repo_file }}
+
+- name: setup java home in profile.d
+  copy: src=java_home.sh dest=/etc/profile.d/
+
+- name: Add apt key
+  apt_key: keyserver=keyserver.ubuntu.com id={{ cloudera_repo_key }}
+  when: ansible_os_family == "Debian"
+
+- name: Install Cloudera 
+  action: "{{ package_info.pkg_mgr }}"
+  args: package_info.args
+  with_items: package_info.pkgs
+
+- name: install agent config
+  template: src=config.ini dest=/etc/cloudera-scm-agent/
+
+- name: Enable the Cloudera agent
+  service: name=cloudera-scm-agent state=started enabled=yes

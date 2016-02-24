@@ -1,0 +1,42 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- name: Install the Dependancies and Cloudera Manager
+  action: "{{ package_info.pkg_mgr }}"
+  args: package_info.args
+  with_items: package_info.pkgs
+  when: package_info.pkgs|length > 0
+
+- include: mysql.yml
+
+- name: Upload db properties template
+  template: src=db.properties dest=/etc/cloudera-scm-server/
+
+- name: Upload db properties template
+  template: src=db.mgmt.properties dest=/etc/cloudera-scm-server/
+
+- name: Enable the ambari-server service
+  service: name=cloudera-scm-server state=started enabled=yes
+
+- name: Waiting for mngr-server to start listening on port 7180
+  wait_for: host={{cloudera_mngr_fqdn}} port=7180
+
+#- name: Waiting for hosts to register with cloudera manager
+#  uri: url=http://{{ ansible_fqdn }}:7180/api/v1/{{ cluster_name }}/hosts/{{ hostvars[item]['ansible_fqdn'] | lower }}
+#       method=GET
+#       force_basic_auth=yes
+#       user=admin
+#       password=admin
+#       status_code=200,201,202,404
+#  with_items: groups['hadoop-cluster']
+#  register: result
+#  until: "result.status != 404"
+#  retries: 200
+#  delay: 5

@@ -1,0 +1,20 @@
+---
+cloudera_version: '5'
+custom_repo: false
+install_spark: true
+install_flume: false
+install_hbase: false
+install_storm: false
+install_kafka: false
+install_falcon: false
+admin_password: 'admin'
+services_password: 'AsdQwe123'
+alerts_contact: 'root@localhost.localdomain'
+
+hdfs:
+  dfs_replication: 3
+  failed_volumes_tolerated: 1
+  ha_namenode: true
+
+# set to true to show host variables
+debug: false
