@@ -5,6 +5,7 @@
   gather_facts: False
   tasks:
     - name: "Add all cluster nodes to the hadoop-cluster group"
+      always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         groups: hadoop-cluster

@@ -5,6 +5,7 @@
   gather_facts: False
   tasks:
     - name: "Add all cluster nodes to the hadoop-cluster group"
+      always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         groups: hadoop-cluster
@@ -13,6 +14,7 @@
         - groups['slave-nodes']|default([])
         - groups['edge-nodes']|default([])
     - name: "Add the last masternode to ambari-node variable group"
+      always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         groups: ambari-node
