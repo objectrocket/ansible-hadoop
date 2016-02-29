@@ -8,6 +8,7 @@
       always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: hadoop-cluster
       with_flattened:
         - groups['master-nodes']|default([])
@@ -17,6 +18,7 @@
       always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: ambari-node
       with_items: groups['master-nodes']|sort|last
 

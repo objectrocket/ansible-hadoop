@@ -8,6 +8,7 @@
       always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: hadoop-cluster
       with_flattened:
         - groups['master-nodes']|default([])
