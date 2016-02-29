@@ -41,7 +41,7 @@
        password=admin
        HEADER_X-Requested-By="ambari"
        status_code=200,201,202,404
-  with_items: groups['hadoop-cluster']
+  with_items: "{{ groups['hadoop-cluster'] }}"
   register: result
   until: "result.status != 404"
   retries: 200

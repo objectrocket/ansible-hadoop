@@ -11,16 +11,16 @@
         ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: hadoop-cluster
       with_flattened:
-        - groups['master-nodes']|default([])
-        - groups['slave-nodes']|default([])
-        - groups['edge-nodes']|default([])
+        - "{{ groups['master-nodes']|default([]) }}"
+        - "{{ groups['slave-nodes']|default([]) }}"
+        - "{{ groups['edge-nodes']|default([]) }}"
     - name: "Add the last masternode to ambari-node variable group"
       always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_ssh_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: ambari-node
-      with_items: groups['master-nodes']|sort|last
+      with_items: "{{ groups['master-nodes']|sort|last }}"
 
 - name: "Show debug info"
   hosts: hadoop-cluster

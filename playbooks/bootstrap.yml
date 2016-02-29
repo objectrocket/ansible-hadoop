@@ -11,9 +11,9 @@
         ansible_host: "{{ hostvars[item].ansible_ssh_host }}"
         groups: hadoop-cluster
       with_flattened:
-        - groups['master-nodes']|default([])
-        - groups['slave-nodes']|default([])
-        - groups['edge-nodes']|default([])
+        - "{{ groups['master-nodes']|default([]) }}"
+        - "{{ groups['slave-nodes']|default([]) }}"
+        - "{{ groups['edge-nodes']|default([]) }}"
 
 - name: "Show debug info"
   hosts: hadoop-cluster
