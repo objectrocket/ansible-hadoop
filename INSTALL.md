@@ -15,7 +15,7 @@ ansible-hadoop installation guide
 
 First step is to setup the build node / workstation.
 
-This build node or workstation will run the Ansible code and build the Hadoop cluster (itself can be a Hadoop nodes).
+This build node or workstation will run the Ansible code and build the Hadoop cluster (itself can be a Hadoop node).
 
 This node needs to be able to contact the cluster devices via SSH and the Rackspace APIs via HTTPS.
 
@@ -30,10 +30,10 @@ The following steps must be followed to install Ansible and the prerequisites on
   yum -y remove python-crypto
   yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
   yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
-  pip install ansible==1.9.4 pyrax importlib oslo.config==3.0.0
+  pip install ansible pyrax importlib oslo.config==3.0.0
   ```
 
-2. Generate SSH public/private key pair:
+2. Generate SSH public/private key pair (press Enter for defaults):
 
   ```
   ssh-keygen -q -t rsa
@@ -47,10 +47,10 @@ The following steps must be followed to install Ansible and the prerequisites on
   sudo su -
   yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
   yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
-  pip install ansible==1.9.4 pyrax
+  pip install ansible pyrax
   ```
 
-2. Generate SSH public/private key pair:
+2. Generate SSH public/private key pair (press Enter for defaults):
 
   ```
   ssh-keygen -q -t rsa
@@ -63,10 +63,10 @@ The following steps must be followed to install Ansible and the prerequisites on
   ```
   sudo su -
   apt-get update; apt-get -y install python-pip python-dev sshpass git vim
-  pip install ansible==1.9.4 pyrax
+  pip install ansible pyrax
   ```
 
-2. Generate SSH public/private key pair:
+2. Generate SSH public/private key pair (press Enter for defaults):
 
   ```
   ssh-keygen -q -t rsa
@@ -113,15 +113,21 @@ There are three types of nodes:
 
 Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set master-nodes specific information (you can remove all the existing content from this file).
 
-- `cluster_interface` should be set to the network device that the HDP nodes will use to communicate between them.
+| Variable           | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
+| cloud_nodes_count  | Should be set to the desired number of master-nodes (1, 2 or 3).   |
+| cloud_image        | The OS image to be used. Can be `CentOS 6 (PVHVM)`, `CentOS 7 (PVHVM)` or `Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)`. |
+| cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) of the nodes. Minimum `general1-8` for Hadoop nodes. |
+| data_disks_devices | Should be set if a separate disk device is used for `/hadoop`, usually `xvde` for Rackspace Servers. Set to `[]` if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. If the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk, set this to `['xvde']`. Alternatively, you can let the playbook build Cloud Block Storage for this purpose. |
 
-- `cloud_nodes_count` should be set to the desired number of master-nodes (1, 2 or 3).
+If Rackspace Block Storage is to be built for storing /hadoop data, set the following options:
 
-- `cloud_image` and `cloud_flavor` can be set to the desired OS and [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova).
-
-- `data_disks_devices` should be set if a separate disk device is used for `/hadoop`. Set to `[]` if `/hadoop` should just be a folder on the root filesystem.
-
-  Alternatively, you let the playbook build Cloud Block Storage for this purpose.
+| Variable           | Description                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| build_cbs          | Set to `true` to build CBS. `data_disks_devices` also needs to be set to `['xvde']` or to `['xvdf']` if the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with ephemeral disks. |
+| cbs_disks_size     | The size of the disk(s) in GB.                                                      |
+| cbs_disks_type     | The type of the disk(s), can be `SATA` or `SSD`.                                    |
 
 - Example for using the `eth1` interface, no Cloud Block Storage device and 2 x `general1-8` nodes running CentOS7:
 
@@ -134,7 +140,7 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set m
   data_disks_devices: []
   ```
 
-- Example for installing a single-node cluster (Hortonworks sandbox in Rackspace Cloud):
+- Example for installing a single-node cluster (Hortonworks sandbox in Rackspace Cloud) and using the ephemeral disk of the `performance2-15` flavor:
 
   ```
   cluster_interface: 'eth1'
@@ -142,7 +148,7 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set m
   cloud_image: 'CentOS 7 (PVHVM)'
   cloud_flavor: 'performance2-15'
   build_cbs: false
-  data_disks_devices: []
+  data_disks_devices: ['xvde']
   ```
 
 
@@ -150,17 +156,21 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set m
 
 Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set slave-nodes specific information (you can remove all the existing content from this file).
 
-- `cluster_interface` should be set to the network device that the HDP nodes will use to communicate between them.
+| Variable           | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
+| cloud_nodes_count  | Should be set to the desired number of slave-nodes (0 or more).    |
+| cloud_image        | The OS image to be used. Can be `CentOS 6 (PVHVM)`, `CentOS 7 (PVHVM)` or `Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)`. |
+| cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) of the nodes. Minimum `general1-8` for Hadoop nodes. |
+| data_disks_devices | Should be set if one or more separate disk devices are used for storing HDFS data, usually starting with `xvde` for Rackspace Servers. Can be set to `[]` if HDFS data is stored on the local filesystem or `[xvde]` if the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk. Alternatively, you can let the playbook build Cloud Block Storage for this purpose. |
 
-- `cloud_nodes_count` should be set to the desired number of slave-nodes (0 or more).
+If Rackspace Block Storage is to be built for storing /hadoop data, set the following options:
 
-- `cloud_image` and `cloud_flavor` can be set to the desired OS and [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova).
-
-- `data_disks_devices` should be set if one or more separate disk devices are used for storing HDFS data.
-
-  Can be set to `[]` if HDFS data is stored on the local filesystem.
-  
-  Alternatively, you let the playbook build Cloud Block Storage for this purpose.
+| Variable           | Description                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| build_cbs          | Set to `true` to build CBS. `data_disks_devices` also needs to be set (for example, to build two CBS disks, set this variable to `['xvde', 'xvdf']`. |
+| cbs_disks_size     | The size of the disk(s) in GB.                                                      |
+| cbs_disks_type     | The type of the disk(s), can be `SATA` or `SSD`.                                    |
 
 - Example for using the `eth1` interface, no Cloud Block Storage devices and 3 x `general1-8` nodes running CentOS7:
 
@@ -173,7 +183,7 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set sl
   data_disks_devices: []
   ```
 
-- Example for using 3 x OnMetal IO nodes and CentOS 6 (OnMetal comes by default with a separate disk device):
+- Example with 3 x OnMetal IO nodes running CentOS 6 (and using the OnMetal SSD ephemeral disks as the data drives):
 
   ```
   cluster_interface: 'bond0.401'
@@ -181,7 +191,7 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set sl
   cloud_image: 'OnMetal - CentOS 6'
   cloud_flavor: 'onmetal-io1'
   build_cbs: false
-  data_disks_devices: ['sda']
+  data_disks_devices: ['sda', 'sdb']
   ```
 
 
@@ -198,17 +208,18 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/all` to set the cluste
 
 The following table will describe the most important variables:
 
-| Variable             | Description                                                        |
-| -------------------- | ------------------------------------------------------------------ |
-| cluster_name         | The name of the HDP cluster                                        |
-| hdp_version          | The HDP major version that should be installed                     |
-| admin_password       | This is the Ambari admin user password                             |
-| services_password    | This is a password used by everything else (like hive's database)  |
-| install_*            | Set these to true in order to install the respective HDP component |
-| rax_credentials_file | The location of the Rackspace credentials file as set above        |
-| rax_region           | The Rackspace region where the Cloud Servers should be built       |
-| allowed_external_ips | A list of IPs allowed to connect to cluster nodes                  |
-| ssh keyfile          | The SSH keyfile that will be placed on cluster nodes               |
+| Variable             | Description                                                         |
+| -------------------- | ------------------------------------------------------------------- |
+| cluster_name         | The name of the HDP cluster                                         |
+| hdp_version          | The HDP major version that should be installed                      |
+| admin_password       | This is the Ambari admin user password                              |
+| services_password    | This is a password used by everything else (like hive's database)   |
+| install_*            | Set these to true in order to install the respective HDP component  |
+| rax_credentials_file | The location of the Rackspace credentials file as set above         |
+| rax_region           | The Rackspace region where the Cloud Servers should be built        |
+| allowed_external_ips | A list of IPs allowed to connect to cluster nodes                   |
+| ssh keyfile          | The SSH keyfile that will be placed on cluster nodes at build time. |
+| ssh keyname          | The name of the SSH key. Make sure you change this if another key was previously used with the same name. |
 
 
 ## Provision the Cloud environment
@@ -254,7 +265,7 @@ The Ambari server runs on the last master-node and be accessed on port 8080.
 
 First step is to setup the build node / workstation.
 
-This build node or workstation will run the Ansible code and build the Hadoop cluster (itself can be a Hadoop nodes).
+This build node or workstation will run the Ansible code and build the Hadoop cluster (itself can be a Hadoop node).
 
 This node needs to be able to contact the cluster devices via SSH.
 
@@ -264,26 +275,25 @@ The following steps must be followed to install Ansible and the prerequisites on
 
 ### CentOS/RHEL 6
 
-1. Install Ansible and git:
+Install Ansible and git:
 
-  ```
-  sudo su -
-  yum -y remove python-crypto
-  yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-  yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
-  pip install ansible==1.9.4 pyrax
-  ```
+```
+sudo su -
+yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+yum repolist; yum install python-pip python-devel sshpass git vim-enhanced -y
+pip install ansible
+```
 
 ### CentOS/RHEL 7
 
-1. Install Ansible and git:
+Install Ansible and git:
 
-  ```
-  sudo su -
-  yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-  yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
-  pip install ansible==1.9.4 pyrax
-  ```
+```
+sudo su -
+yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+yum repolist; yum install python-pip python-devel sshpass git vim-enhanced -y
+pip install ansible
+```
 
 ### Ubuntu 14+ / Debian 8
 
@@ -292,7 +302,7 @@ Install Ansible and git:
 ```
 sudo su -
 apt-get update; apt-get -y install python-pip python-dev sshpass git vim
-pip install ansible==1.9.4
+pip install ansible
 ```
 
 
@@ -322,26 +332,26 @@ There are three types of nodes:
 
 Modify the inventory file at `~/ansible-hadoop/inventory/static` to match the desired cluster layout.
 
-- For each node, set the `ansible_ssh_host` to the IP address that is reachable from the build node / workstation.
+- For each node, set the `ansible_host` to the IP address that is reachable from the build node / workstation.
 
-- Then set `ansible_ssh_user=root` and `ansible_ssh_pass` if the node allows for root user logins. If these are not set, public-key authentication will be used.
+- Then set `ansible_user=root` and `ansible_ssh_pass` if the node allows for root user logins. If these are not set, public-key authentication will be used.
 
 - Example for a 1 master node and 3 slave nodes cluster:
 
   ```
   [master-nodes]
-  master01 ansible_ssh_host=192.168.0.2 ansible_ssh_user=root ansible_ssh_pass=changeme
+  master01 ansible_host=192.168.0.2 ansible_user=root ansible_ssh_pass=changeme
   
   [slave-nodes]
-  slave01 ansible_ssh_host=192.168.0.3 ansible_ssh_user=root ansible_ssh_pass=changeme
-  slave02 ansible_ssh_host=192.168.0.4 ansible_ssh_user=root ansible_ssh_pass=changeme
+  slave01 ansible_host=192.168.0.3 ansible_user=root ansible_ssh_pass=changeme
+  slave02 ansible_host=192.168.0.4 ansible_user=root ansible_ssh_pass=changeme
   ```
 
 - Example for installing a single-node HDP cluster on the local build node (useful if you want HDP installed on a VirtualBox / VMware VM):
 
   ```
   [master-nodes]
-  master01 ansible_ssh_host=localhost ansible_connection=local
+  master01 ansible_host=localhost ansible_connection=local
   ```
 
 
@@ -349,11 +359,10 @@ Modify the inventory file at `~/ansible-hadoop/inventory/static` to match the de
 
 Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set master-nodes specific information (you can remove all the existing content from this file).
 
-- `cluster_interface` should be set to the network device that the HDP nodes will use to communicate between them.
-
-- `data_disks_devices` should be set if a separate disk device is used for `/hadoop`. The playbook will attempt to partition and format it!
-
-  Can be set to `[]` if `/hadoop` is just a folder on the root filesystem.
+| Variable           | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
+| data_disks_devices | Should be set if a separate disk device is used for `/hadoop`. The playbook will attempt to partition and format it! Set to `[]` if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
 
 - Example for using the `eth0` interface and `sdb` disk device:
 
@@ -374,13 +383,10 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set m
 
 Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set slave-nodes specific information (you can remove all the existing content from this file).
 
-- `cluster_interface` should be set to the network device that the HDP nodes will use to communicate between them.
-
-- `data_disks_devices` should be set if one or more separate disk device are used for storing HDFS data. The playbook will attempt to partition and format these devices!
-
-  Can be set to `[]` if HDFS data is stored on the local filesystem.
-  
-  If multiple devices are used, the playbook will create `/grid/0`, `/grid/1`, etc and mount these devices.
+| Variable           | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
+| data_disks_devices | Should be set if one or more separate disk devices are used for storing HDFS data. The playbook will attempt to partition and format these devices! Can be set to `[]` if HDFS data is stored on the local filesystem. If multiple devices are used, the playbook will create `/grid/0`, `/grid/1`, etc and mount these devices. |
 
 - Example for using the `eth0` interface and `sdb`, `sdc`, `sdd` disk devices:
 
@@ -410,13 +416,13 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/all` to set the cluste
 
 The following table will describe the most important variables:
 
-| Variable          | Description                                                        |
-| ----------------- | ------------------------------------------------------------------ |
-| cluster_name      | The name of the HDP cluster                                        |
-| hdp_version       | The HDP major version that should be installed                     |
-| admin_password    | This is the Ambari admin user password                             |
-| services_password | This is a password used by everything else (like hive's database)  |
-| install_*         | Set these to true in order to install the respective HDP component |
+| Variable          | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| cluster_name      | The name of the HDP cluster.                                        |
+| hdp_version       | The HDP major version that should be installed.                     |
+| admin_password    | This is the Ambari admin user password.                             |
+| services_password | This is a password used by everything else (like hive's database).  |
+| install_*         | Set these to true in order to install the respective HDP component. |
 
 
 ## Bootstrapping
