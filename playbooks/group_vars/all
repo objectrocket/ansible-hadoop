@@ -5,7 +5,6 @@ custom_repo: false
 custom_repo_url: ''
 custom_repo_target: 'api/v1/stacks/HDP/versions/2.3/operating_systems/redhat6/repositories/HDP-2.3'
 ambari_version: '2.1.2.1'
-spark_stack: false
 install_spark: true
 install_flume: true
 install_hbase: false
@@ -18,7 +17,7 @@ admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
 
-
+spark_stack: false
 spark_stack_config:
   tachyon_worker_memory: '1GB'
   spark_exector_memory: '1g'
