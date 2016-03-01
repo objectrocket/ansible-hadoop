@@ -30,7 +30,7 @@ update_info:
     state: latest
     update_cache: yes
 
-update_grub: 'grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'
+update_grub: 'cd && grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'
 
 ntp_service: chronyd
 ntp_sync: "systemctl restart ntpdate"
