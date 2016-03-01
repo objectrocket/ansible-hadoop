@@ -1,5 +1,4 @@
 ---
-ansible_ssh_user: 'root'
 cluster_name: 'hadoop-poc'
 hdp_version: '2.3'
 custom_repo: false
