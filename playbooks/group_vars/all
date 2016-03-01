@@ -1,25 +1,23 @@
 ---
-ansible_ssh_user: 'root'
 cluster_name: 'hadoop-poc'
-hdp_version: '2.3'
+hdp_version: '2.4'
 custom_repo: false
 custom_repo_url: ''
-custom_repo_target: 'api/v1/stacks/HDP/versions/2.3/operating_systems/redhat6/repositories/HDP-2.3'
-ambari_version: '2.1.2.1'
-spark_stack: false
+custom_repo_target: 'api/v1/stacks/HDP/versions/2.4/operating_systems/redhat6/repositories/HDP-2.4'
+ambari_version: '2.2.1.0'
 install_spark: true
-install_flume: false
+install_flume: true
 install_hbase: false
-install_storm: false
-install_kafka: false
-install_falcon: false
+install_storm: true
+install_kafka: true
+install_falcon: true
 tachyon_service: false
 custom_blueprint: false
 admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
 
-
+spark_stack: false
 spark_stack_config:
   tachyon_worker_memory: '1GB'
   spark_exector_memory: '1g'

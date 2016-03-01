@@ -26,7 +26,8 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       body="{{ hdprepo.content | b64decode }}"
+       body=" {{ hdprepo.content | b64decode }}"
+       body_format=raw
        status_code=200,201,202
   when: custom_repo
 
@@ -55,7 +56,8 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       body='{{ alert_targets.content | b64decode }}'
+       body=" {{ alert_targets.content | b64decode }}"
+       body_format=raw
        status_code=200,201,202
   when: '"AlertTarget" not in current_alert_targets.content'
 
@@ -88,7 +90,8 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       body='{{ cluster_blueprint.content | b64decode }}'
+       body=" {{ cluster_blueprint.content | b64decode }}"
+       body_format=raw
        status_code=200,201,202
 
 - name: Slurp the cluster creation template
@@ -102,7 +105,8 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       body='{{ cluster_template.content | b64decode }}'
+       body=" {{ cluster_template.content | b64decode }}"
+       body_format=raw
        status_code=200,201,202
 
 - name: Change Ambari admin user password
@@ -112,6 +116,7 @@
        user=admin
        password=admin
        HEADER_X-Requested-By="ambari"
-       body='{"Users":{ "password":"{{ admin_password }}", "old_password":"admin"}}'
+       body=' {"Users":{ "password":"{{ admin_password }}", "old_password":"admin"}}'
+       body_format=raw
        status_code=200,201,202
   when: admin_password != 'admin'

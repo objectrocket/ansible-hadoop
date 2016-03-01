@@ -1,9 +1,10 @@
 ansible-hadoop
 ---------
-
 These Ansible playbooks will build a Hadoop cluster (Hortonworks Data Platform).
 
 You can pre-build a Rackspace cloud environment or run the playbooks against an existing environment.
+
+---
 
 ## [Installation] (id:installation)
 
@@ -12,13 +13,29 @@ See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
 
 ## [Requirements] (id:requirements)
 
-- Requires Ansible 1.9 or newer
+- Ansible >= 2.0.
 
-- Expects CentOS/RHEL6/7 or Ubuntu 14 hosts
+- Expects RHEL/CentOS 6/7 or Ubuntu 14 hosts.
 
-- Building the cloud environment requires the `pyrax` Python module: https://github.com/rackspace/pyrax
+- Building the Rackspace Cloud environment requires the `pyrax` Python module: [pyrax link](https://github.com/rackspace/pyrax).
 
-- The cloud environment requires the standard pyrax credentials file that looks like this:
+
+## [Features] (id:features)
+
+- It installs Hortonworks Data Platform using [Ambari Blueprints](https://cwiki.apache.org/confluence/display/AMBARI/Blueprints).
+
+- It supports static inventory if the environment is pre-built (`inventory/static` file).
+
+- The data drives can be customized and can be put on top of Cloud Block Storage (partitioning is automatic).
+
+- If there are 2 or 3 masternodes, it will also enable HA NameNode.
+
+- Memory settings are scaled with the hardware configuration of the nodes.
+
+
+## [Inventory] (id:inventory)
+
+- The cloud environment requires the standard `pyrax` credentials file that looks like this:
   ````
   [rackspace_cloud]
   username = my_username
@@ -27,7 +44,9 @@ See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
   
   This file will be referenced in `playbooks/group_vars/all` (the `rax_credentials_file` variable).
 
-  By default, the file is expected to be: `~/.raxpub`
+  By default, the file is expected to be: `~/.raxpub`.
+
+- When provisioning HDP on existing infrastructure edit `inventory/static` and add the nodes.
 
 
 ## [Configuration files] (id:configuration)
@@ -55,12 +74,18 @@ bash provision_rax.sh
 
 Similarly, run the bootstrap and hortonworks scripts (in this order), depending what type of environment you have.
 
-Example for a cloud environment:
-````
-bash bootstrap_rax.sh
-bash hortonworks_rax.sh
-````
-For dedicated / prebuilt environments, you'll need to manually add the nodes in the `inventory/static` file.
+- For a Rackspace Cloud environment:
+  ````
+  bash bootstrap_rax.sh
+  bash hortonworks_rax.sh
+  ````
+
+- For static / prebuilt environments:
+  ````
+  bash bootstrap_dedicated.sh
+  bash hortonworks_dedicated.sh
+  ````
+
 
 ## [Accessing Ambari] (id:ambari)
 
@@ -86,6 +111,7 @@ Customize it via the `playbooks/group_vars/cbd` file.
 ````
 bash provision_cbd.sh
 ````
+
 
 ## [Ansible-Hadoop History] (id:history)
 

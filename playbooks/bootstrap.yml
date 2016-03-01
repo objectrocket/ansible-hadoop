@@ -8,16 +8,20 @@
       always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
         groups: hadoop-cluster
       with_flattened:
-        - groups['master-nodes']|default([])
-        - groups['slave-nodes']|default([])
-        - groups['edge-nodes']|default([])
+        - "{{ groups['master-nodes']|default([]) }}"
+        - "{{ groups['slave-nodes']|default([]) }}"
+        - "{{ groups['edge-nodes']|default([]) }}"
 
 - name: "Show debug info"
   hosts: hadoop-cluster
-  sudo: yes
-  sudo_user: root
+  become: yes
   tasks:
     - name: "Show hadoop-cluster info"
       debug: var=hostvars[inventory_hostname]
@@ -26,7 +30,6 @@
 - name: "Apply the common role to all nodes"
   hosts: hadoop-cluster
   any_errors_fatal: true
-  sudo: yes
-  sudo_user: root
+  become: yes
   roles:
     - common
