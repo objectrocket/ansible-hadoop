@@ -501,6 +501,11 @@
         {
           "name" : "ZOOKEEPER_SERVER"
         },
+        {% if install_kafka == true -%}
+        {
+          "name" : "KAFKA_BROKER"
+        },
+        {% endif -%}
         {
           "name" : "AMBARI_SERVER"
         },
@@ -682,6 +687,11 @@
         {
           "name" : "ZOOKEEPER_SERVER"
         },
+        {% if install_kafka == true -%}
+        {
+          "name" : "KAFKA_BROKER"
+        },
+        {% endif -%}
         {
           "name" : "HISTORYSERVER"
         },
