@@ -1,0 +1,273 @@
+---
+- name: "Build the environment on AWS"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add the SSH keypair to our AWS region"
+      local_action:
+        module:  ec2_key
+        name: "{{ cloud_config.ssh.keyname }}"
+        key_material: "{{ lookup('file', cloud_config.ssh.keyfile) }}"
+        region: "{{ cloud_config.aws_region }}"
+
+    - name: "Create a VPC for our cluster in AWS"
+      local_action:
+        module: ec2_vpc_net
+        state: present
+        multi_ok: no
+        name: "VPC_for_{{ cluster_name }}"
+        cidr_block: "{{ cloud_config.aws_vpc_cidr_block }}"
+        tags: { "environment" : "{{ cluster_name }}" }
+        region: "{{ cloud_config.aws_region }}"
+      register: aws_vpc_info
+
+    - name: "Create a Subnet for the VPC in AWS"
+      local_action:
+        module: ec2_vpc_subnet
+        state: present
+        vpc_id: "{{ aws_vpc_info.vpc.id }}"
+        cidr: "{{ cloud_config.aws_vpc_cidr_block }}"
+        region: "{{ cloud_config.aws_region }}"
+        resource_tags:
+          Name: "Subnet_for_{{ cluster_name }}"
+      register: aws_vpc_subnet
+
+    - name: "Create security group in AWS"
+      local_action:
+        module: ec2_group
+        state: present
+        name: "hadoop-nodes"
+        region: "{{ cloud_config.aws_region }}"
+        description: "Nodes for HDP cluster {{ cluster_name }}"
+        vpc_id: "{{ aws_vpc_info.vpc.id }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: icmp
+            from_port: 8
+            to_port:  -1
+            cidr_ip: 0.0.0.0/0
+          - proto: all
+            from_port: 1
+            to_port:  65535
+            cidr_ip: "{{ cloud_config.aws_vpc_cidr_block }}"
+      register: aws_secgroup
+
+    - name: "Add a Name Tag on security group in AWS"
+      local_action:
+        module: ec2_tag
+        region: "{{ cloud_config.aws_region }}"
+        resource: "{{ aws_secgroup.group_id }}"
+        state: present
+        tags: { Name: "SG_for_{{ cluster_name }}" }
+
+    - name: "Create an internet gateway for our VPC in AWS"
+      local_action:
+        module: ec2_vpc_igw
+        vpc_id: "{{ aws_vpc_info.vpc.id }}"
+        state: present
+        region: "{{ cloud_config.aws_region }}"
+      register: aws_igw
+
+    - name: "Add a Name Tag on internet gateway in AWS"
+      local_action:
+        module: ec2_tag
+        region: "{{ cloud_config.aws_region }}"
+        resource: "{{ aws_igw.gateway_id }}"
+        state: present
+        tags: { Name: "IGW_for_{{ cluster_name }}" }
+
+    - name: "Add a public route to the routing table for our VPC Subnet to use internet gateway in AWS"
+      local_action:
+        module: ec2_vpc_route_table
+        vpc_id: "{{ aws_vpc_info.vpc.id }}"
+        region: "{{ cloud_config.aws_region }}"
+        state: present
+        tags:
+          Name: "RT_for_{{ cluster_name }}"
+        subnets:
+          - "{{ aws_vpc_subnet.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ aws_igw.gateway_id }}"
+      register: aws_public_route
+
+
+    - name: "Include master-nodes group variables"
+      include_vars: group_vars/master-nodes
+
+    - name: "Create master nodes on AWS as EC2 instances"
+      local_action:
+        module: ec2
+        instance_tags:
+          environment: "{{ cluster_name }}"
+          group: "master_nodes"
+        image: "{{ aws_image }}"
+        count: "{{ aws_nodes_count }}"
+        instance_type: "{{ aws_instance_type }}"
+        region: "{{ cloud_config.aws_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        group_id: "{{ aws_secgroup.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 900
+        assign_public_ip: yes
+        vpc_subnet_id: "{{ aws_vpc_subnet.subnet.id }}"
+        volumes:
+        - device_name: /dev/sda1
+          volume_size: 50
+      when: aws_nodes_count > 0
+      register: aws_master
+
+    - name: "Create identifier sequence for tagging"
+      debug: msg="{{ item }}"
+      with_sequence: start=1 count="{{ aws_nodes_count | int }}" format=%02d
+      register: sequence
+      tags:
+        - tag
+
+    - name: "Add a Name Tag on master nodes in AWS"
+      local_action:
+        module: ec2_tag
+        region: "{{ cloud_config.aws_region }}"
+        resource: "{{item.0 | join('') }}"
+        state: present
+        tags: { Name: "master-{{item.1.msg}}.{{ cloud_config.domain }}" }
+      with_together:
+        - "{{ aws_master.instance_ids }}"
+        - "{{ sequence.results }}"
+
+    - name: "Create and Attach EBS Volumes for master nodes on AWS"
+      local_action:
+        module: ec2_vol
+        region: "{{ cloud_config.aws_region }}"
+        volume_type: "{{ ebs_disks_type }}"
+        volume_size: "{{ ebs_disks_size }}"
+        instance: "{{ item[0].id }}"
+        device_name: "/dev/{{ item[1] }}"
+        state: present
+      with_nested:
+        - "{{ aws_master.instances }}"
+        - "{{ ebs_disks_devices }}"
+      when: aws_nodes_count > 0 and build_ebs
+
+
+    - name: "Include slave-nodes group variables"
+      include_vars: group_vars/slave-nodes
+
+    - name: "Create slave nodes on AWS as EC2 instances"
+      local_action:
+        module: ec2
+        instance_tags:
+          environment: "{{ cluster_name }}"
+          group: "slave_nodes"
+        image: "{{ aws_image }}"
+        count: "{{ aws_nodes_count }}"
+        instance_type: "{{ aws_instance_type }}"
+        region: "{{ cloud_config.aws_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        group_id: "{{ aws_secgroup.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 900
+        assign_public_ip: yes
+        vpc_subnet_id: "{{ aws_vpc_subnet.subnet.id }}"
+        volumes:
+        - device_name: /dev/sda1
+          volume_size: 50
+      when: aws_nodes_count > 0
+      register: aws_slave
+
+    - name: "Create identifier sequence for tagging"
+      debug: msg="{{ item }}"
+      with_sequence: start=1 count="{{ aws_nodes_count | int }}" format=%02d
+      register: sequence
+      tags:
+        - tag
+
+    - name: "Add a Name Tag on slave nodes in AWS"
+      local_action:
+        module: ec2_tag
+        region: "{{ cloud_config.aws_region }}"
+        resource: "{{item.0 | join('') }}"
+        state: present
+        tags: { Name: "slave-{{item.1.msg}}.{{ cloud_config.domain }}" }
+      with_together:
+        - "{{ aws_slave.instance_ids }}"
+        - "{{ sequence.results }}"
+
+    - name: "Create and Attach EBS Volumes for slave nodes on AWS"
+      local_action:
+        module: ec2_vol
+        region: "{{ cloud_config.aws_region }}"
+        volume_type: "{{ ebs_disks_type }}"
+        volume_size: "{{ ebs_disks_size }}"
+        instance: "{{ item[0].id }}"
+        device_name: "/dev/{{ item[1] }}"
+        state: present
+      with_nested:
+        - "{{ aws_slave.instances }}"
+        - "{{ ebs_disks_devices }}"
+      when: aws_nodes_count > 0 and build_ebs
+
+
+    - name: "Include edge-nodes group variables"
+      include_vars: group_vars/edge-nodes
+
+    - name: "Create edge nodes on AWS as EC2 instances"
+      local_action:
+        module: ec2
+        instance_tags:
+          environment: "{{ cluster_name }}"
+          group: "edge_nodes"
+        image: "{{ aws_image }}"
+        count: "{{ aws_nodes_count }}"
+        instance_type: "{{ aws_instance_type }}"
+        region: "{{ cloud_config.aws_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        group_id: "{{ aws_secgroup.group_id }}"
+        state: present
+        wait: true
+        wait_timeout: 900
+        assign_public_ip: yes
+        vpc_subnet_id: "{{ aws_vpc_subnet.subnet.id }}"
+        volumes:
+        - device_name: /dev/sda1
+          volume_size: 50
+      when: aws_nodes_count > 0
+      register: aws_edge
+
+    - name: "Create identifier sequence for tagging"
+      debug: msg="{{ item }}"
+      with_sequence: start=1 count="{{ aws_nodes_count | int }}" format=%02d
+      register: sequence
+      tags:
+        - tag
+
+    - name: "Add a Name Tag on edge nodes in AWS"
+      local_action:
+        module: ec2_tag
+        region: "{{ cloud_config.aws_region }}"
+        resource: "{{item.0 | join('') }}"
+        state: present
+        tags: { Name: "edge-{{item.1.msg}}.{{ cloud_config.domain }}" }
+      with_together:
+        - "{{ aws_edge.instance_ids }}"
+        - "{{ sequence.results }}"
+
+    - name: "Create and Attach EBS Volumes for edge nodes on AWS"
+      local_action:
+        module: ec2_vol
+        region: "{{ cloud_config.aws_region }}"
+        volume_type: "{{ ebs_disks_type }}"
+        volume_size: "{{ ebs_disks_size }}"
+        instance: "{{ item[0].id }}"
+        device_name: "/dev/{{ item[1] }}"
+        state: present
+      with_nested:
+        - "{{ aws_edge.instances }}"
+        - "{{ ebs_disks_devices }}"
+      when: aws_nodes_count > 0 and build_ebs

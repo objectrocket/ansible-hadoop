@@ -35,6 +35,11 @@ hdfs:
 cloud_config:
   rax_credentials_file: '~/.raxpub'
   rax_region: 'ORD'
+
+  aws_credentials_file: '~/.aws/credentials'
+  aws_region: 'us-east-1'
+  aws_vpc_cidr_block: '172.23.0.0/16'
+
   domain: 'localnet'
   allowed_external_ips: ['127.0.0.1']
   ssh:

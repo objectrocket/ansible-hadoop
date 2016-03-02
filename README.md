@@ -19,6 +19,8 @@ See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
 
 - Building the Rackspace Cloud environment requires the `pyrax` Python module: [pyrax link](https://github.com/rackspace/pyrax).
 
+- Building the Amazon AWS environment requires the `boto` Python module: [pyrax link](https://github.com/boto/boto).
+
 
 ## [Features] (id:features)
 
@@ -26,7 +28,7 @@ See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
 
 - It supports static inventory if the environment is pre-built (`inventory/static` file).
 
-- The data drives can be customized and can be put on top of Cloud Block Storage (partitioning is automatic).
+- The data drives can be customized and can be put on top of Cloud Block Storage (Rackspace) or Elastic Block Storage (AWS) (partitioning is automatic).
 
 - If there are 2 or 3 masternodes, it will also enable HA NameNode.
 
@@ -35,7 +37,7 @@ See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
 
 ## [Inventory] (id:inventory)
 
-- The cloud environment requires the standard `pyrax` credentials file that looks like this:
+- The Rackspace cloud environment requires the standard `pyrax` credentials file that looks like this:
   ````
   [rackspace_cloud]
   username = my_username
@@ -46,6 +48,19 @@ See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
 
   By default, the file is expected to be: `~/.raxpub`.
 
+- The Amazon AWS environment requires the standard `boto` credentials file that looks like this:
+  ```
+  [default]
+  aws_access_key_id = YOUR_KEY
+  aws_secret_access_key = YOUR_SECRET
+  ```
+
+  Replace the `YOUR_KEY` and `YOUR_SECRET` with the correct credential values.
+  
+  You can generate these credentials in your [Amazon AWS Console](https://console.aws.amazon.com).
+
+  Save this file as `.aws/credentials` under the home folder of the user running the playbook. You may need to create the `.aws` folder as well.
+  
 - When provisioning HDP on existing infrastructure edit `inventory/static` and add the nodes.
 
 
@@ -70,6 +85,13 @@ To provision a cloud environment, run the `provision_rax.sh` script after you've
 bash provision_rax.sh
 ````
 
+###`provision_aws.sh`
+
+To provision an Amazon AWS environment, run the `provision_aws.sh` script after you've customized the variables under `playbooks/group_vars`:
+````
+bash provision_aws.sh
+````
+
 ###`bootstrap* and hortonworks*`
 
 Similarly, run the bootstrap and hortonworks scripts (in this order), depending what type of environment you have.
@@ -78,6 +100,12 @@ Similarly, run the bootstrap and hortonworks scripts (in this order), depending 
   ````
   bash bootstrap_rax.sh
   bash hortonworks_rax.sh
+  ````
+
+- For an Amazon AWS environment:
+  ````
+  bash bootstrap_aws.sh
+  bash hortonworks_aws.sh
   ````
 
 - For static / prebuilt environments:
@@ -132,4 +160,3 @@ Today with a pile of customers under our belt and many more all the time, we wan
 This of course is only the beginning! 
 
 I hope this project evolves and inspires even more Rockstars to find ways to contribute.
-

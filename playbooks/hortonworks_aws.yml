@@ -1,0 +1,93 @@
+---
+- name: "Add Master nodes to relevant groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Adding nodes to master-nodes, hadoop-cluster groups"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: master-nodes, hadoop-cluster
+      with_flattened:
+        - "{{groups['tag_group_master_nodes'] }}"
+
+- name: "Add Slave nodes to relevant groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Adding nodes to slave-nodes, hadoop-cluster groups"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: slave-nodes, hadoop-cluster
+      with_flattened:
+        - "{{ groups['tag_group_slave_nodes'] }}"
+
+- name: "Add Edge nodes to relevant groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Adding nodes to edge-nodes, hadoop-cluster groups"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: edge-nodes, hadoop-cluster
+      with_flattened:
+        - "{{ groups['tag_group_edge_nodes'] }}"
+
+- name: "Add Ambari Master to required groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add the last masternode to ambari-node variable group"
+      always_run: yes
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: ambari-node
+      with_items: "{{ groups['master-nodes']|last }}"
+
+- name: "Show debug info"
+  hosts: hadoop-cluster
+  become: yes
+  tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+- name: "Apply the ambari-agent role to all nodes"
+  hosts: hadoop-cluster
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - ambari-agent
+  tags:
+    - ambari-agent-only
+
+- name: "Apply the ambari-server role to ambari-node group"
+  hosts: ambari-node
+  become: yes
+  roles:
+    - ambari-server
+  tags:
+    - ambari-server-only

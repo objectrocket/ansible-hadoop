@@ -3,6 +3,8 @@ ansible-hadoop installation guide
 
 * These Ansible playbooks can build a Rackspace Cloud environment and install HDP on it. Follow this [link](#install-hdp-on-rackspace-cloud).
 
+* These Ansible playbooks can build an Amazon AWS environment and install HDP on it. Follow this [link](#install-hdp-on-amazon-aws).
+
 * It can also install HDP on existing Linux devices, be it dedicated devices in a datacenter or VMs running on a hypervizor. Follow this [link](#install-hdp-on-existing-devices).
 
 
@@ -245,6 +247,237 @@ Then run the script that will install Ambari and build the cluster using Ambari 
 
 ```
 cd ~/ansible-hadoop/ && bash hortonworks_rax.sh
+```
+
+
+## Login to Ambari
+
+Once you are at this point you can see progress by accessing the Ambari interface.
+
+The Ambari server runs on the last master-node and be accessed on port 8080.
+
+
+---
+
+
+# Install HDP on Amazon AWS
+
+## Build setup
+
+First step is to setup the build node / workstation.
+
+This build node or workstation will run the Ansible code and build the Hadoop cluster (itself can be a Hadoop node).
+
+This node needs to be able to contact the cluster devices via SSH and the Amazon APIs via HTTPS.
+
+The following steps must be followed to install Ansible and the prerequisites on this build node / workstation, depending on its operating system:
+
+### CentOS/RHEL 6
+
+1. Install Ansible and git:
+
+  ```
+  sudo su -
+  yum -y remove python-crypto
+  yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
+  pip install ansible boto
+  ```
+
+2. Generate SSH public/private key pair (press Enter for defaults):
+
+  ```
+  ssh-keygen -q -t rsa
+  ```
+
+### CentOS/RHEL 7
+
+1. Install Ansible and git:
+
+  ```
+  sudo su -
+  yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+  yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
+  pip install ansible boto
+  ```
+
+2. Generate SSH public/private key pair (press Enter for defaults):
+
+  ```
+  ssh-keygen -q -t rsa
+  ```
+
+### Ubuntu 14+ / Debian 8
+
+1. Install Ansible and git:
+
+  ```
+  sudo su -
+  apt-get update; apt-get -y install python-pip python-dev sshpass git vim
+  pip install ansible boto
+  ```
+
+2. Generate SSH public/private key pair (press Enter for defaults):
+
+  ```
+  ssh-keygen -q -t rsa
+  ```
+
+## Setup the Rackspace credentials file
+
+The cloud environment requires the standard [boto](https://github.com/boto/boto#getting-started-with-boto) credentials file that looks like this:
+```
+[default]
+aws_access_key_id = YOUR_KEY
+aws_secret_access_key = YOUR_SECRET
+```
+
+Replace the `YOUR_KEY` and `YOUR_SECRET` with the correct credential values.
+You can generate these credentials in your [Amazon AWS Console](https://console.aws.amazon.com).
+
+Save this file as `.aws/credentials` under the home folder of the user running the playbook. You may need to create the `.aws` folder as well.
+
+
+## Clone the repository
+
+On the same build node / workstation, run the following:
+
+```
+cd; git clone https://github.com/rackerlabs/ansible-hadoop
+```
+
+
+## Set master-nodes variables
+
+There are three types of nodes:
+
+1. `master-nodes` are nodes running the master Hadoop services. You can specify one, two or three nodes.
+ 
+ With two or three master nodes the HDFS NameNode will be configured in HA mode.
+
+1. `slave-nodes` are nodes running the slave Hadoop services and store HDFS data. You can specify 0 or more nodes.
+ 
+ By specifying no slave-nodes, the scripts will deploy a single-node HDP, similar with the Hortonworks sandbox.
+
+1. `edge-nodes` are client only nodes and have only the client libraries installed. These are optional. 
+
+
+
+Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set master-nodes specific information (you can remove all the existing content from this file).
+
+| Variable           | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them, Default is `eth0`, as all nodes are under VPC. |
+| aws_nodes_count  | Should be set to the desired number of master-nodes (1, 2 or 3).   |
+| aws_image        | The AMI OS image to be used. This is confirmed working with RHEL7 Image for now, but others `should` work as well. You can find the AMI IDs in [Amazon AWS Console EC2 Section](https://console.aws.amazon.com).. |
+| aws_instance_type       | [Instance type](https://aws.amazon.com/ec2/instance-types/) of the nodes. Minimum `t2.large` for Hadoop nodes. |
+| ebs_disks_devices | Should be set if a separate disk device is used for `/hadoop`, usually `xvda`. Set to `[]` if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
+
+If Elastic Block Storage is to be built for storing /hadoop data, set the following options:
+
+| Variable           | Description                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| build_ebs          | Set to `true` to build EBS. |
+| ebs_disks_size     | The size of the disk(s) in GB.                                                      |
+| ebs_disks_type     | The type of the disk(s), can be `standard` or `ssd`.                                    |
+
+- Example for using the `eth0` interface, no Elastic Block Storage device and 2 x `t2.large` nodes running RHEL7:
+
+  ```
+  cluster_interface: 'eth0'
+  aws_nodes_count: 2
+  aws_image: 'ami-2051294a'
+  aws_instance_type: 't2.large'
+  build_ebs: false
+  ebs_disks_devices: []
+  ```
+
+
+## Set slave-nodes variables
+
+Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set slave-nodes specific information (you can remove all the existing content from this file).
+
+| Variable           | Description                                                        |
+| ------------------ | ------------------------------------------------------------------ |
+| cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them, Default is `eth0`, as all nodes are under VPC. |
+| aws_nodes_count  | Should be set to the desired number of master-nodes (1, 2 or 3).   |
+| aws_image        | The AMI OS image to be used. This is confirmed working with RHEL7 Image for now, but others `should` work as well. You can find the AMI IDs in [Amazon AWS Console EC2 Section](https://console.aws.amazon.com).. |
+| aws_instance_type       | [Instance type](https://aws.amazon.com/ec2/instance-types/) of the nodes. Minimum `t2.large` for Hadoop nodes. |
+| ebs_disks_devices | Should be set if a separate disk device is used for `/hadoop`, usually `xvda`. Set to `[]` if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
+
+If Elastic Block Storage is to be built for storing /hadoop data, set the following options:
+
+| Variable           | Description                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| build_ebs          | Set to `true` to build EBS. |
+| ebs_disks_size     | The size of the disk(s) in GB.                                                      |
+| ebs_disks_type     | The type of the disk(s), can be `standard` or `ssd`.                                    |
+
+- Example for using the `eth0` interface, 2x 100GB Elastic Block Storage device and 2 x `t2.large` nodes running RHEL7:
+
+  ```
+  cluster_interface: 'eth0'
+  aws_nodes_count: 2
+  aws_image: 'ami-2051294a'
+  aws_instance_type: 't2.large'
+  build_ebs: false
+  ebs_disks_size: 100
+  ebs_disks_type: 'standard'
+  ebs_disks_devices: ['xvde', 'xvdf']
+  ```
+
+
+## Set edge-nodes variables
+
+Optionally, if edge nodes are used, modify the file at `~/ansible-hadoop/playbooks/group_vars/edge-nodes` to set edge-nodes specific information (you can remove all the existing content from this file).
+
+The same guidelines as for the master nodes above can be used here.
+
+
+## Set the global variables
+
+Modify the file at `~/ansible-hadoop/playbooks/group_vars/all` to set the cluster configuration.
+
+The following table will describe the most important variables:
+
+| Variable             | Description                                                         |
+| -------------------- | ------------------------------------------------------------------- |
+| cluster_name         | The name of the HDP cluster                                         |
+| hdp_version          | The HDP major version that should be installed                      |
+| admin_password       | This is the Ambari admin user password                              |
+| services_password    | This is a password used by everything else (like hive's database)   |
+| install_*            | Set these to true in order to install the respective HDP component  |
+| rax_region           | The Rackspace region where the Cloud Servers should be built        |
+| allowed_external_ips | A list of IPs allowed to connect to cluster nodes                   |
+| ssh keyfile          | The SSH keyfile that will be placed on cluster nodes at build time. |
+| ssh keyname          | The name of the SSH key. Make sure you change this if another key was previously used with the same name. |
+| aws_credentials_file | The location of the AWS credentials file as set above               |
+| aws_region           | The Amazon AWS region where the Cloud Servers should be built       |                 
+| aws_vpc_cidr_block   | The CIDR block to be used in VPC and Subnet for the Cluster         |
+
+## Provision the Cloud environment
+The first step is to run the script that will provision the Cloud environment:
+
+```
+cd ~/ansible-hadoop/ && bash provision_aws.sh
+```
+
+
+## Bootstrapping
+
+Then run the bootstrapping script that will setup the prerequisites on the cluster nodes.
+
+```
+cd ~/ansible-hadoop/ && bash bootstrap_aws.sh
+```
+
+
+## HDP Installation
+
+Then run the script that will install Ambari and build the cluster using Ambari Blueprints:
+
+```
+cd ~/ansible-hadoop/ && bash hortonworks_aws.sh
 ```
 
 

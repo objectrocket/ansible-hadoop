@@ -37,6 +37,10 @@
   apt: upgrade=dist
   when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
 
+- name: Make sure SeLinux is disabled (RHEL)
+  selinux: state=disabled
+  when: ansible_os_family == "RedHat"
+
 - include: spark_stack.yml
   when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
