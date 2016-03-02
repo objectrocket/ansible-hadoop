@@ -3,30 +3,30 @@
 ## cloud servers ##
 ###################
 
-# cluster_interface: 'eth1'
-# cloud_nodes_count: 3
-# cloud_image: 'CentOS 7 (PVHVM)'
+cluster_interface: 'eth1'
+cloud_nodes_count: 3
+cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'CentOS 6 (PVHVM)'
 # cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
-# cloud_flavor: 'general1-8'
-# build_cbs: true
-# cbs_disks_size: 200
-# cbs_disks_type: 'SATA'
-# data_disks_devices: ['xvde', 'xvdf']
+cloud_flavor: 'general1-8'
+build_cbs: true
+cbs_disks_size: 200
+cbs_disks_type: 'SATA'
+data_disks_devices: ['xvde', 'xvdf']
 
 ########################
 ## amazon aws servers ##
 ########################
 
-cluster_interface: 'eth0'
-aws_nodes_count: 3
-aws_image: 'ami-2051294a'
+# cluster_interface: 'eth0'
+# aws_nodes_count: 3
+# aws_image: 'ami-2051294a'
 # RHEL7 HVM
-aws_instance_type: 't2.large'
-build_ebs: true
-ebs_disks_size: 100
-ebs_disks_type: 'standard'
-ebs_disks_devices: ['xvde', 'xvdf']
+# aws_instance_type: 't2.large'
+# build_ebs: true
+# ebs_disks_size: 100
+# ebs_disks_type: 'standard'
+# ebs_disks_devices: ['xvde', 'xvdf']
 
 ###########
 # onmetal #
