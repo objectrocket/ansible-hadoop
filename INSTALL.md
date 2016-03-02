@@ -323,9 +323,9 @@ The following steps must be followed to install Ansible and the prerequisites on
   ssh-keygen -q -t rsa
   ```
 
-## Setup the Rackspace credentials file
+## Setup the Amazon AWS credentials file
 
-The cloud environment requires the standard [boto](https://github.com/boto/boto#getting-started-with-boto) credentials file that looks like this:
+The Amazon AWS environment requires the standard [boto](https://github.com/boto/boto#getting-started-with-boto) credentials file that looks like this:
 ```
 [default]
 aws_access_key_id = YOUR_KEY
