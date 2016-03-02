@@ -29,17 +29,13 @@
         groups: ambari-node
       with_items: groups['master-nodes']|sort|last
 
-- name: "Show debug info"
-  hosts: hadoop-cluster
-  become: yes
-  tasks:
-    - name: "Show hadoop-cluster info"
-      debug: var=hostvars[inventory_hostname]
-      when: debug
-
 - name: "Apply the ambari-agent role to all nodes"
   hosts: hadoop-cluster
   become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
   roles:
     - ambari-agent
 

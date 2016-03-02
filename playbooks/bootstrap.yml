@@ -19,17 +19,13 @@
         - "{{ groups['slave-nodes']|default([]) }}"
         - "{{ groups['edge-nodes']|default([]) }}"
 
-- name: "Show debug info"
-  hosts: hadoop-cluster
-  become: yes
-  tasks:
-    - name: "Show hadoop-cluster info"
-      debug: var=hostvars[inventory_hostname]
-      when: debug
-
 - name: "Apply the common role to all nodes"
   hosts: hadoop-cluster
   any_errors_fatal: true
   become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
   roles:
     - common

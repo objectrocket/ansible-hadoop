@@ -29,18 +29,14 @@
         groups: ambari-node
       with_items: groups['master-nodes']|sort|last
 
-- name: "Show debug info"
-  hosts: hadoop-cluster
-  become: yes
-  tasks:
-    - name: "Show hadoop-cluster info"
-      debug: var=hostvars[inventory_hostname]
-      when: debug
-
 - name: "install sensu client"
   hosts: hadoop-cluster
   any_errors_fatal: true
   become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
   roles:
     - monitoring/sensu
 
