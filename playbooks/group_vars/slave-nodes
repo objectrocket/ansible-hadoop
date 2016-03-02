@@ -20,8 +20,7 @@ data_disks_devices: ['xvde', 'xvdf']
 
 # cluster_interface: 'eth0'
 # aws_nodes_count: 3
-# aws_image: 'ami-2051294a'
-# RHEL7 HVM
+# aws_image: 'ami-0d28fe66'
 # aws_instance_type: 't2.large'
 # build_ebs: true
 # ebs_disks_size: 100
