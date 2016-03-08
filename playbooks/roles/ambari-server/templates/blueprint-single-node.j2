@@ -10,6 +10,19 @@
     },
     {% if ansible_memtotal_mb > 59000 -%}
     {
+      "ams-hbase-env" : {
+        "regionserver_xmn_size" : "384m",
+        "hbase_regionserver_heapsize" : "1024m",
+        "hbase_master_heapsize" : "1024m",
+        "hbase_master_xmn_size" : "384m"
+      }
+    },
+    {
+      "ams-env" : {
+        "metrics_collector_heapsize" : "1024m"
+      }
+    },
+    {
       "hadoop-env" : {
         "dtnode_heapsize" : "2048m",
         "namenode_heapsize" : "2048m",

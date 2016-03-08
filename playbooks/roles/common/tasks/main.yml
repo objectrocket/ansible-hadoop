@@ -91,7 +91,7 @@
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Get number of kernels in grub.conf
-  shell: grep -E "^[[:blank:]]*kernel" /boot/grub/grub.conf | grep -v transparent_hugepage
+  shell: grep -E "^[[:blank:]]*kernel" /boot/grub/grub.conf | grep -v transparent_hugepage; exit 0
   register: grep_result
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
   ignore_errors: true
@@ -149,3 +149,4 @@
   when: cloud_nodes_count is defined and cloud_nodes_count > 0
 
 - include: partitioning.yml
+  when: data_disks_devices is defined and data_disks_devices

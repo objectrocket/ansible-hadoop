@@ -1,0 +1,32 @@
+---
+- name: "Add nodes to required groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add all cluster nodes to the hadoop-cluster group"
+      always_run: yes
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: hadoop-cluster
+      with_flattened:
+        - "{{ groups['master-nodes']|default([]) }}"
+        - "{{ groups['slave-nodes']|default([]) }}"
+        - "{{ groups['edge-nodes']|default([]) }}"
+
+    - name: "Add the last masternode to ambari-node variable group"
+      always_run: yes
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: ambari-node
+      with_items: "{{ groups['master-nodes']|sort|last }}"
