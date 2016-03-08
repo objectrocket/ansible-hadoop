@@ -4,9 +4,14 @@
   when: ansible_devices[options.data_disks_devices[0]] is defined
   register: disk_offset
 
-- name: Partition and format data disks
-  shell: parted -s -a optimal /dev/{{ item }} mklabel gpt mkpart primary ext4 {{ disk_offset.stdout|default("2048") }}s 100% && sleep 2 && partprobe /dev/{{ item }} && sleep 2 && mkfs.ext4 -m1 /dev/{{ item }}1
+- name: Partition data disks
+  shell: parted -s -a optimal /dev/{{ item }} mklabel gpt mkpart primary ext4 {{ disk_offset.stdout|default("2048") }}s 100% && sleep 5 && partprobe /dev/{{ item }}; sleep 5
   when: ansible_devices[item]['partitions'] == {}
+  with_items: "{{ data_disks_devices }}"
+
+- name: Create the filesystem on data disks
+  filesystem: dev="/dev/{{ item }}1" fstype="ext4" opts="-m1"
+  when: ansible_devices[item] is defined
   with_items: "{{ data_disks_devices }}"
 
 - name: Disable periodic fsck
