@@ -103,15 +103,6 @@ You will need to modify your browser settings to use socks proxy `localhost` and
 
 You'll then be able to navigate to http://ambari-node:8080 in your configured browser and access all subsidiary links.
 
-###`provision_cbd.sh`
-
-Provision a Rackspace Cloud Big Data cluster (http://www.rackspace.com/cloud/big-data) by running this script.
-
-Customize it via the `playbooks/group_vars/cbd` file.
-````
-bash provision_cbd.sh
-````
-
 
 ## [Ansible-Hadoop History] (id:history)
 
