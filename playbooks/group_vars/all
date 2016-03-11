@@ -30,8 +30,8 @@ spark_stack_config:
 #requires HDP2.3 RHEL/CentOS 6 
 arcadia: true
 arcadia_config:
-  archive_file: arcadia-enterprise-ambari.tar.gz
-  archive_src: 'http://get.arcadiadata.com'
+  archive_file: archive.tar.gz
+  archive_src: 'http://arch.domain.com'
   archive_dest: '/var/lib/ambari-server/resources/stacks/HDP/2.3/services/'
   hdfs-site: 'dfs.block.access.token.enable'
 
