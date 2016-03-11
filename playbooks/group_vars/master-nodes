@@ -14,6 +14,19 @@ cbs_disks_size: 200
 cbs_disks_type: 'SATA'
 data_disks_devices: []
 
+########################
+## amazon aws servers ##
+########################
+
+# cluster_interface: 'eth0'
+# aws_nodes_count: 2
+# aws_image: 'ami-0d28fe66'
+# aws_instance_type: 't2.large'
+# build_ebs: false
+# ebs_disks_size: 100
+# ebs_disks_type: 'standard'
+# ebs_disks_devices: []
+
 ###########
 # onmetal #
 ###########

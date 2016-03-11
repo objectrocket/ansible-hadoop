@@ -1,0 +1,68 @@
+---
+- name: "Add nodes to master group"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add all cluster nodes to the hadoop-cluster group"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: master-nodes, hadoop-cluster
+      with_flattened:
+        - "{{ groups['tag_group_master_nodes'] }}"
+
+
+- name: "Add nodes to slave group"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add all cluster nodes to the hadoop-cluster group"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: slave-nodes, hadoop-cluster
+      with_flattened:
+        - "{{ groups['tag_group_slave_nodes'] }}"
+
+
+- name: "Add nodes to edge group"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: "Add all cluster nodes to the hadoop-cluster group"
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: edge-nodes, hadoop-cluster
+      with_flattened:
+        - "{{ groups['tag_group_edge_nodes'] }}"
+
+- name: "Show debug info"
+  hosts: hadoop-cluster
+  become: yes
+  tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+- name: "Apply the common role to all nodes"
+  hosts: hadoop-cluster
+  any_errors_fatal: true
+  become: yes
+  roles:
+    - common
