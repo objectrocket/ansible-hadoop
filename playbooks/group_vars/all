@@ -27,6 +27,14 @@ spark_stack_config:
   zeppelin_spark_cores_max: '1'
   default_user: 'dgrier'
 
+#requires HDP2.3 RHEL/CentOS 6 
+arcadia: true
+arcadia_config:
+  archive_file: arcadia-enterprise-ambari.tar.gz
+  archive_src: 'http://get.arcadiadata.com'
+  archive_dest: '/var/lib/ambari-server/resources/stacks/HDP/2.3/services/'
+  hdfs-site: 'dfs.block.access.token.enable'
+
 hdfs:
   dfs_replication: 3
   failed_volumes_tolerated: 1
