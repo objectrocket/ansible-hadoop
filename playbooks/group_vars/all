@@ -33,7 +33,7 @@ arcadia_config:
   archive_file: archive.tar.gz
   archive_src: 'http://arch.domain.com'
   archive_dest: '/var/lib/ambari-server/resources/stacks/HDP/2.3/services/'
-  hdfs-site: 'dfs.block.access.token.enable'
+  hdfs-site: 'dfs.datanode.hdfs-blocks-metadata.enabled'
 
 hdfs:
   dfs_replication: 3
