@@ -1,18 +1,21 @@
 ---
-- name: Load OS specific variables
-  include_vars: "{{ item }}"
-  with_first_found:
-    - files:
-        - "{{ ansible_os_family|lower }}.yml"
-        - defaults.yml
-      paths:
-        - ../vars
+- name: Ensure required packages are installed (yum)
+  yum:
+    name: "{{ item }}"
+    update_cache: yes
+    state: installed
+  with_items:
+    - ambari-server
+  when: ansible_os_family == "RedHat"
 
-- name: Install the Ambari server
-  action: "{{ package_info.pkg_mgr }}"
-  args: package_info.args
-  with_items: package_info.pkgs
-  when: package_info.pkgs|length > 0
+- name: Ensure required packages are installed (apt)
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: installed
+  with_items:
+    - ambari-server
+  when: ansible_os_family == "Debian"
 
 - include: spark_stack.yml
   when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
@@ -24,8 +27,8 @@
   copy: src=ambari-server.service  dest=/usr/lib/systemd/system/ambari-server.service
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
-- name: Enable the ambari-server service
-  service: name=ambari-server state=restarted enabled=yes
+- name: Make sure ambari-server is running
+  service: name=ambari-server state=started enabled=yes
 
 - name: Waiting for ambari-server to start listening on port 8080
   wait_for: host={{ansible_fqdn}} port=8080
@@ -38,7 +41,7 @@
        password=admin
        HEADER_X-Requested-By="ambari"
        status_code=200,201,202,404
-  with_items: groups['hadoop-cluster']
+  with_items: "{{ groups['hadoop-cluster'] }}"
   register: result
   until: "result.status != 404"
   retries: 200

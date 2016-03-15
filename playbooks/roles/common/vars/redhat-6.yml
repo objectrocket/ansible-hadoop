@@ -1,34 +1,26 @@
-package_info:
-  pkg_mgr: yum
-  args:
-    name: "{{ item }}"
-    state: present
-  pkgs:
-    - python-simplejson
-    - python-httplib2
-    - man
-    - man-pages
-    - vim-enhanced
-    - sysstat
-    - lsof
-    - jwhois
-    - telnet
-    - nc
-    - libselinux-python
-    - ntp
-    - parted
-    - mc
-    - perl
-    - openssh-clients
-    - util-linux-ng
-    - iotop
-    - links
-    - unzip
-    - curl
-    - wget
-  sprk_pkgs:
-    - spark-stack-ambari
-    - hue-ambari
+packages:
+  - python-simplejson
+  - python-httplib2
+  - man
+  - man-pages
+  - vim-enhanced
+  - sysstat
+  - lsof
+  - jwhois
+  - telnet
+  - nc
+  - libselinux-python
+  - ntp
+  - parted
+  - mc
+  - perl
+  - openssh-clients
+  - util-linux-ng
+  - iotop
+  - links
+  - unzip
+  - curl
+  - wget
 
 update_info:
   pkg_mgr: yum

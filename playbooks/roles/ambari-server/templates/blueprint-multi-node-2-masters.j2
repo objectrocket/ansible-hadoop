@@ -16,6 +16,19 @@
     },
     {% if hostvars[groups['master-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
     {
+      "ams-hbase-env" : {
+        "regionserver_xmn_size" : "512m",
+        "hbase_regionserver_heapsize" : "2048m",
+        "hbase_master_heapsize" : "2048m",
+        "hbase_master_xmn_size" : "512m"
+      }
+    },
+    {
+      "ams-env" : {
+        "metrics_collector_heapsize" : "2048m"
+      }
+    },
+    {
       "hadoop-env" : {
         "dtnode_heapsize" : "2048m",
         "namenode_heapsize" : "4096m",
@@ -24,6 +37,19 @@
       }
     },
     {% elif hostvars[groups['master-nodes'][0]]['ansible_memtotal_mb'] > 10000 -%}
+    {
+      "ams-hbase-env" : {
+        "regionserver_xmn_size" : "384m",
+        "hbase_regionserver_heapsize" : "1024m",
+        "hbase_master_heapsize" : "1024m",
+        "hbase_master_xmn_size" : "384m"
+      }
+    },
+    {
+      "ams-env" : {
+        "metrics_collector_heapsize" : "1024m"
+      }
+    },
     {
       "hadoop-env" : {
         "dtnode_heapsize" : "1024m",
@@ -399,6 +425,11 @@
         {
           "name" : "ZOOKEEPER_SERVER"
         },
+        {% if install_kafka == true -%}
+        {
+          "name" : "KAFKA_BROKER"
+        },
+        {% endif -%}
         {
           "name" : "HISTORYSERVER"
         },

@@ -1,8 +1,2 @@
-package_info:
-  pkg_mgr: yum
-  args:
-    pkg: "ambari-agent"
-    state: latest
-    update_cache: yes
 ambari_repo: "http://public-repo-1.hortonworks.com/ambari/centos{{ ansible_distribution_major_version }}/2.x/updates/{{ ambari_version }}/ambari.repo"
 ambari_repo_file: "/etc/yum.repos.d/ambari.repo"

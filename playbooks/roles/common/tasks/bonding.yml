@@ -14,7 +14,7 @@
 
 - name: Write ifcfg files for bonded interfaces
   template: src={{ ansible_os_family|lower }}-ifcfg-eth.j2 dest={{ networking_path }}/ifcfg-{{ item }}
-  with_items: bond_interfaces
+  with_items: "{{ bond_interfaces }}"
   notify: Restart network interfaces
 
 - name: Write ifcfg file for bond interface
@@ -26,5 +26,5 @@
 - name: Ping between all hosts on bond interface to verify network connectivity
   command: /bin/ping -q -c 5 -i 0.2 -W 1 {{ hostvars[item]['bond_ip'] }}
   when: bond_ip is defined and hostvars[item]['bond_ip'] is defined
-  with_items: groups['all']
+  with_items: "{{ groups['all'] }}"
   changed_when: 0
