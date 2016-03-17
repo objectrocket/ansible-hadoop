@@ -336,6 +336,11 @@
         {
           "name" : "TEZ_CLIENT"
         },
+        {% if install_falcon == true -%}
+        {
+          "name" : "FALCON_CLIENT"
+        },
+        {% endif -%}
         {
           "name" : "SLIDER"
         },
@@ -710,6 +715,11 @@
         {
           "name" : "TEZ_CLIENT"
         },
+        {% if install_falcon == true -%}
+        {
+          "name" : "FALCON_CLIENT"
+        },
+        {% endif -%}
         {
           "name" : "SLIDER"
         },
