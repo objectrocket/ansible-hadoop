@@ -6,6 +6,7 @@
     state: installed
   with_items:
     - ambari-server
+  notify: reload systemd
   when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
@@ -16,6 +17,8 @@
   with_items:
     - ambari-server
   when: ansible_os_family == "Debian"
+
+- meta: flush_handlers
 
 - include: spark_stack.yml
   when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
