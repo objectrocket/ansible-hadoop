@@ -261,8 +261,11 @@
     {% endif -%}
     {
       "hive-site" : {
-        "hive.tez.container.size" : "-1",
-        "hive.tez.java.opts": "-1",
+        {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 59000 -%}
+        "hive.tez.container.size" : "4096",
+        {% elif hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
+        "hive.tez.container.size" : "2048",
+        {% endif -%}
         "fs.file.impl.disable.cache" : "true",
         "fs.hdfs.impl.disable.cache" : "true",
         "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"
