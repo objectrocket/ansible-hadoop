@@ -72,7 +72,6 @@
         "tez.task.resource.memory.mb" : "4096"
       }
     },
-    {% if install_spark == true %}
     {
       "spark-defaults" : {
         "spark.executor.instances" : 1,
@@ -84,8 +83,6 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
-    {% endif -%}
-    {% if install_hbase == true -%}
     {
       "hbase-env" : {
         "hbase_master_heapsize" : "2048m",
@@ -93,7 +90,6 @@
         "hbase_regionserver_xmn_max" : "2048"
         }
     },
-    {% endif -%}
     {% elif ansible_memtotal_mb > 24000 -%}
     {
       "yarn-site" : {
@@ -124,7 +120,6 @@
         "tez.task.resource.memory.mb" : "2048"
       }
     },
-    {% if install_spark == true %}
     {
       "spark-defaults" : {
         "spark.executor.instances" : 1,
@@ -136,8 +131,6 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
-    {% endif -%}
-    {% if install_hbase == true -%}
     {
       "hbase-env" : {
         "hbase_master_heapsize" : "1024m",
@@ -146,14 +139,11 @@
         }
     },
     {% endif -%}
-    {% endif -%}
-    {% if install_kafka == true -%}
     {
       "kafka-broker" : {
         "log.dirs" : "/hadoop/kafka-logs"
       }
     },
-    {% endif -%}
     {
       "storm-site" : {
         "logviewer.port" : "8005"

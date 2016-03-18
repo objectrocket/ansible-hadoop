@@ -84,14 +84,12 @@
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
     },
-    {% if install_hbase == true -%}
     {% if hdfs.ha_namenode -%}
     {
       "hbase-site" : {
         "hbase.rootdir": "hdfs://{{ cluster_name }}/apps/hbase/data"
       }
     },
-    {% endif -%}
     {% endif -%}
     {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 59000 -%}
     {
@@ -123,7 +121,6 @@
         "tez.task.resource.memory.mb" : "4096"
       }
     },
-    {% if install_spark == true -%}
     {
       "spark-defaults" : {
         "spark.executor.instances" : "{{ groups['slave-nodes']|length }}",
@@ -135,8 +132,6 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
-    {% endif -%}
-    {% if install_hbase == true -%}
     {
       "hbase-env" : {
         "hbase_master_heapsize" : "2048m",
@@ -144,7 +139,6 @@
         "hbase_regionserver_xmn_max" : "2048"
         }
     },
-    {% endif -%}
     {% elif hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
     {
       "yarn-site" : {
@@ -175,7 +169,6 @@
         "tez.task.resource.memory.mb" : "2048"
       }
     },
-    {% if install_spark == true -%}
     {
       "spark-defaults" : {
         "spark.executor.instances" : "{{ groups['slave-nodes']|length }}",
@@ -187,8 +180,6 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
-    {% endif -%}
-    {% if install_hbase == true -%}
     {
       "hbase-env" : {
         "hbase_master_heapsize" : "1024m",
@@ -197,14 +188,11 @@
         }
     },
     {% endif -%}
-    {% endif -%}
-    {% if install_kafka == true -%}
     {
       "kafka-broker" : {
         "log.dirs" : "/hadoop/kafka-logs"
       }
     },
-    {% endif -%}
     {
       "storm-site" : {
         "logviewer.port" : "8005"
