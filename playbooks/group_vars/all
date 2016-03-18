@@ -4,7 +4,7 @@ hdp_version: '2.4'
 custom_repo: false
 custom_repo_url: ''
 custom_repo_target: 'api/v1/stacks/HDP/versions/2.4/operating_systems/redhat6/repositories/HDP-2.4'
-ambari_version: '2.2.1.0'
+ambari_version: '2.2.1.1'
 install_spark: true
 install_flume: true
 install_hbase: false
