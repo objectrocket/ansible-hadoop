@@ -3,7 +3,7 @@
 ## example for Rackspace cloud servers ##
 #########################################
 
-cluster_interface: 'eth1'
+# cluster_interface: 'eth1'
 cloud_nodes_count: 0
 cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'CentOS 6 (PVHVM)'
