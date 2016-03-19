@@ -119,36 +119,34 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set m
 | cloud_nodes_count  | Should be set to the desired number of master-nodes (1, 2 or 3).   |
 | cloud_image        | The OS image to be used. Can be `CentOS 6 (PVHVM)`, `CentOS 7 (PVHVM)` or `Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)`. |
 | cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) of the nodes. Minimum `general1-8` for Hadoop nodes. |
-| data_disks_devices | Should be set if a separate disk device is used for `/hadoop`, usually `xvde` for Rackspace Servers. Set to `[]` if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. If the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk, set this to `['xvde']`. Alternatively, you can let the playbook build Cloud Block Storage for this purpose. |
+| hadoop_disk        | The disk that will be mounted under `/hadoop`. If the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk, set this to `xvde`. Remove this variable if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
+| datanode_disks     | Only used for single-nodes clusters. The disks that will be mounted under `/grid/{0..n}`. Should be set if one or more separate disk devices are used for storing HDFS data. |
 
-If Rackspace Block Storage is to be built for storing /hadoop data, set the following options:
+For single-node clusters, if Rackspace Cloud Block Storage is to be built for storing HDFS data, set the following options:
 
 | Variable           | Description                                                                         |
 | ------------------ | ----------------------------------------------------------------------------------- |
-| build_cbs          | Set to `true` to build CBS. `data_disks_devices` also needs to be set to `['xvde']` or to `['xvdf']` if the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with ephemeral disks. |
+| build_datanode_cbs | Set to `true` to build CBS for . `datanode_disks` also needs to be set (for example, to build two CBS disks, set `datanode_disks` to `['xvde', 'xvdf']`). |
 | cbs_disks_size     | The size of the disk(s) in GB.                                                      |
 | cbs_disks_type     | The type of the disk(s), can be `SATA` or `SSD`.                                    |
 
-- Example for using the `eth1` interface, no Cloud Block Storage device and 2 x `general1-8` nodes running CentOS7:
+- Example for using 2 x `general1-8` master nodes running CentOS7 with `eth1` as the cluster interface:
 
   ```
   cluster_interface: 'eth1'
   cloud_nodes_count: 2
   cloud_image: 'CentOS 7 (PVHVM)'
   cloud_flavor: 'general1-8'
-  build_cbs: false
-  data_disks_devices: []
   ```
 
-- Example for installing a single-node cluster (Hortonworks sandbox in Rackspace Cloud) and using the ephemeral disk of the `performance2-15` flavor:
+- Example for installing a single-node cluster (Hortonworks sandbox in Rackspace Cloud) and using the ephemeral disk of the `performance2-15` flavor for the `/hadoop` mount:
 
   ```
   cluster_interface: 'eth1'
   cloud_nodes_count: 1
   cloud_image: 'CentOS 7 (PVHVM)'
   cloud_flavor: 'performance2-15'
-  build_cbs: false
-  data_disks_devices: ['xvde']
+  hadoop_disk: xvde
   ```
 
 
@@ -162,25 +160,27 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set sl
 | cloud_nodes_count  | Should be set to the desired number of slave-nodes (0 or more).    |
 | cloud_image        | The OS image to be used. Can be `CentOS 6 (PVHVM)`, `CentOS 7 (PVHVM)` or `Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)`. |
 | cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) of the nodes. Minimum `general1-8` for Hadoop nodes. |
-| data_disks_devices | Should be set if one or more separate disk devices are used for storing HDFS data, usually starting with `xvde` for Rackspace Servers. Can be set to `[]` if HDFS data is stored on the local filesystem or `[xvde]` if the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk. Alternatively, you can let the playbook build Cloud Block Storage for this purpose. |
+| datanode_disks     | The disks that will be mounted under `/grid/{0..n}`. Should be set if one or more separate disk devices are used for storing HDFS data and remove it if the data should be stored on the root filesystem. Can be set to `['xvde']` or `['xvde', 'xvdf']` if the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk. Alternatively, you can let the playbook build Cloud Block Storage for this purpose. |
 
-If Rackspace Block Storage is to be built for storing /hadoop data, set the following options:
+If Rackspace Cloud Block Storage is to be built for storing HDFS data, set the following options:
 
 | Variable           | Description                                                                         |
 | ------------------ | ----------------------------------------------------------------------------------- |
-| build_cbs          | Set to `true` to build CBS. `data_disks_devices` also needs to be set (for example, to build two CBS disks, set this variable to `['xvde', 'xvdf']`. |
+| build_datanode_cbs | Set to `true` to build CBS. `datanode_disks` also needs to be set (for example, to build two CBS disks, set `datanode_disks` to `['xvde', 'xvdf']`). |
 | cbs_disks_size     | The size of the disk(s) in GB.                                                      |
 | cbs_disks_type     | The type of the disk(s), can be `SATA` or `SSD`.                                    |
 
-- Example for using the `eth1` interface, no Cloud Block Storage devices and 3 x `general1-8` nodes running CentOS7:
+- Example with 3 x `general1-8` nodes running CentOS7 and 2 x 200GB CBS disks on each node:
 
   ```
   cluster_interface: 'eth1'
   cloud_nodes_count: 3
   cloud_image: 'CentOS 7 (PVHVM)'
   cloud_flavor: 'general1-8'
-  build_cbs: false
-  data_disks_devices: []
+  build_datanode_cbs: true
+  cbs_disks_size: 200
+  cbs_disks_type: 'SATA'
+  datanode_disks: ['xvde', 'xvdf']
   ```
 
 - Example with 3 x OnMetal IO nodes running CentOS 6 (and using the OnMetal SSD ephemeral disks as the data drives):
@@ -190,8 +190,8 @@ If Rackspace Block Storage is to be built for storing /hadoop data, set the foll
   cloud_nodes_count: 3
   cloud_image: 'OnMetal - CentOS 6'
   cloud_flavor: 'onmetal-io1'
-  build_cbs: false
-  data_disks_devices: ['sda', 'sdb']
+  build_datanode_cbs: false
+  datanode_disks: ['sda', 'sdb']
   ```
 
 
@@ -362,20 +362,22 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set m
 | Variable           | Description                                                        |
 | ------------------ | ------------------------------------------------------------------ |
 | cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
-| data_disks_devices | Should be set if a separate disk device is used for `/hadoop`. The playbook will attempt to partition and format it! Set to `[]` if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
+| hadoop_disk        | The disk that should be mounted under `/hadoop`. The playbook will attempt to partition and format it! Remove this variable if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
+| datanode_disks     | Only used for single-nodes clusters. The disks that will be mounted under `/grid/{0..n}`. Should be set if one or more separate disk devices are used for storing HDFS data. |
 
-- Example for using the `eth0` interface and `sdb` disk device:
-
-  ```
-  cluster_interface: 'eth0'
-  data_disks_devices: ['sdb']
-  ```
-
-- Example for using the `eth0` interface and no separate disk device (`/hadoop` will be a folder on the root filesystem):
+- Example for using the `eth0` cluster interface and `sdb` as the disk device for `/hadoop`:
 
   ```
   cluster_interface: 'eth0'
-  data_disks_devices: []
+  hadoop_disk: sdb
+  ```
+
+- Example for a single-node cluster with `sdb` mounted under `/hadoop` and `sdc`, `sdd`, `sde` used as data drives and mounted under `/grid/0`, `/grid/1` and `/grid/2`:
+
+  ```
+  cluster_interface: 'eth0'
+  hadoop_disk: sdb
+  datanode_disks: ['sdc', 'sdd', 'sde']
   ```
 
 
@@ -386,20 +388,13 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set sl
 | Variable           | Description                                                        |
 | ------------------ | ------------------------------------------------------------------ |
 | cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
-| data_disks_devices | Should be set if one or more separate disk devices are used for storing HDFS data. The playbook will attempt to partition and format these devices! Can be set to `[]` if HDFS data is stored on the local filesystem. If multiple devices are used, the playbook will create `/grid/0`, `/grid/1`, etc and mount these devices. |
+| datanode_disks     | The disks that will be mounted under `/grid/{0..n}`. Should be set if one or more separate disk devices are used for storing HDFS data. Remove this variable if HDFS data should be stored on the root filesystem or if the disks have already been partitioned and mounted under `/grid/{0..n}`. |
 
-- Example for using the `eth0` interface and `sdb`, `sdc`, `sdd` disk devices:
-
-  ```
-  cluster_interface: 'eth0'
-  data_disks_devices: ['sdb', 'sdc', 'sdd']
-  ```
-
-- Example for using the `eth0` interface and no separate disk device (HDFS data will be stored on the root filesystem under `/hadoop`):
+- Example for using the `eth0` cluster interface and `sdb`, `sdc`, `sdd` as the disk devices that will be mounted under `/grid/0`, `/grid/1` and `/grid/2`:
 
   ```
   cluster_interface: 'eth0'
-  data_disks_devices: []
+  datanode_disks: ['sdb', 'sdc', 'sdd']
   ```
 
 

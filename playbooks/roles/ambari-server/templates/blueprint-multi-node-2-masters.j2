@@ -75,12 +75,12 @@
         "dfs.namenode.shared.edits.dir" : "qjournal://%HOSTGROUP::masternode_1%:8485;%HOSTGROUP::masternode_2%:8485;%HOSTGROUP::slavenode_zookeeper%:8485/{{ cluster_name }}",
         "dfs.nameservices" : "{{ cluster_name }}",
         {% endif -%}
-        "dfs.datanode.data.dir" : "{% if hostvars[groups['slave-nodes'][0]]['data_disks_devices'] is defined and hostvars[groups['slave-nodes'][0]]['data_disks_devices'] and hostvars[groups['slave-nodes'][0]]['data_disks_devices']|length > 1 %}{% for disk in hostvars[groups['slave-nodes'][0]]['data_disks_devices'] %}/grid/{{ loop.index0 }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
+        "dfs.datanode.data.dir" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}",
         {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 59000 -%}
         "dfs.datanode.balance.bandwidthPerSec" : "12500000",
         "dfs.datanode.max.transfer.threads": "4096",
         {% endif -%}
-        "dfs.datanode.failed.volumes.tolerated" : "{% if hostvars[groups['slave-nodes'][0]]['data_disks_devices'] is defined and hostvars[groups['slave-nodes'][0]]['data_disks_devices'] and hostvars[groups['slave-nodes'][0]]['data_disks_devices']|length > 1 %}{{ hdfs.failed_volumes_tolerated }}{% else %}0{% endif %}",
+        "dfs.datanode.failed.volumes.tolerated" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{% if loop.last %}{% if loop.index > 1 %}{{ hdfs.failed_volumes_tolerated }}{% else %}0{% endif %}{% endif %}{% else %}0{%- endfor %}",
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
     },

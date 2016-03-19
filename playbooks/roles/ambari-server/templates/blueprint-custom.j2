@@ -29,7 +29,7 @@
     {% endif -%}
     {
       "hdfs-site" : {
-        "dfs.datanode.data.dir" : "{% if hostvars[groups['slave-nodes'][0]]['data_disks_devices'] is defined and hostvars[groups['slave-nodes'][0]]['data_disks_devices'] and hostvars[groups['slave-nodes'][0]]['data_disks_devices']|length > 1 %}{% for disk in hostvars[groups['slave-nodes'][0]]['data_disks_devices'] %}/grid/{{ loop.index0 }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
+        "dfs.datanode.data.dir" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}",
         {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 40000 -%}
         "dfs.datanode.balance.bandwidthPerSec" : "12500000",
         "dfs.datanode.max.transfer.threads": "4096",

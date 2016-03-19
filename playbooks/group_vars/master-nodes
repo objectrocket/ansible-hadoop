@@ -1,37 +1,31 @@
 ---
-###################
-## cloud servers ##
-###################
+#########################################
+## example for Rackspace cloud servers ##
+#########################################
 
 cluster_interface: 'eth1'
 cloud_nodes_count: 2
 cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'CentOS 6 (PVHVM)'
 # cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
-cloud_flavor: 'general1-8'
-build_cbs: false
-cbs_disks_size: 200
-cbs_disks_type: 'SATA'
-data_disks_devices: []
+cloud_flavor: 'performance2-15'
+hadoop_disk: xvde
 
-###########
-# onmetal #
-###########
+###################################
+## example for Rackspace OnMetal ##
+###################################
 
 # cluster_interface: 'bond0.401'
 # cloud_nodes_count: 2
 # cloud_image: 'OnMetal - CentOS 6'
 # cloud_flavor: 'onmetal-io1'
-# build_cbs: false
-# cbs_disks_size:
-# cbs_disks_type:
-# data_disks_devices: ['sda']
+# hadoop_disk: sda
 
-#############
-# dedicated #
-#############
+##################################
+## example for static inventory ##
+##################################
 
 # cluster_interface: 'bond1'
 # bond_interfaces: ['eth4', 'eth6']
 # bond_netmask: '255.255.255.0'
-# data_disks_devices: ['sdb']
+# hadoop_disk: sdb
