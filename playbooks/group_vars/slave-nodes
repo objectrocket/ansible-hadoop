@@ -1,18 +1,46 @@
 ---
 #########################################
 ## example for Rackspace cloud servers ##
+## general1-8 flavor and CentOS 7      ##
+## root filesystem used for HDFS data  ##
+## using the default public network    ##
 #########################################
 
-# cluster_interface: 'eth1'
 cloud_nodes_count: 3
 cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'CentOS 6 (PVHVM)'
-# cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
 cloud_flavor: 'general1-8'
-build_datanode_cbs: true
-cbs_disks_size: 200
-cbs_disks_type: 'SATA'
-datanode_disks: ['xvde', 'xvdf']
+
+
+############################################
+## example for Rackspace cloud servers    ##
+## general1-8 flavor and CentOS 7         ##
+## Cloud Block Storage used for HDFS data ##
+## using the default public network       ##
+############################################
+
+# cloud_nodes_count: 3
+# cloud_image: 'CentOS 7 (PVHVM)'
+# cloud_flavor: 'general1-8'
+# build_datanode_cbs: true
+# cbs_disks_size: 200
+# cbs_disks_type: 'SATA'
+# datanode_disks: ['xvde', 'xvdf']
+
+
+#############################################
+## example for Rackspace cloud servers     ##
+## performance2-15 flavor and Ubuntu 14    ##
+## ephemeral disk used for HDFS data       ##
+## using ServiceNet as the cluster network ##
+#############################################
+
+# cluster_interface: 'eth1'
+# cloud_nodes_count: 3
+# cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
+# cloud_flavor: 'performance2-15'
+# datanode_disks: ['xvde']
+
 
 ###################################
 ## example for Rackspace OnMetal ##
@@ -23,6 +51,7 @@ datanode_disks: ['xvde', 'xvdf']
 # cloud_image: 'OnMetal - CentOS 6'
 # cloud_flavor: 'onmetal-io1'
 # datanode_disks: ['sda', 'sdb']
+
 
 ##################################
 ## example for static inventory ##

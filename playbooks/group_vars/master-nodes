@@ -1,15 +1,30 @@
 ---
 #########################################
 ## example for Rackspace cloud servers ##
+## general1-8 flavor and CentOS 7      ##
+## root filesystem used for /hadoop    ##
+## using the default public network    ##
 #########################################
 
-# cluster_interface: 'eth1'
 cloud_nodes_count: 2
 cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'CentOS 6 (PVHVM)'
+cloud_flavor: 'general1-8'
+
+
+#############################################
+## example for Rackspace cloud servers     ##
+## performance2-15 flavor and Ubuntu 14    ##
+## ephemeral disk used for /hadoop         ##
+## using ServiceNet as the cluster network ##
+#############################################
+
+# cluster_interface: 'eth1'
+# cloud_nodes_count: 2
 # cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
-cloud_flavor: 'performance2-15'
-hadoop_disk: xvde
+# cloud_flavor: 'performance2-15'
+# hadoop_disk: xvde
+
 
 ###################################
 ## example for Rackspace OnMetal ##
@@ -20,6 +35,7 @@ hadoop_disk: xvde
 # cloud_image: 'OnMetal - CentOS 6'
 # cloud_flavor: 'onmetal-io1'
 # hadoop_disk: sda
+
 
 ##################################
 ## example for static inventory ##
