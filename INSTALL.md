@@ -130,7 +130,7 @@ For single-node clusters, if Rackspace Cloud Block Storage is to be built for st
 | cbs_disks_size     | The size of the disk(s) in GB.                                                      |
 | cbs_disks_type     | The type of the disk(s), can be `SATA` or `SSD`.                                    |
 
-- Example for using 2 x `general1-8` master nodes running CentOS7 with `eth1` as the cluster interface:
+- Example with using 2 x `general1-8` master nodes running CentOS 7 with ServiceNet(`eth1`) as the cluster interface:
 
   ```
   cluster_interface: 'eth1'
@@ -139,7 +139,15 @@ For single-node clusters, if Rackspace Cloud Block Storage is to be built for st
   cloud_flavor: 'general1-8'
   ```
 
-- Example for installing a single-node cluster (Hortonworks sandbox in Rackspace Cloud) and using the ephemeral disk of the `performance2-15` flavor for the `/hadoop` mount:
+- Example with using 2 x `onmetal-general2-small` master nodes running Ubuntu 14:
+
+  ```
+  cloud_nodes_count: 2
+  cloud_image: 'OnMetal - Ubuntu 14.04 LTS (Trusty Tahr)'
+  cloud_flavor: 'onmetal-general2-small'
+  ```
+
+- Example for installing a single-node cluster (Hortonworks sandbox in Rackspace Cloud) and using the ephemeral disk of the `performance2-15` flavor for the `/hadoop` mount (for a single node cluster, make sure `cloud_nodes_count` is set to `0` in `group_vars/slave-nodes`):
 
   ```
   cluster_interface: 'eth1'
@@ -149,6 +157,15 @@ For single-node clusters, if Rackspace Cloud Block Storage is to be built for st
   hadoop_disk: xvde
   ```
 
+- Example for installing a single-node OnMetal cluster (Hortonworks sandbox on OnMetal) and using the ephemeral SSD disks of the `onmetal-io2` flavor for both the `/hadoop` mount and HDFS data (for a single node cluster, make sure `cloud_nodes_count` is set to `0` in `group_vars/slave-nodes`):
+
+  ```
+  cloud_nodes_count: 1
+  cloud_image: 'OnMetal - CentOS 7'
+  cloud_flavor: 'onmetal-io2'
+  hadoop_disk: sdc
+  datanode_disks: ['sdd']
+  ```
 
 ## Set slave-nodes variables
 
@@ -170,7 +187,7 @@ If Rackspace Cloud Block Storage is to be built for storing HDFS data, set the f
 | cbs_disks_size     | The size of the disk(s) in GB.                                                      |
 | cbs_disks_type     | The type of the disk(s), can be `SATA` or `SSD`.                                    |
 
-- Example with 3 x `general1-8` nodes running CentOS7 and 2 x 200GB CBS disks on each node:
+- Example with 3 x `general1-8` nodes running CentOS 7 and 2 x 200GB CBS disks on each node:
 
   ```
   cluster_interface: 'eth1'
@@ -183,15 +200,13 @@ If Rackspace Cloud Block Storage is to be built for storing HDFS data, set the f
   datanode_disks: ['xvde', 'xvdf']
   ```
 
-- Example with 3 x OnMetal IO nodes running CentOS 6 (and using the OnMetal SSD ephemeral disks as the data drives):
+- Example with 3 x OnMetal I/O v2 nodes running CentOS 7 and using the ephemeral SSD disks of the `onmetal-io2` flavor as the HDFS data drives:
 
   ```
-  cluster_interface: 'bond0.401'
   cloud_nodes_count: 3
-  cloud_image: 'OnMetal - CentOS 6'
-  cloud_flavor: 'onmetal-io1'
-  build_datanode_cbs: false
-  datanode_disks: ['sda', 'sdb']
+  cloud_image: 'OnMetal - CentOS 7'
+  cloud_flavor: 'onmetal-io2'
+  datanode_disks: ['sdc', 'sdd']
   ```
 
 

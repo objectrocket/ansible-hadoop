@@ -26,15 +26,14 @@ cloud_flavor: 'general1-2'
 # hadoop_disk: xvde
 
 
-###################################
-## example for Rackspace OnMetal ##
-###################################
+######################################
+## example for Rackspace OnMetal v2 ##
+######################################
 
-# cluster_interface: 'bond0.401'
-# cloud_nodes_count: 0
-# cloud_image: 'OnMetal - CentOS 6'
-# cloud_flavor: 'onmetal-io1'
-# hadoop_disk: sda
+# cloud_nodes_count: 2
+# cloud_image: 'OnMetal - CentOS 7'
+## cloud_image: 'OnMetal - Ubuntu 14.04 LTS (Trusty Tahr)'
+# cloud_flavor: 'onmetal-general2-small'
 
 
 ##################################
