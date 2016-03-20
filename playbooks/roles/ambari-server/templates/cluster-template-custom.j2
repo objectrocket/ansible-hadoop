@@ -8,7 +8,7 @@
       "hosts" : [{% for node in groups['slave-nodes']|sort %}
 
         {
-          "fqdn" : "{{ hostvars[node]['ansible_fqdn'] | lower }}"
+          "fqdn" : "{{ hostvars[node]['ansible_nodename'] | lower }}"
         }{% if not loop.last %},{% endif %}
 {% endfor %}
 
@@ -21,7 +21,7 @@
       "hosts" : [
 {% for node in groups['master-nodes']|sort %}{% if loop.index == 2 %}
         {
-          "fqdn" : "{{ hostvars[node]['ansible_fqdn'] | lower }}"
+          "fqdn" : "{{ hostvars[node]['ansible_nodename'] | lower }}"
         }
 {% endif %}{% endfor %}
       ]
@@ -32,7 +32,7 @@
       "name" : "masternode_3",
       "hosts" : [
         {
-          "fqdn" : "{{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] | lower }}"
+          "fqdn" : "{{ hostvars[groups['ambari-node'][0]]['ansible_nodename'] | lower }}"
         }
       ]
     },
@@ -43,7 +43,7 @@
       "hosts" : [{% for node in groups['edge-nodes']|sort %}
 
         {
-          "fqdn" : "{{ hostvars[node]['ansible_fqdn'] | lower }}"
+          "fqdn" : "{{ hostvars[node]['ansible_nodename'] | lower }}"
         }{% if not loop.last %},{% endif %}
 {% endfor %}
 
@@ -54,7 +54,7 @@
       "name" : "masternode_1",
       "hosts" : [
         {
-          "fqdn" : "{{ hostvars[groups['master-nodes']|sort|first]['ansible_fqdn'] | lower }}"
+          "fqdn" : "{{ hostvars[groups['master-nodes']|sort|first]['ansible_nodename'] | lower }}"
         }
       ]
     }

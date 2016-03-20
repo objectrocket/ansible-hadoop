@@ -30,10 +30,10 @@
   service: name=ambari-server state=started enabled=yes
 
 - name: Waiting for ambari-server to start listening on port 8080
-  wait_for: host={{ansible_fqdn}} port=8080
+  wait_for: host={{ ansible_nodename }} port=8080
 
 - name: Waiting for ambari-agents to register
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/hosts/{{ hostvars[item]['ansible_fqdn'] | lower }}
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/hosts/{{ hostvars[item]['ansible_nodename'] | lower }}
        method=GET
        force_basic_auth=yes
        user=admin
