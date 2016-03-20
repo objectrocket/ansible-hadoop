@@ -425,7 +425,7 @@ The following table will describe the most important variables:
 The first step is to run the bootstrapping script that will setup the prerequisites on the cluster nodes.
 
 ```
-cd ~/ansible-hadoop/ && bash bootstrap_dedicated.sh
+cd ~/ansible-hadoop/ && bash bootstrap_static.sh
 ```
 
 
@@ -434,7 +434,7 @@ cd ~/ansible-hadoop/ && bash bootstrap_dedicated.sh
 Then run the script that will install Ambari and build the cluster using Ambari Blueprints:
 
 ```
-cd ~/ansible-hadoop/ && bash hortonworks_dedicated.sh
+cd ~/ansible-hadoop/ && bash hortonworks_static.sh
 ```
 
 
