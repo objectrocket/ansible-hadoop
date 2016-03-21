@@ -145,7 +145,7 @@
 
 - name: Include firewall.yml
   include: firewall.yml
-  when: rax_id is defined
+  when: configure_firewall or rax_id is defined
 
 - name: Include partitioning.yml
   include: partitioning.yml
