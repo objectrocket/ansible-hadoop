@@ -23,17 +23,23 @@ The following steps must be followed to install Ansible and the prerequisites on
 
 ### CentOS/RHEL 6
 
-1. Install Ansible and git:
+1. Install required packaged:
 
   ```
   sudo su -
   yum -y remove python-crypto
   yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-  yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
-  pip install ansible pyrax importlib oslo.config==3.0.0
+  yum repolist; yum install gcc gcc-c++ python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
   ```
 
-2. Generate SSH public/private key pair (press Enter for defaults):
+2. Create the Python virtualenv and install Ansible:
+
+  ```
+  virtualenv ansible2; source ansible2/bin/activate
+  pip install oslo.config==3.0.0 keyring==5.7.1 importlib ansible pyrax
+  ```
+
+3. Generate SSH public/private key pair (press Enter for defaults):
 
   ```
   ssh-keygen -q -t rsa
@@ -41,16 +47,22 @@ The following steps must be followed to install Ansible and the prerequisites on
 
 ### CentOS/RHEL 7
 
-1. Install Ansible and git:
+1. Install required packaged:
 
   ```
   sudo su -
   yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-  yum repolist; yum install gcc gcc-c++ python-pip python-devel sshpass git vim-enhanced -y
+  yum repolist; yum install gcc gcc-c++ python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
+  ```
+
+2. Create the Python virtualenv and install Ansible:
+
+  ```
+  virtualenv ansible2; source ansible2/bin/activate
   pip install ansible pyrax
   ```
 
-2. Generate SSH public/private key pair (press Enter for defaults):
+3. Generate SSH public/private key pair (press Enter for defaults):
 
   ```
   ssh-keygen -q -t rsa
@@ -58,19 +70,26 @@ The following steps must be followed to install Ansible and the prerequisites on
 
 ### Ubuntu 14+ / Debian 8
 
-1. Install Ansible and git:
+1. Install required packaged:
 
   ```
   sudo su -
-  apt-get update; apt-get -y install python-pip python-dev sshpass git vim
+  apt-get update; apt-get -y install python-virtualenv python-pip python-dev sshpass git vim
+  ```
+
+2. Create the Python virtualenv and install Ansible:
+
+  ```
+  virtualenv ansible2; source ansible2/bin/activate
   pip install ansible pyrax
   ```
 
-2. Generate SSH public/private key pair (press Enter for defaults):
+3. Generate SSH public/private key pair (press Enter for defaults):
 
   ```
   ssh-keygen -q -t rsa
   ```
+
 
 ## Setup the Rackspace credentials file
 
@@ -290,35 +309,53 @@ The following steps must be followed to install Ansible and the prerequisites on
 
 ### CentOS/RHEL 6
 
-Install Ansible and git:
+1. Install required packaged:
 
-```
-sudo su -
-yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-yum repolist; yum install python-pip python-devel sshpass git vim-enhanced -y
-pip install ansible
-```
+  ```
+  sudo su -
+  yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  yum repolist; yum install python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
+  ```
+
+2. Create the Python virtualenv and install Ansible:
+
+  ```
+  virtualenv ansible2; source ansible2/bin/activate
+  pip install ansible pyrax
+  ```
 
 ### CentOS/RHEL 7
 
-Install Ansible and git:
+1. Install required packaged:
 
-```
-sudo su -
-yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-yum repolist; yum install python-pip python-devel sshpass git vim-enhanced -y
-pip install ansible
-```
+  ```
+  sudo su -
+  yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+  yum repolist; yum install python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
+  ```
+
+2. Create the Python virtualenv and install Ansible:
+
+  ```
+  virtualenv ansible2; source ansible2/bin/activate
+  pip install ansible pyrax
+  ```
 
 ### Ubuntu 14+ / Debian 8
 
-Install Ansible and git:
+1. Install required packaged:
 
-```
-sudo su -
-apt-get update; apt-get -y install python-pip python-dev sshpass git vim
-pip install ansible
-```
+  ```
+  sudo su -
+  apt-get update; apt-get -y install python-virtualenv python-pip python-dev sshpass git vim
+  ```
+
+2. Create the Python virtualenv and install Ansible:
+
+  ```
+  virtualenv ansible2; source ansible2/bin/activate
+  pip install ansible pyrax
+  ```
 
 
 ## Clone the repository
