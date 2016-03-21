@@ -3,6 +3,7 @@
   include_vars: "{{ item }}"
   with_first_found:
     - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
         - "{{ ansible_os_family|lower }}.yml"
         - defaults.yml
       paths:
@@ -38,7 +39,7 @@
   lineinfile: dest=/etc/init/ambari-agent.conf
               state=absent
               regexp='^kill(.*)'
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
 
 - name: Configure the Ambari agent
   lineinfile: dest=/etc/ambari-agent/conf/ambari-agent.ini

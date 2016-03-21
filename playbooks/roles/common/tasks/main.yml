@@ -3,8 +3,9 @@
   include_vars: "{{ item }}"
   with_first_found:
     - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
         - "{{ ansible_os_family|lower }}.yml"
-        - "{{ ansible_os_family|lower }}-{{ansible_distribution_major_version }}.yml"
         - defaults.yml
       paths:
         - ../vars
@@ -90,7 +91,7 @@
 - name: Get number of kernels in grub.conf
   shell: grep -E "^[[:blank:]]*kernel" /boot/grub/grub.conf | grep -v transparent_hugepage; exit 0
   register: grep_result
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
   ignore_errors: true
 
 - name: Disable Transparent Huge Pages in Grub 1
@@ -101,7 +102,7 @@
               line='\1 transparent_hugepage=never'
   register: result
   with_items: "{{ grep_result.stdout_lines }}"
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
 
 - name: Disable Transparent Huge Pages in Grub 2
   lineinfile: dest=/etc/default/grub
