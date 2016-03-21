@@ -20,14 +20,6 @@ packages:
   - ifenslave
   - xfsprogs
 
-update_info:
-  pkg_mgr: apt
-  args:
-    upgrade: dist
-    update_cache: yes
-    cache_valid_time: 600
-    state: latest
-
 update_grub: "/usr/sbin/update-grub"
 
 ntp_service: ntp

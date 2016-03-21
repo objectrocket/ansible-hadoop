@@ -23,13 +23,6 @@ packages:
   - wget
   - xfsprogs
 
-update_info:
-  pkg_mgr: yum
-  args:
-    pkg: "*"
-    state: latest
-    update_cache: yes
-
 ntp_service: ntpd
 ntp_sync: "/usr/sbin/ntpd -gq"
 
