@@ -74,11 +74,8 @@
     - "* soft nproc 32768"
     - "* hard nproc 32768"
 
-- name: Load bridge kernel module to prevent sysctl errors
-  modprobe: name=bridge state=present
-
 - name: Set swappiness to 1
-  sysctl: name=vm.swappiness value=1 state=present
+  sysctl: name=vm.swappiness value=1 state=present ignoreerrors=yes
 
 - name: Set the tuned profile
   copy: src=tuned.conf
