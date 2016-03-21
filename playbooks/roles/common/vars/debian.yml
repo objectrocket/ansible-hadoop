@@ -18,6 +18,7 @@ packages:
   - curl
   - wget
   - ifenslave
+  - xfsprogs
 
 update_info:
   pkg_mgr: apt

@@ -156,10 +156,22 @@
     - "{{ datanode_disks|default([]) }}"
 
 - name: Mount hadoop disk under /hadoop
-  mount: state=mounted src="/dev/{{ hadoop_disk }}1" name="/hadoop" fstype=ext4 opts=defaults,noatime dump=0 passno=0
+  mount: state=mounted
+         src="/dev/{{ hadoop_disk }}1"
+         name="/hadoop"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
   when: hadoop_disk is defined and hadoop_disk and ansible_devices[hadoop_disk] is defined
 
 - name: Mount datanode disks under /grid/{0..n}
-  mount: state=mounted src="/dev/{{ item.1 }}1" name="/grid/{{ item.0 }}" fstype=ext4 opts=defaults,noatime dump=0 passno=0
+  mount: state=mounted
+         src="/dev/{{ item.1 }}1"
+         name="/grid/{{ item.0 }}"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
   with_indexed_items: "{{ datanode_disks|default([]) }}"
   when: datanode_disks is defined and datanode_disks and ansible_devices[item.1] is defined

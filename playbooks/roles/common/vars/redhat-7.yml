@@ -22,6 +22,7 @@ packages:
   - unzip
   - curl
   - wget
+  - xfsprogs
 
 update_info:
   pkg_mgr: yum
