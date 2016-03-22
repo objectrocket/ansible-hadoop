@@ -1,12 +1,6 @@
-package_info:
-  pkg_mgr: yum
-  args:
-    name: "{{ item }}"
-    state: latest
-    update_cache: yes
-  pkgs:
-    - mariadb-server
-    - mysql-connector-java
-    - cloudera-manager-server-db-2
-    - cloudera-manager-server
-    - cloudera-manager-daemons
+pkgs:
+  - mariadb-server
+  - mysql-connector-java
+  - cloudera-manager-server-db-2
+  - cloudera-manager-server
+  - cloudera-manager-daemons

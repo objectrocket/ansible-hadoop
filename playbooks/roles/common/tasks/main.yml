@@ -9,6 +9,12 @@
       paths:
         - ../vars
 
+- include_vars: group_vars/cloudera
+  when distro == "cdh"
+
+- include_vars: group_vars/hortonworks
+  when distro == "hdp"
+
 - name: Install epel
   yum: name={{ epel_url }} state=present update_cache=yes
   when: ansible_os_family == "RedHat"
@@ -38,7 +44,7 @@
   when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
 
 - include: spark_stack.yml
-  when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+  when: distro == "hdp" and spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Make sure the NTP service is stopped
   service: name={{ ntp_service }} state=stopped

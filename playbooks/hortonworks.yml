@@ -11,13 +11,24 @@
       when: debug
   roles:
     - ambari-agent
-  tags:
-    - ambari-agent-only
+
+- name: "Add nodes to required groups"
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+     add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: ambari-node
+      with_items: "{{ groups['admin-nodes']|sort|last }}"
 
 - name: "Apply the ambari-server role to ambari-node group"
   hosts: ambari-node
   become: yes
   roles:
     - ambari-server
-  tags:
-    - ambari-server-only

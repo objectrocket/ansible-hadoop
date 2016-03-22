@@ -5,7 +5,6 @@ package_info:
     state: latest
     update_cache: yes
   pkgs:
-
     - cloudera-manager-agent
     - cloudera-manager-daemons
     - oracle-j2sdk1.7
