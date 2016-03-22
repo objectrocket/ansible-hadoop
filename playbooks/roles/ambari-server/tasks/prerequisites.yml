@@ -6,6 +6,7 @@
     state: installed
   with_items:
     - ambari-server
+  notify: reload systemd
   when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
@@ -17,24 +18,22 @@
     - ambari-server
   when: ansible_os_family == "Debian"
 
+- meta: flush_handlers
+
 - include: spark_stack.yml
   when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Run Ambari Server setup
   shell: /usr/sbin/ambari-server setup -s
 
-- name: because packaging is hard
-  copy: src=ambari-server.service  dest=/usr/lib/systemd/system/ambari-server.service
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
-
 - name: Make sure ambari-server is running
   service: name=ambari-server state=started enabled=yes
 
 - name: Waiting for ambari-server to start listening on port 8080
-  wait_for: host={{ansible_fqdn}} port=8080
+  wait_for: host={{ ansible_nodename }} port=8080
 
 - name: Waiting for ambari-agents to register
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/hosts/{{ hostvars[item]['ansible_fqdn'] | lower }}
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/hosts/{{ hostvars[item]['ansible_nodename'] | lower }}
        method=GET
        force_basic_auth=yes
        user=admin

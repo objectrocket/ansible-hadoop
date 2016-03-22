@@ -1,6 +1,7 @@
 packages:
   - python-simplejson
-  - python-httplib2
+  - python26-httplib2
+  - python27-httplib2
   - man
   - man-pages
   - vim-enhanced

@@ -1,37 +1,64 @@
 ---
-###################
-## cloud servers ##
-###################
+#########################################
+## example for Rackspace cloud servers ##
+## general1-8 flavor and CentOS 7      ##
+## root filesystem used for HDFS data  ##
+## using the default public network    ##
+#########################################
 
-cluster_interface: 'eth1'
 cloud_nodes_count: 3
 cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'CentOS 6 (PVHVM)'
-# cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
 cloud_flavor: 'general1-8'
-build_cbs: true
-cbs_disks_size: 200
-cbs_disks_type: 'SATA'
-data_disks_devices: ['xvde', 'xvdf']
 
-###########
-# onmetal #
-###########
 
-# cluster_interface: 'bond0.401'
+############################################
+## example for Rackspace cloud servers    ##
+## general1-8 flavor and CentOS 7         ##
+## Cloud Block Storage used for HDFS data ##
+## using the default public network       ##
+############################################
+
 # cloud_nodes_count: 3
-# cloud_image: 'OnMetal - CentOS 6'
-# cloud_flavor: 'onmetal-io1'
-# build_cbs: false
-# cbs_disks_size:
-# cbs_disks_type:
-# data_disks_devices: ['sda', 'sdb']
+# cloud_image: 'CentOS 7 (PVHVM)'
+# cloud_flavor: 'general1-8'
+# build_datanode_cbs: true
+# cbs_disks_size: 200
+# cbs_disks_type: 'SATA'
+# datanode_disks: ['xvde', 'xvdf']
 
-#############
-# dedicated #
-#############
+
+#############################################
+## example for Rackspace cloud servers     ##
+## performance2-15 flavor and Ubuntu 14    ##
+## ephemeral disk used for HDFS data       ##
+## using ServiceNet as the cluster network ##
+#############################################
+
+# cluster_interface: 'eth1'
+# cloud_nodes_count: 3
+# cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
+# cloud_flavor: 'performance2-15'
+# datanode_disks: ['xvde']
+
+
+############################################
+## example for Rackspace OnMetal v2       ##
+## SSD ephemeral disks used for HDFS data ##
+############################################
+
+# cloud_nodes_count: 3
+# cloud_image: 'OnMetal - CentOS 7'
+## cloud_image: 'OnMetal - Ubuntu 14.04 LTS (Trusty Tahr)'
+# cloud_flavor: 'onmetal-io2'
+# datanode_disks: ['sdc', 'sdd']
+
+
+##################################
+## example for static inventory ##
+##################################
 
 # cluster_interface: 'bond1'
 # bond_interfaces: ['eth4', 'eth6']
 # bond_netmask: '255.255.255.0'
-# data_disks_devices: ['sdb', 'sdc', 'sdd', 'sde', 'sdf', 'sdg']
+# datanode_disks: ['sdb', 'sdc', 'sdd', 'sde', 'sdf', 'sdg']

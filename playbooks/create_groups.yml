@@ -18,6 +18,7 @@
         - "{{ groups['master-nodes']|default([]) }}"
         - "{{ groups['slave-nodes']|default([]) }}"
         - "{{ groups['edge-nodes']|default([]) }}"
+      when: "'hadoop-cluster' not in groups or groups['hadoop-cluster']|length < 1"
 
     - name: "include cdh vars"
       include_vars: group_vars/cloudera
@@ -38,3 +39,4 @@
         ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
         groups: "{{ adminnode }}"
       with_items: "{{ groups['master-nodes']|sort|last }}"
+      when: "'ambari-node' not in groups or groups['ambari-node']|length < 1"

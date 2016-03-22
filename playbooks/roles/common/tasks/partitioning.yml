@@ -1,27 +1,17 @@
 ---
-- name: Get disk alignment
-  shell: if [[ -e /sys/block/{{ options.data_disks_devices[0] }}/queue/optimal_io_size && -e /sys/block/{{ options.data_disks_devices[0] }}/alignment_offset && -e /sys/block/{{ options.data_disks_devices[0] }}/queue/physical_block_size ]]; then echo $[$(( ($(cat /sys/block/{{ options.data_disks_devices[0] }}/queue/optimal_io_size) + $(cat /sys/block/{{ options.data_disks_devices[0] }}/alignment_offset)) / $(cat /sys/block/{{ options.data_disks_devices[0] }}/queue/physical_block_size) )) | 2048]; else echo 2048; fi
-  when: ansible_devices[options.data_disks_devices[0]] is defined
+- name: Get disk alignment for disk {{ item }}
+  shell: if [[ -e /sys/block/{{ item }}/queue/optimal_io_size && -e /sys/block/{{ item }}/alignment_offset && -e /sys/block/{{ item }}/queue/physical_block_size ]]; then echo $[$(( ($(cat /sys/block/{{ item }}/queue/optimal_io_size) + $(cat /sys/block/{{ item }}/alignment_offset)) / $(cat /sys/block/{{ item }}/queue/physical_block_size) )) | 2048]; else echo 2048; fi
+  when: ansible_devices[item] is defined
   register: disk_offset
 
-- name: Partition data disks
-  shell: parted -s -a optimal /dev/{{ item }} mklabel gpt mkpart primary ext4 {{ disk_offset.stdout|default("2048") }}s 100% && sleep 5 && partprobe /dev/{{ item }}; sleep 5
-  when: ansible_devices[item]['partitions'] == {}
-  with_items: "{{ data_disks_devices }}"
+- name: Partition disk {{ item }}
+  shell: parted -s -a optimal /dev/{{ item }} mklabel gpt mkpart primary {{ data_disks_filesystem }} {{ disk_offset.stdout|default("2048") }}s 100% && sleep 5 && partprobe /dev/{{ item }}; sleep 5
+  when: ansible_devices[item] is defined and ansible_devices[item]['partitions'] == {}
 
-- name: Create the filesystem on data disks
-  filesystem: dev="/dev/{{ item }}1" fstype="ext4" opts="-m1"
+- name: Create the filesystem on disk {{ item }}
+  filesystem: dev="/dev/{{ item }}1" fstype="{{ data_disks_filesystem }}"
   when: ansible_devices[item] is defined
-  with_items: "{{ data_disks_devices }}"
 
-- name: Disable periodic fsck
-  shell: for disk in $(blkid|grep ext[3,4]|cut -f1 -d' '|sed -e 's/:$//'); do tune2fs -c0 -i0 $disk; done
-
-- name: Mount single data disk under /hadoop
-  mount: state=mounted src="/dev/{{ data_disks_devices[0] }}1" name="/hadoop" fstype=ext4 opts=defaults,noatime dump=0 passno=0
-  when: data_disks_devices|length == 1
-
-- name: Mount multiple data disks under /grid/{0..n}
-  mount: state=mounted src="/dev/{{ item.1 }}1" name="/grid/{{ item.0 }}" fstype=ext4 opts=defaults,noatime dump=0 passno=0
-  with_indexed_items: "{{ data_disks_devices }}"
-  when: data_disks_devices|length > 1
+- name: Disable periodic fsck on {{ item }}
+  shell: tune2fs -c0 -i0 /dev/{{ item }}1
+  when: ansible_devices[item] is defined and {{ data_disks_filesystem }}

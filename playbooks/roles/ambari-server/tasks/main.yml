@@ -20,7 +20,7 @@
   when: custom_repo
 
 - name: modify repo base_url
-  uri: url=http://{{ ansible_fqdn }}:8080/{{ custom_repo_target }}
+  uri: url=http://{{ ansible_nodename }}:8080/{{ custom_repo_target }}
        method=PUT
        force_basic_auth=yes
        user=admin
@@ -39,7 +39,7 @@
   register: alert_targets
 
 - name: Check if alert_targets already exists
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/alert_targets
        method=GET
        force_basic_auth=yes
        user=admin
@@ -50,7 +50,7 @@
   register: current_alert_targets
 
 - name: Register the alert_targets with the Ambari server
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/alert_targets
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/alert_targets
        method=POST
        force_basic_auth=yes
        user=admin
@@ -74,7 +74,7 @@
   register: cluster_blueprint
 
 - name: Make sure the blueprint doesn't already exist
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/blueprints/cluster_blueprint
        method=DELETE
        force_basic_auth=yes
        user=admin
@@ -84,7 +84,7 @@
   ignore_errors: true
 
 - name: Register the blueprint with the Ambari server
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/blueprints/cluster_blueprint
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/blueprints/cluster_blueprint
        method=POST
        force_basic_auth=yes
        user=admin
@@ -99,7 +99,7 @@
   register: cluster_template
 
 - name: Create the cluster instance
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/clusters/{{ cluster_name }}
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/clusters/{{ cluster_name }}
        method=POST
        force_basic_auth=yes
        user=admin
@@ -110,7 +110,7 @@
        status_code=200,201,202
 
 - name: Change Ambari admin user password
-  uri: url=http://{{ ansible_fqdn }}:8080/api/v1/users/admin
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/users/admin
        method=PUT
        force_basic_auth=yes
        user=admin

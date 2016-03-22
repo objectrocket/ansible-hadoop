@@ -22,13 +22,7 @@ packages:
   - unzip
   - curl
   - wget
-
-update_info:
-  pkg_mgr: yum
-  args:
-    pkg: "*"
-    state: latest
-    update_cache: yes
+  - xfsprogs
 
 update_grub: 'cd && grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'
 

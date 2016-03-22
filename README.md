@@ -82,8 +82,8 @@ Similarly, run the bootstrap and hortonworks scripts (in this order), depending 
 
 - For static / prebuilt environments:
   ````
-  bash bootstrap_dedicated.sh
-  bash hortonworks_dedicated.sh
+  bash bootstrap_static.sh
+  bash hortonworks_static.sh
   ````
 
 

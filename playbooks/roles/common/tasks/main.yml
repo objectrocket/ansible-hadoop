@@ -3,8 +3,9 @@
   include_vars: "{{ item }}"
   with_first_found:
     - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
         - "{{ ansible_os_family|lower }}.yml"
-        - "{{ ansible_os_family|lower }}-{{ansible_distribution_major_version }}.yml"
         - defaults.yml
       paths:
         - ../vars
@@ -80,11 +81,8 @@
     - "* soft nproc 32768"
     - "* hard nproc 32768"
 
-- name: Load bridge kernel module to prevent sysctl errors
-  modprobe: name=bridge state=present
-
 - name: Set swappiness to 1
-  sysctl: name=vm.swappiness value=1 state=present
+  sysctl: name=vm.swappiness value=1 state=present ignoreerrors=yes
 
 - name: Set the tuned profile
   copy: src=tuned.conf
@@ -99,7 +97,7 @@
 - name: Get number of kernels in grub.conf
   shell: grep -E "^[[:blank:]]*kernel" /boot/grub/grub.conf | grep -v transparent_hugepage; exit 0
   register: grep_result
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
   ignore_errors: true
 
 - name: Disable Transparent Huge Pages in Grub 1
@@ -110,7 +108,7 @@
               line='\1 transparent_hugepage=never'
   register: result
   with_items: "{{ grep_result.stdout_lines }}"
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
 
 - name: Disable Transparent Huge Pages in Grub 2
   lineinfile: dest=/etc/default/grub
@@ -151,8 +149,33 @@
 - name: Set hosts file
   template: src=hosts.j2 dest=/etc/hosts mode=0644
 
-- include: firewall.yml
-  when: cloud_nodes_count is defined and cloud_nodes_count > 0
+- name: Include firewall.yml
+  include: firewall.yml
+  when: configure_firewall or rax_id is defined
 
-- include: partitioning.yml
-  when: data_disks_devices is defined and data_disks_devices
+- name: Include partitioning.yml
+  include: partitioning.yml
+  with_flattened:
+    - "{{ hadoop_disk|default([]) }}"
+    - "{{ datanode_disks|default([]) }}"
+
+- name: Mount hadoop disk under /hadoop
+  mount: state=mounted
+         src="/dev/{{ hadoop_disk }}1"
+         name="/hadoop"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: hadoop_disk is defined and hadoop_disk and ansible_devices[hadoop_disk] is defined
+
+- name: Mount datanode disks under /grid/{0..n}
+  mount: state=mounted
+         src="/dev/{{ item.1 }}1"
+         name="/grid/{{ item.0 }}"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  with_indexed_items: "{{ datanode_disks|default([]) }}"
+  when: datanode_disks is defined and datanode_disks and ansible_devices[item.1] is defined

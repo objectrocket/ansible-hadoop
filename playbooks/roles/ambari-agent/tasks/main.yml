@@ -3,6 +3,7 @@
   include_vars: "{{ item }}"
   with_first_found:
     - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
         - "{{ ansible_os_family|lower }}.yml"
         - defaults.yml
       paths:
@@ -22,6 +23,7 @@
     state: installed
   with_items:
     - ambari-agent
+  notify: reload systemd
   when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
@@ -33,11 +35,20 @@
     - ambari-agent
   when: ansible_os_family == "Debian"
 
+- name: Fix for upstart script in RHEL6
+  lineinfile: dest=/etc/init/ambari-agent.conf
+              state=absent
+              regexp='^kill(.*)'
+  when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
+
 - name: Configure the Ambari agent
   lineinfile: dest=/etc/ambari-agent/conf/ambari-agent.ini
               regexp='^hostname\s*='
-              line='hostname={{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] }}'
+              line='hostname={{ hostvars[groups['ambari-node'][0]]['ansible_nodename'] }}'
               state=present
+  notify: restart ambari-agent
+
+- meta: flush_handlers
 
 - name: Make sure ambari-agent is running
   service: name=ambari-agent state=started enabled=yes

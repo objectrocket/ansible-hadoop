@@ -33,7 +33,7 @@
     {% endif -%}
     {
       "hdfs-site" : {
-        "dfs.datanode.data.dir" : "{% if data_disks_devices is defined and data_disks_devices and data_disks_devices|length > 1 %}{% for disk in data_disks_devices %}/grid/{{ loop.index0 }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{%- endfor %}{% else %}/hadoop/hdfs/data{% endif %}",
+        "dfs.datanode.data.dir" : "{% for disk in ansible_mounts if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}",
         {% if ansible_memtotal_mb > 59000 -%}
         "dfs.datanode.balance.bandwidthPerSec" : "12500000",
         "dfs.datanode.max.transfer.threads": "2048",
@@ -42,15 +42,15 @@
         "dfs.replication" : "1"
       }
     },
-    {% if ansible_memtotal_mb > 59000 -%}
+    {% if ansible_memtotal_mb > 119000 -%}
     {
       "yarn-site" : {
         {% if install_hbase == true -%}
-        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 25000 - ansible_memtotal_mb//6)//2048)*2048 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb  - 25000 - 2048 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 50000 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb  - 50000 - 4096 - ansible_memtotal_mb//6)//2048)*2048 }}",
         {% else -%}
-        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 20000 - ansible_memtotal_mb//6)//2048)*2048 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 20000 - 2048 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 40000 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 40000 - 4096 - ansible_memtotal_mb//6)//2048)*2048 }}",
         {% endif -%}
         "yarn.scheduler.minimum-allocation-mb" : "2048"
       }
@@ -59,9 +59,9 @@
       "mapred-site" : {
         "mapreduce.map.java.opts" : "-Xmx3276m",
         "mapreduce.map.memory.mb" : "4096",
-        "mapreduce.reduce.java.opts" : "-Xmx3276m",
-        "mapreduce.reduce.memory.mb" : "4096",
-        "mapreduce.task.io.sort.mb" : "1536",
+        "mapreduce.reduce.java.opts" : "-Xmx6553m",
+        "mapreduce.reduce.memory.mb" : "8192",
+        "mapreduce.task.io.sort.mb" : "2048",
         "yarn.app.mapreduce.am.command-opts" : "-Xmx1638m -Dhdp.version=${hdp.version}",
         "yarn.app.mapreduce.am.resource.mb" : "2048"
       }
@@ -69,7 +69,144 @@
     {
       "tez-site" : {
         "tez.am.resource.memory.mb" : "4096",
-        "tez.task.resource.memory.mb" : "4096"
+        "tez.task.resource.memory.mb" : "8192"
+      }
+    },
+    {
+      "spark-defaults" : {
+        "spark.executor.instances" : 1,
+        "spark.executor.memory" : "7808m",
+        "spark.driver.memory" : "7808m",
+        "spark.yarn.am.memory" : "7808m",
+        "spark.yarn.executor.memoryOverhead" : "384",
+        "spark.yarn.driver.memoryOverhead" : "384",
+        "spark.yarn.am.memoryOverhead" : "384"
+        }
+    },
+    {
+      "hbase-env" : {
+        "hbase_master_heapsize" : "2048m",
+        "hbase_regionserver_heapsize" : "8192m",
+        "hbase_regionserver_xmn_max" : "2048"
+        }
+    },
+    {% elif ansible_memtotal_mb > 59000 -%}
+    {
+      "yarn-site" : {
+        {% if install_hbase == true -%}
+        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 35000 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb  - 35000 - 2048 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        {% else -%}
+        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 30000 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 30000 - 2048 - ansible_memtotal_mb//6)//2048)*2048 }}",
+        {% endif -%}
+        "yarn.scheduler.minimum-allocation-mb" : "2048"
+      }
+    },
+    {
+      "mapred-site" : {
+        "mapreduce.map.java.opts" : "-Xmx2457m",
+        "mapreduce.map.memory.mb" : "3072",
+        "mapreduce.reduce.java.opts" : "-Xmx2457m",
+        "mapreduce.reduce.memory.mb" : "3072",
+        "mapreduce.task.io.sort.mb" : "1536",
+        "yarn.app.mapreduce.am.command-opts" : "-Xmx1638m -Dhdp.version=${hdp.version}",
+        "yarn.app.mapreduce.am.resource.mb" : "2048"
+      }
+    },
+    {
+      "tez-site" : {
+        "tez.am.resource.memory.mb" : "3072",
+        "tez.task.resource.memory.mb" : "3072"
+      }
+    },
+    {
+      "spark-defaults" : {
+        "spark.executor.instances" : 1,
+        "spark.executor.memory" : "3712m",
+        "spark.driver.memory" : "1664m",
+        "spark.yarn.am.memory" : "1664m",
+        "spark.yarn.executor.memoryOverhead" : "384",
+        "spark.yarn.driver.memoryOverhead" : "384",
+        "spark.yarn.am.memoryOverhead" : "384"
+        }
+    },
+    {
+      "hbase-env" : {
+        "hbase_master_heapsize" : "2048m",
+        "hbase_regionserver_heapsize" : "4096m",
+        "hbase_regionserver_xmn_max" : "1024"
+        }
+    },
+    {% elif ansible_memtotal_mb > 24000 -%}
+    {
+      "yarn-site" : {
+        {% if install_hbase == true -%}
+        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 15000)//1024)*1024 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 15000 - 1024)//1024)*1024 }}",
+        {% else -%}
+        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 13000)//1024)*1024 }}",
+        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 13000 - 1024)//1024)*1024 }}",
+        {% endif -%}
+        "yarn.scheduler.minimum-allocation-mb" : "1024"
+      }
+    },
+    {
+      "mapred-site" : {
+        "mapreduce.map.java.opts" : "-Xmx1638m",
+        "mapreduce.map.memory.mb" : "2048",
+        "mapreduce.reduce.java.opts" : "-Xmx1638m",
+        "mapreduce.reduce.memory.mb" : "2048",
+        "mapreduce.task.io.sort.mb" : "768",
+        "yarn.app.mapreduce.am.command-opts" : "-Xmx819m -Dhdp.version=${hdp.version}",
+        "yarn.app.mapreduce.am.resource.mb" : "1024"
+      }
+    },
+    {
+      "tez-site" : {
+        "tez.am.resource.memory.mb" : "2048",
+        "tez.task.resource.memory.mb" : "2048"
+      }
+    },
+    {
+      "spark-defaults" : {
+        "spark.executor.instances" : 1,
+        "spark.executor.memory" : "1664m",
+        "spark.driver.memory" : "1664m",
+        "spark.yarn.am.memory" : "1664m",
+        "spark.yarn.executor.memoryOverhead" : "384",
+        "spark.yarn.driver.memoryOverhead" : "384",
+        "spark.yarn.am.memoryOverhead" : "384"
+        }
+    },
+    {
+      "hbase-env" : {
+        "hbase_master_heapsize" : "1024m",
+        "hbase_regionserver_heapsize" : "2048m",
+        "hbase_regionserver_xmn_max" : "512"
+        }
+    },
+    {% endif -%}
+    {
+      "kafka-broker" : {
+        "log.dirs" : "/hadoop/kafka-logs"
+      }
+    },
+    {
+      "storm-site" : {
+        "logviewer.port" : "8005"
+      }
+    },
+    {
+      "oozie-site" : {
+        "oozie.service.ProxyUserService.proxyuser.hue.groups" : "*",
+        "oozie.service.ProxyUserService.proxyuser.hue.hosts" : "*"
+      }
+    },
+    {
+      "webhcat-site" : {
+        "webhcat.proxyuser.hue.groups" : "*",
+        "webhcat.proxyuser.hue.hosts" : "*"
       }
     },
     {% if spark_stack == true -%}
@@ -134,113 +271,19 @@
           "spark_driver_memory" : "{{ spark_stack_config.spark_driver_memory }}",
           "spark_driver_maxResultSize" : "{{ spark_stack_config.spark_driver_maxResultSize }}",
           "content" : "\n# Default system properties included when running spark-submit.\n# This is useful for setting default environmental settings.\n\n# Core\nspark.master                     spark://{{spark_master}}:7077\nspark.serializer                 org.apache.spark.serializer.KryoSerializer\n\n\n# Driver\nspark.driver.memory              {{spark_driver_memory}}\nspark.driver.maxResultSize       {{spark_driver_maxResultSize}}\nspark.driver.host                {{node_hostname}}\n\n# Executors\nspark.executor.memory              {{spark_exector_memory}}\n# spark.executor.extraJavaOptions  -XX:+PrintGCDetails -Dkey=value -Dnumbers=\"one two three\"\n# spark.rdd.compress               false\n\n# Storage\nspark.externalBlockStore.blockManager  org.apache.spark.storage.TachyonBlockManager\nspark.externalBlockStore.url           tachyon://{{tachyon_master}}:19998\nspark.externalBlockStore.baseDir       /spark\n\n# History\nspark.eventLog.enabled           true\nspark.eventLog.dir               {{hdfs_root}}/{{spark_events}}\nspark.history.fs.logDirectory    {{hdfs_root}}/{{spark_events}}\n# spark.eventLog.compress          false\n\n# Shuffle Options\nspark.shuffle.consolidateFiles   true"
-        }	
-      }
-    },
-    {% endif -%}
-    {% if install_spark == true %}
-    {
-      "spark-defaults" : {
-        "spark.executor.instances" : 1,
-        "spark.executor.memory" : "7808m",
-        "spark.driver.memory" : "3712m",
-        "spark.yarn.am.memory" : "3712m",
-        "spark.yarn.executor.memoryOverhead" : "384",
-        "spark.yarn.driver.memoryOverhead" : "384",
-        "spark.yarn.am.memoryOverhead" : "384"
         }
-    },
-    {% endif -%}
-    {% if install_hbase == true -%}
-    {
-      "hbase-env" : {
-        "hbase_master_heapsize" : "2048m",
-        "hbase_regionserver_heapsize" : "8192m",
-        "hbase_regionserver_xmn_max" : "2048"
-        }
-    },
-    {% endif -%}
-    {% elif ansible_memtotal_mb > 24000 -%}
-    {
-      "yarn-site" : {
-        {% if install_hbase == true -%}
-        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 15000)//1024)*1024 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 15000 - 1024)//1024)*1024 }}",
-        {% else -%}
-        "yarn.nodemanager.resource.memory-mb" : "{{ ((ansible_memtotal_mb - 13000)//1024)*1024 }}",
-        "yarn.scheduler.maximum-allocation-mb" : "{{ ((ansible_memtotal_mb - 13000 - 1024)//1024)*1024 }}",
-        {% endif -%}
-        "yarn.scheduler.minimum-allocation-mb" : "1024"
-      }
-    },
-    {
-      "mapred-site" : {
-        "mapreduce.map.java.opts" : "-Xmx1638m",
-        "mapreduce.map.memory.mb" : "2048",
-        "mapreduce.reduce.java.opts" : "-Xmx1638m",
-        "mapreduce.reduce.memory.mb" : "2048",
-        "mapreduce.task.io.sort.mb" : "768",
-        "yarn.app.mapreduce.am.command-opts" : "-Xmx819m -Dhdp.version=${hdp.version}",
-        "yarn.app.mapreduce.am.resource.mb" : "1024"
-      }
-    },
-    {
-      "tez-site" : {
-        "tez.am.resource.memory.mb" : "2048",
-        "tez.task.resource.memory.mb" : "2048"
-      }
-    },
-    {% if install_spark == true %}
-    {
-      "spark-defaults" : {
-        "spark.executor.instances" : 1,
-        "spark.executor.memory" : "1664m",
-        "spark.driver.memory" : "1664m",
-        "spark.yarn.am.memory" : "1664m",
-        "spark.yarn.executor.memoryOverhead" : "384",
-        "spark.yarn.driver.memoryOverhead" : "384",
-        "spark.yarn.am.memoryOverhead" : "384"
-        }
-    },
-    {% endif -%}
-    {% if install_hbase == true -%}
-    {
-      "hbase-env" : {
-        "hbase_master_heapsize" : "1024m",
-        "hbase_regionserver_heapsize" : "2048m",
-        "hbase_regionserver_xmn_max" : "1024"
-        }
-    },
-    {% endif -%}
-    {% endif -%}
-    {% if install_kafka == true -%}
-    {
-      "kafka-broker" : {
-        "log.dirs" : "/hadoop/kafka-logs"
       }
     },
     {% endif -%}
-    {
-      "storm-site" : {
-        "logviewer.port" : "8005"
-      }
-    },
-    {
-      "oozie-site" : {
-        "oozie.service.ProxyUserService.proxyuser.hue.groups" : "*",
-        "oozie.service.ProxyUserService.proxyuser.hue.hosts" : "*"
-      }
-    },
-    {
-      "webhcat-site" : {
-        "webhcat.proxyuser.hue.groups" : "*",
-        "webhcat.proxyuser.hue.hosts" : "*"
-      }
-    },
     {
       "hive-site" : {
-        "hive.tez.container.size" : "-1",
-        "hive.tez.java.opts": "-1",
+        {% if ansible_memtotal_mb > 119000 -%}
+        "hive.tez.container.size" : "8192",
+        {% elif ansible_memtotal_mb > 59000 -%}
+        "hive.tez.container.size" : "3072",
+        {% elif ansible_memtotal_mb > 24000 -%}
+        "hive.tez.container.size" : "2048",
+        {% endif -%}
         "fs.file.impl.disable.cache" : "true",
         "fs.hdfs.impl.disable.cache" : "true",
         "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"

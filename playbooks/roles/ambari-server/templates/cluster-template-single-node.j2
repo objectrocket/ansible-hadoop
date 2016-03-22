@@ -6,7 +6,7 @@
       "name" : "single_node",
       "hosts" : [
         {
-          "fqdn" : "{{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] | lower }}"
+          "fqdn" : "{{ hostvars[groups['ambari-node'][0]]['ansible_nodename'] | lower }}"
         }
       ]
     }
