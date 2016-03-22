@@ -1,0 +1,8 @@
+---
+- name: reload systemd
+  command: systemctl daemon-reload
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: restart ambari-agent
+  service: name=ambari-agent state=restarted
+  notify: sleep

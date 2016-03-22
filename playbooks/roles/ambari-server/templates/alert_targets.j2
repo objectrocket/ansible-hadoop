@@ -10,7 +10,7 @@
       "mail.smtp.port" : "25",
       "mail.smtp.auth" : "false",
       "mail.smtp.starttls.enable" : "false",
-      "mail.smtp.from" : "ambari@{{ hostvars[groups['ambari-node'][0]]['ansible_fqdn'] }}"
+      "mail.smtp.from" : "ambari@{{ hostvars[groups['ambari-node'][0]]['ansible_nodename'] }}"
     }
   }
 }

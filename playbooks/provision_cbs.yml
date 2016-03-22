@@ -11,7 +11,7 @@
     wait: true
   with_nested:
     - "{{ rax.instances }}"
-    - "{{ data_disks_devices }}"
+    - "{{ datanode_disks }}"
 
 - name: "Attach CBS Volumes"
   local_action:
@@ -25,4 +25,4 @@
     wait: true
   with_nested:
     - "{{ rax.instances }}"
-    - "{{ data_disks_devices }}"
+    - "{{ datanode_disks }}"

@@ -18,14 +18,7 @@ packages:
   - curl
   - wget
   - ifenslave
-
-update_info:
-  pkg_mgr: apt
-  args:
-    upgrade: dist
-    update_cache: yes
-    cache_valid_time: 600
-    state: latest
+  - xfsprogs
 
 update_grub: "/usr/sbin/update-grub"
 

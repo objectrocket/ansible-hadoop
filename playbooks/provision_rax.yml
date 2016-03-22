@@ -36,7 +36,7 @@
 
     - name: "Build Rackspace CBS for master nodes"
       include: provision_cbs.yml
-      when: cloud_nodes_count > 0 and build_cbs
+      when: cloud_nodes_count > 0 and build_datanode_cbs is defined and build_datanode_cbs
 
     - name: Include slave-nodes group variables
       include_vars: group_vars/slave-nodes
@@ -62,7 +62,7 @@
 
     - name: "Build Rackspace CBS for slave nodes"
       include: provision_cbs.yml
-      when: cloud_nodes_count > 0 and build_cbs
+      when: cloud_nodes_count > 0 and build_datanode_cbs is defined and build_datanode_cbs
 
     - name: Include edge-nodes group variables
       include_vars: group_vars/edge-nodes
@@ -85,7 +85,3 @@
         wait_timeout: 900
       register: rax
       when: cloud_nodes_count > 0
-
-    - name: "Build Rackspace CBS for edge nodes"
-      include: provision_cbs.yml
-      when: cloud_nodes_count > 0 and build_cbs

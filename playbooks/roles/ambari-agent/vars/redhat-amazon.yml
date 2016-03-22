@@ -1,0 +1,2 @@
+ambari_repo: "http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/{{ ambari_version }}/ambari.repo"
+ambari_repo_file: "/etc/yum.repos.d/ambari.repo"
