@@ -11,10 +11,10 @@
         - ../vars
 
 - include_vars: group_vars/cloudera
-  when distro == "cdh"
+  when: distro == "cdh"
 
 - include_vars: group_vars/hortonworks
-  when distro == "hdp"
+  when: distro == "hdp"
 
 - name: Install epel
   yum: name={{ epel_url }} state=present update_cache=yes

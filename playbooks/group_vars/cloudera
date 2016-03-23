@@ -13,6 +13,9 @@ install_falcon: false
 admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
+data_disks_filesystem: xfs
+configure_firewall: false
+
 
 hdfs:
   dfs_replication: 3
