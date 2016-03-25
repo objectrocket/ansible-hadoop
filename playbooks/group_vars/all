@@ -1,5 +1,5 @@
 ---
-cluster_name: 'hadoop-poc'
+cluster_name: 'hadoopPOC'
 #valid hdp/cdh
 distro: 'cdh'
 
