@@ -23,7 +23,7 @@
   roles:
     - cloudera-mysql
 
-- name: "Apply the admin-server role to admin-node group"
+- name: "Apply the cloudera-mngr role to cm-node group"
   hosts: cm-node
   become: yes
   pre_tasks:
@@ -32,3 +32,31 @@
       when: debug
   roles:
     - cloudera-mngr
+
+- name: Build a Cloudera cluster
+  gather_facts: True
+  hosts: cm-node
+  pre_tasks:
+    - name: Install python-pip (yum)
+      yum: name='python-pip' state=installed
+      when: ansible_os_family == "RedHat"
+
+    - name: Install python-pip (apt)
+      apt: name='python-pip' state=installed
+      when: ansible_os_family == "Debian"
+
+    - name: Install cm_api
+      pip: name='cm_api' state=latest
+
+  tasks:
+    - name: Cloudera cluster create request
+      action:
+        module: cloudera_init
+        name: "{{ cluster_name }}"
+        fullVersion: 5.6.0
+        admin_password: admin
+        cm_host: "{{ groups['cm-node'][0] }}"
+        hosts: "{{ groups['hadoop-cluster']|join(',') }}"
+        state: present
+        trial: true
+      register: my_cluster
