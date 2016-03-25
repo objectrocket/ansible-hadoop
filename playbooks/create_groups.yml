@@ -18,6 +18,7 @@
         - "{{ groups['master-nodes']|default([]) }}"
         - "{{ groups['slave-nodes']|default([]) }}"
         - "{{ groups['edge-nodes']|default([]) }}"
+      register: hadoop_cluster    
       when: "'hadoop-cluster' not in groups or groups['hadoop-cluster']|length < 1"
 
     - name: "include cdh vars"

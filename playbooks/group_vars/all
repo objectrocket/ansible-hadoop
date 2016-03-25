@@ -13,4 +13,4 @@ cloud_config:
     keyfile: '~/.ssh/id_rsa.pub'
 
 # set to true to show host variables
-debug: false
+debug: true

@@ -1,5 +1,4 @@
 ---
-
 - include: create_groups.yml
 
 - name: "Apply the ambari-agent role to all nodes"
@@ -13,8 +12,23 @@
   roles:
     - cloudera-agent
 
-- name: "Apply the ambari-server role to ambari-node group"
+- name: "setup mysql on master nodes"
+  hosts: master-nodes
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  roles:
+    - cloudera-mysql
+
+- name: "Apply the admin-server role to admin-node group"
   hosts: cm-node
   become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
   roles:
     - cloudera-mngr

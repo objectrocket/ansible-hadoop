@@ -1,0 +1,54 @@
+---
+- include_vars: mysql_vars.yml
+
+- name: mysql config template
+  template: src=my.cnf dest=/etc/
+
+- name: start mysql
+  service: name=mariadb state=started enabled=yes
+
+- name: copy db dump to server
+  copy: src={{ item }}.sql dest=/tmp
+  with_items: "{{ db_names }}"
+
+- name: create DB references
+  mysql_db: name={{ item }} state=present
+  with_items: "{{ db_names }}"
+
+- name: import DBs
+  mysql_db: name={{ item }} state=import target=/tmp/{{ item }}.sql
+  with_items: "{{ db_names }}"
+
+- name: setup Activity Monitor DB user
+  mysql_user: name=amon password={{ amon_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=amon.*:ALL state=present
+  with_items: "{{ hadoop-cluster }}"
+ 
+#- name: Set firewalld rules between cluster nodes
+#  command: firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" accept'
+#  firewalld: source={{ hostvars[item][['ansible_', hostvars[item]['cluster_interface']]|join]['ipv4']['address'] }} state=enabled
+#  with_items: "{{ hadoop-cluster }}"
+
+
+- name: setup Report Manager DB user
+  mysql_user: name=rman password={{ rman_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=rman.*:ALL state=present
+  with_items: "{{ hadoop-cluster }}"
+
+- name: setup Sentry DB user
+  mysql_user: name=sentry password={{ sentry_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=sentry.*:ALL state=present
+  with_items: "{{ hadoop-cluster }}"
+
+- name: setup Cloudera Navigator DB user
+  mysql_user: name=nav password={{ nav_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=nav.*:ALL state=present
+  with_items: "{{ hadoop-cluster }}"
+
+- name: setup Cloudera Navigator Metadata DB user
+  mysql_user: name=navms password={{ navms_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=navms.*:ALL state=present
+  with_items: "{{ hadoop-cluster }}"
+
+- name: setup Hive DB user
+  mysql_user: name=metastore password={{ hive_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=hive.*:ALL state=present
+  with_items: "{{ hadoop-cluster }}"
+
+- name: setup SCM DB user
+  mysql_user: name=scm password={{ scm_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=scm.*:ALL state=present
+  with_items: "{{ hadoop-cluster }}"

@@ -8,6 +8,7 @@
       paths:
         - ../vars
 
+- include_vars: ../../cloudera-mysql/vars/mysql_vars.yml
 
 - name: Ensure required packages are installed (yum)
   yum:
@@ -16,8 +17,6 @@
     state: installed
   with_items: "{{ pkgs }}"
   when: ansible_os_family == "RedHat"
-
-- include: mysql.yml
 
 - name: Upload db properties template
   template: src=db.properties dest=/etc/cloudera-scm-server/
@@ -29,7 +28,7 @@
   service: name=cloudera-scm-server state=started enabled=yes
 
 - name: Waiting for mngr-server to start listening on port 7180
-  wait_for: host={{ cloudera_mngr_fqdn }} port=7180
+  wait_for: host={{ ansible_nodename }} port=7180
 
 #- name: Waiting for hosts to register with cloudera manager
 #  uri: url=http://{{ ansible_fqdn }}:7180/api/v1/{{ cluster_name }}/hosts/{{ hostvars[item]['ansible_fqdn'] | lower }}

@@ -14,7 +14,7 @@ admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
 data_disks_filesystem: xfs
-configure_firewall: false
+configure_firewall: true
 
 
 hdfs:
