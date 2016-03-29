@@ -30,15 +30,3 @@
 - name: Waiting for mngr-server to start listening on port 7180
   wait_for: host={{ ansible_nodename }} port=7180
 
-#- name: Waiting for hosts to register with cloudera manager
-#  uri: url=http://{{ ansible_fqdn }}:7180/api/v1/{{ cluster_name }}/hosts/{{ hostvars[item]['ansible_fqdn'] | lower }}
-#       method=GET
-#       force_basic_auth=yes
-#       user=admin
-#       password=admin
-#       status_code=200,201,202,404
-#  with_items: groups['hadoop-cluster']
-#  register: result
-#  until: "result.status != 404"
-#  retries: 200
-#  delay: 5

@@ -22,5 +22,6 @@ hdfs:
   failed_volumes_tolerated: 1
   ha_namenode: true
 
+
 # set to true to show host variables
-debug: false
+debug: true

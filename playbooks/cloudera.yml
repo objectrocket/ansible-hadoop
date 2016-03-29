@@ -17,7 +17,7 @@
   any_errors_fatal: true
   become: yes
   pre_tasks:
-    - name: "Show hadoop-cluster info"
+    - name: "Show cluster info"
       debug: var="{{ hostvars[inventory_hostname] }}"
       when: debug
   roles:
@@ -27,7 +27,7 @@
   hosts: cm-node
   become: yes
   pre_tasks:
-    - name: "Show hadoop-cluster info"
+    - name: "Show cluster info"
       debug: var="{{ hostvars[inventory_hostname] }}"
       when: debug
   roles:
@@ -59,4 +59,7 @@
         hosts: "{{ groups['hadoop-cluster']|join(',') }}"
         state: present
         trial: true
+        hive_metastore_host: "{{ groups['cm-node'][0] }}"
+        reports_manager_host: "{{ groups['cm-node'][0] }}"
+
       register: my_cluster
