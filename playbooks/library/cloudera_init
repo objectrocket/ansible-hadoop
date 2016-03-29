@@ -59,7 +59,7 @@ options:
       - present
       - absent
     default: present
-author: Alexandru Anghel
+author: Alexandru Anghel, David Grier
 '''
 
 EXAMPLES = '''
