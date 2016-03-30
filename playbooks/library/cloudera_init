@@ -153,7 +153,7 @@ def auto_prov_cluster(module, api, name):
 
     changed = False
 
-    parcel_list = []
+    parcels_list = []
     cluster = find_cluster(module, api, name)
 
     if cluster:
@@ -162,7 +162,7 @@ def auto_prov_cluster(module, api, name):
             for p in cluster.get_all_parcels():
     
                 if p.version.startswith(cdh_version_number) and p.product == "CDH":
-	            parcels_list.append(p)
+                    parcels_list.append(p)
 
         except ApiException as e:
             module.fail_json(msg='cant find cluster.\nError is %s' % e)
@@ -176,7 +176,7 @@ def auto_prov_cluster(module, api, name):
 
     for p in parcels_list:
         if p.version > cdh_parcel.version:
-	    cdh_parcel = p
+            cdh_parcel = p
 
     #download parcel
     cmd = cdh_parcel.start_download()
@@ -186,7 +186,7 @@ def auto_prov_cluster(module, api, name):
 
     # make sure the download finishes
     while cdh_parcel.stage != 'DOWNLOADED':
-	sleep(5)
+        sleep(5)
         cdh_parcel = get_parcel(api, cdh_parcel.product, cdh_parcel.version, cluster_name)
 
     # distribute the parcel
@@ -207,7 +207,7 @@ def auto_prov_cluster(module, api, name):
 
     # make sure the activation finishes
     while cdh_parcel.stage != "ACTIVATED":
-	cdh_parcel = get_parcel(api, cdh_parcel.product, cdh_parcel.version, cluster_name)
+        cdh_parcel = get_parcel(api, cdh_parcel.product, cdh_parcel.version, cluster_name)
 
     cmd = cm.inspect_hosts()
     while cmd.success == None:
