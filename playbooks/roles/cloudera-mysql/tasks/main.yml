@@ -3,6 +3,8 @@
   include_vars: "{{ item }}"
   with_first_found:
     - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
         - "{{ ansible_os_family|lower }}.yml"
         - defaults.yml
       paths:
@@ -19,10 +21,10 @@
 - include_vars: mysql_vars.yml
 
 - name: mysql config template
-  template: src=my.cnf dest=/etc/
+  template: src={{ mycnf_template }} dest=/etc/my.cnf
 
 - name: start mysql
-  service: name=mariadb state=started enabled=yes
+  service: name={{ mysql_service }}  state=started enabled=yes
 
 - name: copy db dump to server
   copy: src={{ item }}.sql dest=/tmp
