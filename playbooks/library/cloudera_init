@@ -109,7 +109,7 @@ def init_cluster(module, api, name, fullVersion, hosts, cm_host):
             all_hosts.add(cm_host)
             cluster.add_hosts(all_hosts)
             changed = True
-            time.sleep(5)
+            time.sleep(10)
         except ApiException as e:
             module.fail_json(msg='Failed to build cluster.\nError is %s' % e)
 
