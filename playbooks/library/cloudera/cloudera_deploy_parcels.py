@@ -96,6 +96,25 @@ def find_cluster(module, api, name):
 
     return cluster
 
+def get_parcels(module, LATEST_PARCEL_URL)
+
+    PARCEL_VERSION = CONFIG.get("CDH", "cdh.parcel.version")
+    if PARCEL_VERSION.lower() == "latest":
+        # Get list of parcels from the cloudera repo to see what the latest version is. Then to parse:
+        # find first item that starts with CDH-
+        # strip off leading CDH-
+        # strip off everything after the last - in that item, including the -'
+        PARCEL_PREFIX = 'CDH-'
+        dir_list = urllib2.urlopen(LATEST_PARCEL_URL).read()
+        dir_list = dir_list[dir_list.index(PARCEL_PREFIX) + len(PARCEL_PREFIX):]
+        dir_list = dir_list[:dir_list.index('"')]
+        PARCEL_VERSION = dir_list[:dir_list.rfind('-')]
+    PARCELS = [
+        {'name': "CDH", 'version': PARCEL_VERSION},
+        # { 'name' : "CDH", 'version' : "5.0.1-1.cdh5.0.1.p0.47" },
+        # { 'name' : "ACCUMULO", 'version' : "1.4.3-cdh4.3.0-beta-3"}
+    ]
+    return PARCELS
 
 def deploy_parcels(module, api, name, fullVersion, hosts, cm_host, parcels):
 
@@ -166,8 +185,7 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
         hosts=dict(type='str', default=''),
-        trial=dict(type='bool', default=True),
-        auto_prov=dict(type='bool', default=True),
+        latest_parcel_url=dict(type='str', default='http://archive.cloudera.com/cdh5/parcels/latest/')
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -182,7 +200,7 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     hosts = module.params.get('hosts')
-    trial = module.params.get('trial')
+    latest_parcel_url = module.params.get('latest_parcel_url')
     auto_prov = module.params.get('auto_prov')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
@@ -192,18 +210,19 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
+    get_parcels(module, latest_parcel_url)
+
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
         MANAGER = API.get_cloudera_manager()
-        if trial:
-            MANAGER.begin_trial()
+
     except ApiException as e:
         module.fail_json(msg='Failed to connect to Cloudera Manager.\nError is %s' % e)
 
     if state == "absent":
         delete_cluster(module, API, name)
     else:
-        init_cluster(module, API, name, fullVersion, hosts, cm_host)
+        deploy_parcels(module, API, name, fullVersion, hosts, cm_host, PARCELS)
 
     return cluster
 # import module snippets
