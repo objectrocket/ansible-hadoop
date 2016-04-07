@@ -82,6 +82,8 @@ EXAMPLES = '''
         admin_password: admin
         cm_host: localhost
         hosts: localhost
+        service_host: cm_host
+        service_pass: temp
         state: present
       register: my_cdh
 
@@ -186,6 +188,18 @@ def build_rman_config(module, manager, service_host, service_pass)
 
     return (RMAN_ROLENAME, RMAN_ROLE_CONFIG)
 
+def build_configs(module, manager, service_host, service_pass)
+    build_amon_config(module, manager, service_host, service_pass)
+    build_mgmt_config()
+    build_apub_config()
+    build_eserv_config()
+    build_hmon_config()
+    build_smon_config()
+    build_nav_config(module, manager, service_host, service_pass)
+    build_navms_config()
+    build_rman_config(module, manager, service_host, service_pass)
+
+
 def deploy_management(manager, mgmt_servicename, mgmt_service_conf, mgmt_role_conf, amon_role_name, amon_role_conf, apub_role_name, apub_role_conf, eserv_role_name, eserv_role_conf, hmon_role_name, hmon_role_conf, smon_role_name, smon_role_conf, nav_role_name, nav_role_conf, navms_role_name, navms_role_conf, rman_role_name, rman_role_conf):
    mgmt = manager.create_mgmt_service(ApiServiceSetupInfo())
 
@@ -260,11 +274,13 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
+    build_configs(module, manager, service_host, service_pass)
+
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
         MANAGER = API.get_cloudera_manager()
-        if trial:
-            MANAGER.begin_trial()
+
+
     except ApiException as e:
         module.fail_json(msg='Failed to connect to Cloudera Manager.\nError is %s' % e)
 
