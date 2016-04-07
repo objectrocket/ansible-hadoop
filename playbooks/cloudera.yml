@@ -59,7 +59,11 @@
         hosts: "{{ groups['hadoop-cluster']|join(',') }}"
         state: present
         trial: true
-        hive_metastore_host: "{{ groups['cm-node'][0] }}"
-        reports_manager_host: "{{ groups['cm-node'][0] }}"
 
+        reports_manager_host: "{{ groups['cm-node'][0] }}"
+  tasks:
+   - name: Cloudera Manager setup
+     action: 
+     
+      hive_metastore_host: "{{ groups['cm-node'][0] }}"
       register: my_cluster

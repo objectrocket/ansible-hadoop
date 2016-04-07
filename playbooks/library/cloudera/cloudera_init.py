@@ -146,17 +146,7 @@ def main():
         trial=dict(type='bool', default=True),
         auto_prov=dict(type='bool', default=True),
         wait=dict(type='bool', default=False),
-        wait_timeout=dict(default=30),
-        hive_metastore_host=dict(type='str', default='localhost'),
-        hive_metastore_name=dict(type='str', default='metastore'),
-        hive_metastore_password=dict(type='str', default='temp'),
-        hive_metastore_database_port=dict(type='str', default='3306'),
-        hive_metastore_database_type=dict(type='str', default='mysql'),
-        reports_manager_host=dict(type='str', default='localhost'),
-        reports_manager_name=dict(type='str', default='rman'),
-        reports_manager_username=dict(type='str', default='rman'),
-        reports_manager_password=dict(type='str', default='temp'),
-        reports_manager_database_type=dict(type='str', default='mysql')   
+        wait_timeout=dict(default=30)
     )
 
     module = AnsibleModule(
@@ -173,16 +163,6 @@ def main():
     auto_prov = module.params.get('auto_prov')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
-    hive_metastore_host = module.params.get('hive_metastore_host')
-    hive_metastore_name = module.params.get('hive_metastore_name')
-    hive_metastore_password = module.params.get('hive_metastore_password')
-    hive_metastore_database_port = module.params.get('hive_metastore_database_port')
-    hive_metastore_database_type = module.params.get('hive_metastore_database_type')
-    reports_manager_host = module.params.get('reports_manager_host')
-    reports_manager_name = module.params.get('reports_manager_name')
-    reports_manager_username = module.params.get('reports_manager_username')
-    reports_manager_password = module.params.get('reports_manager_password')
-    reports_manager_database_type = module.params.get('reports_manager_database_type')
 
     if not name:
         module.fail_json(msg='The cluster name is required for this module')
@@ -201,11 +181,8 @@ def main():
         delete_cluster(module, API, name)
     else:
         init_cluster(module, API, name, fullVersion, hosts, cm_host)
-            
-        if auto_prov == True:
-            auto_provision_cluster(module, API, name, fullVersion, hosts, cm_host)
-         
 
+    return cluster
 # import module snippets
 from ansible.module_utils.basic import *
 
