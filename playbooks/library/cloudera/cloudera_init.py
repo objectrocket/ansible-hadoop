@@ -27,9 +27,9 @@ from cm_api.endpoints.services import ApiServiceSetupInfo
 DOCUMENTATION = '''
 ---
 module: cloudera_init
-short_description: create / delete a Cloudera cluster
+short_description: create / delete / start /stop a Cloudera cluster
 description:
-     - creates / deletes a Cloudera cluster using Cloudera Manager.
+     - creates / deletes / starts / stops  a Cloudera cluster using Cloudera Manager.
 version_added: "2.1"
 options:
   name:
@@ -58,6 +58,8 @@ options:
     choices:
       - present
       - absent
+      - started
+      - stopped
     default: present
 author:
   - Alexandru Anghel
@@ -118,6 +120,39 @@ def init_cluster(module, api, name, fullVersion, hosts, cm_host):
     result = dict(changed=changed, cluster=cluster.name)
     module.exit_json(**result)
 
+def start_cluster(module, api, name, fullVersion, hosts, cm_host):
+
+    changed = False
+
+    try:
+        cluster = find_cluster(module, api, name)
+
+    except ApiException as e:
+        module.fail_json(msg='Failed to find cluster.\nError is %s' % e)
+
+    try:
+        cluster.start().wait()
+
+
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
+def stop_cluster(module, api, name, fullVersion, hosts, cm_host):
+
+    changed = False
+
+    try:
+        cluster = find_cluster(module, api, name)
+
+    except ApiException as e:
+        module.fail_json(msg='Failed to find cluster.\nError is %s' % e)
+
+    try:
+        cluster.stop().wait()
+
+
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
 
 def delete_cluster(module, api, name):
 
@@ -142,10 +177,10 @@ def main():
         name=dict(type='str'),
         fullVersion=dict(type='str', default='5.6.0'),
         admin_password=dict(type='str', default='admin'),
-        state=dict(default='present', choices=['present', 'absent']),
+        state=dict(default='present', choices=['present', 'absent', 'started', 'stopped']),
         cm_host=dict(type='str', default='localhost'),
         hosts=dict(type='str', default=''),
-        trial=dict(type='bool', default=True),
+        trial=dict(type='bool', default=False),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -179,8 +214,12 @@ def main():
 
     if state == "absent":
         delete_cluster(module, API, name)
-    else:
+    elif state == "present":
         init_cluster(module, API, name, fullVersion, hosts, cm_host)
+    elif state == "started"
+        start_cluster(module, API, name, fullVersion, hosts, cm_host)
+    else
+        stop_cluster(module, API, name, fullVersion, hosts, cm_host)
 
     return cluster
 # import module snippets
