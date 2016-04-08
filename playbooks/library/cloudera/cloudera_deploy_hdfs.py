@@ -245,12 +245,23 @@ def main():
     if state == "absent":
         delete_cluster(module, API, name)
     else:
+        try:
         hdfs_service = deploy_hdfs(CLUSTER, HDFS_SERVICE_NAME, HDFS_SERVICE_CONFIG, HDFS_NAMENODE_SERVICE_NAME,
                                    HDFS_NAMENODE_HOST, HDFS_NAMENODE_CONFIG, HDFS_SECONDARY_NAMENODE_HOST,
                                    HDFS_SECONDARY_NAMENODE_CONFIG, HDFS_DATANODE_HOSTS, HDFS_DATANODE_CONFIG,
                                    HDFS_GATEWAY_HOSTS, HDFS_GATEWAY_CONFIG)
+        except: ApiException as e:
+            module.fail_json(msg='Failed to deploy hdfs.\nError is %s' % e)
 
     return hdfs_service
+
+    try:
+        init_hdfs(hdfs_service, hdfs_name, timeout)
+
+    except ApiException as e:
+        module.fail_json(msg='Failed to init hdfs.\nError is %s' % e)
+
+
 
 # import module snippets
 from ansible.module_utils.basic import *
