@@ -224,14 +224,14 @@ def main():
         delete_cluster(module, API, name)
     else:
         try:
-            deploy_hbase(CLUSTER, HBASE_SERVICE_NAME, HBASE_SERVICE_CONFIG, HBASE_HM_HOST, HBASE_HM_CONFIG,
+            hbase_service = deploy_hbase(CLUSTER, HBASE_SERVICE_NAME, HBASE_SERVICE_CONFIG, HBASE_HM_HOST, HBASE_HM_CONFIG,
                          HBASE_RS_HOSTS, HBASE_RS_CONFIG, HBASE_THRIFTSERVER_SERVICE_NAME, HBASE_THRIFTSERVER_HOST,
                          HBASE_THRIFTSERVER_CONFIG, HBASE_GW_HOSTS, HBASE_GW_CONFIG)
 
         except: ApiException as e:
             module.fail_json(msg='Failed to deploy hbase.\nError is %s' % e)
 
-
+    return hbase_service
 
 # import module snippets
 from ansible.module_utils.basic import *
