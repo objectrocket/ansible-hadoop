@@ -27,9 +27,9 @@ from cm_api.endpoints.services import ApiServiceSetupInfo
 DOCUMENTATION = '''
 ---
 module: cloudera_deploy_zookeeper
-short_description: create / delete a Cloudera cluster
+short_description: deploy zookeeper / delete a Cloudera cluster
 description:
-     - creates / deletes a Cloudera cluster using Cloudera Manager.
+     - deploys zookeeper / deletes a Cloudera cluster using Cloudera Manager.
 version_added: "2.1"
 options:
   name:
@@ -170,8 +170,7 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
         hosts=dict(type='str', default=''),
-        trial=dict(type='bool', default=True),
-        auto_prov=dict(type='bool', default=True),
+        zookeeper_hosts=dict(type='str', default='localhost')
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )

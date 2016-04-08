@@ -26,10 +26,10 @@ from cm_api.endpoints.services import ApiServiceSetupInfo
 
 DOCUMENTATION = '''
 ---
-module: cloudera_init
-short_description: create / delete a Cloudera cluster
+module: cloudera_deploy_parcels
+short_description: deploy parcels / delete a Cloudera cluster
 description:
-     - creates / deletes a Cloudera cluster using Cloudera Manager.
+     - deploy parcels / deletes a Cloudera cluster using Cloudera Manager.
 version_added: "2.1"
 options:
   name:
@@ -59,25 +59,28 @@ options:
       - present
       - absent
     default: present
-author: Alexandru Anghel, David Grier
+author:
+  - David Grier
+
 '''
 
 EXAMPLES = '''
-- name: Build a Cloudera cluster
+- name: deploy parcels
   gather_facts: False
   hosts: local
   connection: local
   tasks:
     - name: Cloudera cluster create request
       local_action:
-        module: cloudera_init
+        module: cloudera_deploy_parcels
         name: my-test-cluster
         fullVersion: 5.6.0
         admin_password: admin
         cm_host: localhost
         hosts: localhost
+        latest_parcel_url: 'http://archive.cloudera.com/cdh5/parcels/latest/'
         state: present
-      register: my_cdh
+      register: parcels
 
     - debug: var=my_cdh
 '''

@@ -59,7 +59,9 @@ options:
       - present
       - absent
     default: present
-author: Alexandru Anghel, David Grier
+author:
+  - Alexandru Anghel
+  - David Grier
 '''
 
 EXAMPLES = '''
@@ -144,7 +146,6 @@ def main():
         cm_host=dict(type='str', default='localhost'),
         hosts=dict(type='str', default=''),
         trial=dict(type='bool', default=True),
-        auto_prov=dict(type='bool', default=True),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -160,7 +161,6 @@ def main():
     cm_host = module.params.get('cm_host')
     hosts = module.params.get('hosts')
     trial = module.params.get('trial')
-    auto_prov = module.params.get('auto_prov')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
