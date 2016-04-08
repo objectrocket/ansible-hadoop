@@ -253,14 +253,11 @@ def main():
         except: ApiException as e:
             module.fail_json(msg='Failed to deploy hdfs.\nError is %s' % e)
 
-    return hdfs_service
-
     try:
         init_hdfs(hdfs_service, hdfs_name, timeout)
 
     except ApiException as e:
         module.fail_json(msg='Failed to init hdfs.\nError is %s' % e)
-
 
 
 # import module snippets
