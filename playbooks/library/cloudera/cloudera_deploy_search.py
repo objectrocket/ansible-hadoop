@@ -195,7 +195,7 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_hbase_config(cluster_hosts, hdfs_service_name, zookeeper_service_name)
+    build_search_config(cluster_hosts, hdfs_service_name, zookeeper_service_name)
 
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
@@ -206,16 +206,15 @@ def main():
 
     if state == "absent":
         delete_cluster(module, API, name)
+
     else:
         try:
-            hbase_service = deploy_hbase(module, API, name, HBASE_SERVICE_NAME, HBASE_SERVICE_CONFIG, HBASE_HM_HOST, HBASE_HM_CONFIG,
-                         HBASE_RS_HOSTS, HBASE_RS_CONFIG, HBASE_THRIFTSERVER_SERVICE_NAME, HBASE_THRIFTSERVER_HOST,
-                         HBASE_THRIFTSERVER_CONFIG, HBASE_GW_HOSTS, HBASE_GW_CONFIG)
-
+            search_service = deploy_search(module, API, name, SEARCH_SERVICE_NAME, SEARCH_SERVICE_CONFIG, SEARCH_SOLR_HOST,
+                                           SEARCH_SOLR_CONFIG, SEARCH_GW_HOSTS, SEARCH_GW_CONFIG)
         except: ApiException as e:
             module.fail_json(msg='Failed to deploy hbase.\nError is %s' % e)
 
-    return hbase_service
+    return search_service
 
 # import module snippets
 from ansible.module_utils.basic import *
