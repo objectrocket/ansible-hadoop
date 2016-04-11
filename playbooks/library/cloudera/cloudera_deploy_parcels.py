@@ -99,7 +99,7 @@ def find_cluster(module, api, name):
 
     return cluster
 
-def get_parcels(module, LATEST_PARCEL_URL)
+def get_parcels(LATEST_PARCEL_URL)
 
     PARCEL_VERSION = CONFIG.get("CDH", "cdh.parcel.version")
     if PARCEL_VERSION.lower() == "latest":
@@ -119,7 +119,7 @@ def get_parcels(module, LATEST_PARCEL_URL)
     ]
     return PARCELS
 
-def deploy_parcels(module, api, name, fullVersion, hosts, cm_host, parcels):
+def deploy_parcels(module, api, name, hosts, cm_host, parcels):
 
     changed = False
     cluster = find_cluster(module, api, name)
@@ -213,7 +213,7 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    get_parcels(module, latest_parcel_url)
+    get_parcels(latest_parcel_url)
 
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
@@ -225,7 +225,7 @@ def main():
     if state == "absent":
         delete_cluster(module, API, name)
     else:
-        deploy_parcels(module, API, name, fullVersion, hosts, cm_host, PARCELS)
+        deploy_parcels(module, API, name, hosts, cm_host, PARCELS)
 
     return cluster
 # import module snippets

@@ -217,7 +217,7 @@ def main():
         delete_cluster(module, API, name)
     else:
         try:
-            impala_service = deploy_impala(CLUSTER, IMPALA_SERVICE_NAME, IMPALA_SERVICE_CONFIG, IMPALA_SS_HOST,
+            impala_service = deploy_impala(module, API, name, IMPALA_SERVICE_NAME, IMPALA_SERVICE_CONFIG, IMPALA_SS_HOST,
                                            IMPALA_SS_CONFIG, IMPALA_CS_HOST, IMPALA_CS_CONFIG, IMPALA_ID_HOSTS,
                                            IMPALA_ID_CONFIG)
 

@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_mapred_config(module, api, cm_host, CLUSTER_HOSTS)
+def build_mapred_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, HADOOP_DATA_DIR_PREFIX, HDFS_DATANODE_HOSTS)
     ### MapReduce ###
     MAPRED_SERVICE_NAME = "MAPRED"
     MAPRED_SERVICE_CONFIG = {
@@ -138,7 +138,7 @@ def build_mapred_config(module, api, cm_host, CLUSTER_HOSTS)
 
     return (MAPRED_SERVICE_NAME, MAPRED_SERVICE_CONFIG, MAPRED_JT_HOST, MAPRED_JT_CONFIG, MAPRED_TT_HOSTS, MAPRED_TT_CONFIG, MAPRED_GW_HOSTS, MAPRED_GW_CONFIG)
 
-def deploy_mapreduce(module, name, api, mapred_service_name, mapred_service_config, mapred_jt_host, mapred_jt_config, mapred_tt_hosts, mapred_tt_config, mapred_gw_hosts, mapred_gw_config ):
+def deploy_mapreduce(module, api, name, mapred_service_name, mapred_service_config, mapred_jt_host, mapred_jt_config, mapred_tt_hosts, mapred_tt_config, mapred_gw_hosts, mapred_gw_config ):
 
     changed = False
     cluster = find_cluster(module, api, name)
@@ -200,6 +200,9 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
         cluster_hosts=dict(type='str', default='locahost'),
+        hdfs_service_name=dict(type='str', default='HDFS'),
+        hadoop_data_dir_prefix=dict(type='str', default='/grid'),
+        hdfs_datanode_hosts=dict(type='str', default='localhost'),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -214,6 +217,9 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     cluster_hosts = module.params.get('hosts')
+    hdfs_service_name = module.params.get('hdfs_service_name')
+    hadoop_data_dir_prefix = module.params.get('hadoop_data_dir_prefix')
+    hdfs_datanode_hosts = module.params.get('hdfs_datanode_hosts')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
@@ -222,7 +228,7 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_mapred_config(cm_host, cluster_hosts)
+    build_mapred_config(cluster_hosts, hdfs_service_name, hadoop_data_dir_prefix, hdfs_datanode_hosts)
 
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)

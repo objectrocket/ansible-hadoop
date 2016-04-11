@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_hbase_config(module, api, cm_host, CLUSTER_HOSTS)
+def build_hbase_config(HDFS_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME, CLUSTER_HOSTS)
     ### HBase ###
     HBASE_SERVICE_NAME = "HBASE"
     HBASE_SERVICE_CONFIG = {
@@ -121,7 +121,7 @@ def build_hbase_config(module, api, cm_host, CLUSTER_HOSTS)
     return (HBASE_SERVICE_NAME, HBASE_SERVICE_CONFIG, HBASE_HM_HOST, HBASE_HM_CONFIG, HBASE_RS_HOSTS, HBASE_RS_CONFIG, HBASE_THRIFTSERVER_SERVICE_NAME, HBASE_THRIFTSERVER_HOST, HBASE_THRIFTSERVER_CONFIG, HBASE_GW_HOSTS, HBASE_GW_CONFIG)
 
 
-def deploy_hbase(cluster, hbase_service_name, hbase_service_config, hbase_hm_host, hbase_hm_config, hbase_rs_hosts, hbase_rs_config, hbase_thriftserver_service_name, hbase_thriftserver_host, hbase_thriftserver_config, hbase_gw_hosts, hbase_gw_config ):
+def deploy_hbase(module, api, name, hbase_service_name, hbase_service_config, hbase_hm_host, hbase_hm_config, hbase_rs_hosts, hbase_rs_config, hbase_thriftserver_service_name, hbase_thriftserver_host, hbase_thriftserver_config, hbase_gw_hosts, hbase_gw_config ):
 
     changed = False
     cluster = find_cluster(module, api, name)
@@ -189,6 +189,8 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
         cluster_hosts=dict(type='str', default='locahots'),
+        hdfs_service_name=dict(type='str', default=''),
+        zookeeper_service_name=dict(type='str', default=''),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -203,6 +205,8 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     cluster_hosts = module.params.get('hosts')
+    hdfs_service_name = module.params.get('hdfs_service_name')
+    zookeeper_service_name = module.params.get('zookeeper_service_name')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
@@ -224,7 +228,7 @@ def main():
         delete_cluster(module, API, name)
     else:
         try:
-            hbase_service = deploy_hbase(CLUSTER, HBASE_SERVICE_NAME, HBASE_SERVICE_CONFIG, HBASE_HM_HOST, HBASE_HM_CONFIG,
+            hbase_service = deploy_hbase(module, API, name, HBASE_SERVICE_NAME, HBASE_SERVICE_CONFIG, HBASE_HM_HOST, HBASE_HM_CONFIG,
                          HBASE_RS_HOSTS, HBASE_RS_CONFIG, HBASE_THRIFTSERVER_SERVICE_NAME, HBASE_THRIFTSERVER_HOST,
                          HBASE_THRIFTSERVER_CONFIG, HBASE_GW_HOSTS, HBASE_GW_CONFIG)
 

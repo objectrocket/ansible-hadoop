@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_yarn_config(module, api, cm_host, CLUSTER_HOSTS)
+def build_yarn_config(HDFS_SERVICE_NAME, CLUSTER_HOSTS, HADOOP_DATA_DIR_PREFIX)
     ### YARN ###
     YARN_SERVICE_NAME = "YARN"
     YARN_SERVICE_CONFIG = {
@@ -118,7 +118,7 @@ def build_yarn_config(module, api, cm_host, CLUSTER_HOSTS)
 
     return (YARN_SERVICE_NAME, YARN_SERVICE_CONFIG, YARN_RM_HOST, YARN_RM_CONFIG, YARN_JHS_HOST, YARN_JHS_CONFIG, YARN_NM_HOSTS, YARN_NM_CONFIG, YARN_GW_HOSTS, YARN_GW_CONFIG)
 
-def deploy_yarn(cluster, yarn_service_name, yarn_service_config, yarn_rm_host, yarn_rm_config, yarn_jhs_host, yarn_jhs_config, yarn_nm_hosts, yarn_nm_config, yarn_gw_hosts, yarn_gw_config):
+def deploy_yarn(module, api, name, yarn_service_name, yarn_service_config, yarn_rm_host, yarn_rm_config, yarn_jhs_host, yarn_jhs_config, yarn_nm_hosts, yarn_nm_config, yarn_gw_hosts, yarn_gw_config):
 
     changed = False
     cluster = find_cluster(module, api, name)
@@ -187,7 +187,9 @@ def main():
         admin_password=dict(type='str', default='admin'),
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
-        cluster_hosts=dict(type='str', default='locahots'),
+        cluster_hosts=dict(type='str', default='locahost'),
+        hdfs_service_name=dict(type='str', default='HDFS'),
+        hadoop_data_dir_prefix=dict(type='str', default='/grid'),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -202,6 +204,8 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     cluster_hosts = module.params.get('hosts')
+    hdfs_service_name = module.params.get('hdfs_service_name')
+    hadoop_data_dir_prefix = module.params.get('hadoop_data_dir_prefix')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
@@ -210,7 +214,8 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_hdfs_config(cm_host, cluster_hosts)
+    build_yarn_config(hdfs_service_name, cluster_hosts, hadoop_data_dir_prefix)
+
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
         MANAGER = API.get_cloudera_manager()
@@ -222,7 +227,7 @@ def main():
         delete_cluster(module, API, name)
     else:
         try:
-            yarn_service = deploy_yarn(CLUSTER, YARN_SERVICE_NAME, YARN_SERVICE_CONFIG, YARN_RM_HOST, YARN_RM_CONFIG,
+            yarn_service = deploy_yarn(module, API, name, YARN_SERVICE_NAME, YARN_SERVICE_CONFIG, YARN_RM_HOST, YARN_RM_CONFIG,
                                        YARN_JHS_HOST, YARN_JHS_CONFIG, YARN_NM_HOSTS, YARN_NM_CONFIG, YARN_GW_HOSTS,
                                        YARN_GW_CONFIG)
 

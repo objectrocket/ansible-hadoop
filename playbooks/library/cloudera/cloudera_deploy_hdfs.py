@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_hdfs_config(module, api, cm_host, CLUSTER_HOSTS)
+def build_hdfs_config(CM_HOST, CLUSTER_HOSTS, HADOOP_DATA_DIR_PREFIX)
     ### HDFS ###
     HDFS_SERVICE_NAME = "HDFS"
     HDFS_SERVICE_CONFIG = {
@@ -108,7 +108,7 @@ def build_hdfs_config(module, api, cm_host, CLUSTER_HOSTS)
     HDFS_NAMENODE_HOST = CLUSTER_HOSTS[0]
     HDFS_NAMENODE_CONFIG = {
         # 'dfs_name_dir_list': '/data01/hadoop/namenode',
-        'dfs_name_dir_list': HADOOP_DATA_DIR_PREFIX + '/grid/',
+        'dfs_name_dir_list': HADOOP_DATA_DIR_PREFIX + '/namenode',
         'dfs_namenode_handler_count': 30,  # int(ln(len(DATANODES))*20),
     }
     HDFS_SECONDARY_NAMENODE_HOST = CLUSTER_HOSTS[1]
@@ -138,7 +138,7 @@ def build_hdfs_config(module, api, cm_host, CLUSTER_HOSTS)
     return (HDFS_SERVICE_NAME, HDFS_SERVICE_CONFIG, HDFS_NAMENODE_SERVICE_NAME, HDFS_NAMENODE_HOST, HDFS_NAMENODE_CONFIG, HDFS_SECONDARY_NAMENODE_HOST, HDFS_SECONDARY_NAMENODE_CONFIG, HDFS_DATANODE_HOSTS, HDFS_DATANODE_CONFIG, HDFS_GATEWAY_HOSTS, HDFS_GATEWAY_CONFIG)
 
 
-def deploy_hdfs(module, hdfs_service_name, hdfs_config, hdfs_nn_service_name, hdfs_nn_host, hdfs_nn_config,
+def deploy_hdfs(module, api, name, hdfs_service_name, hdfs_config, hdfs_nn_service_name, hdfs_nn_host, hdfs_nn_config,
                 hdfs_snn_host, hdfs_snn_config, hdfs_dn_hosts, hdfs_dn_config, hdfs_gw_hosts, hdfs_gw_config):
     changed = False
     cluster = find_cluster(module, api, name)
@@ -173,6 +173,7 @@ def deploy_hdfs(module, hdfs_service_name, hdfs_config, hdfs_nn_service_name, hd
         gateway += 1
         hdfs_service.create_role("{0}-gw-".format(hdfs_service_name) + str(gateway), "GATEWAY", host)
 
+    return hdfs_service
 
 # Initializes HDFS - format the file system
 def init_hdfs(hdfs_service, hdfs_name, timeout):
@@ -211,7 +212,8 @@ def main():
         admin_password=dict(type='str', default='admin'),
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
-        cluster_hosts=dict(type='str', default='locahots'),
+        cluster_hosts=dict(type='str', default='locahost'),
+        hadoop_data_dir_prefix=dict(type='str', default'/grid'),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -226,6 +228,7 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     cluster_hosts = module.params.get('hosts')
+    hadoop_data_dir_prefix = module.params.get('hadoop_data_dir_prefix')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
@@ -234,7 +237,8 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_hdfs_config(cm_host, cluster_hosts)
+    build_hdfs_config(cm_host, cluster_hosts, hadoop_data_dir_prefix)
+
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
         MANAGER = API.get_cloudera_manager()
@@ -246,7 +250,7 @@ def main():
         delete_cluster(module, API, name)
     else:
         try:
-        hdfs_service = deploy_hdfs(CLUSTER, HDFS_SERVICE_NAME, HDFS_SERVICE_CONFIG, HDFS_NAMENODE_SERVICE_NAME,
+        hdfs_service = deploy_hdfs(module, API, name, HDFS_SERVICE_NAME, HDFS_SERVICE_CONFIG, HDFS_NAMENODE_SERVICE_NAME,
                                    HDFS_NAMENODE_HOST, HDFS_NAMENODE_CONFIG, HDFS_SECONDARY_NAMENODE_HOST,
                                    HDFS_SECONDARY_NAMENODE_CONFIG, HDFS_DATANODE_HOSTS, HDFS_DATANODE_CONFIG,
                                    HDFS_GATEWAY_HOSTS, HDFS_GATEWAY_CONFIG)
@@ -254,7 +258,7 @@ def main():
             module.fail_json(msg='Failed to deploy hdfs.\nError is %s' % e)
 
     try:
-        init_hdfs(hdfs_service, hdfs_name, timeout)
+        init_hdfs(hdfs_service, HDFS_NAMENODE_SERVICE_NAME, timeout)
 
     except ApiException as e:
         module.fail_json(msg='Failed to init hdfs.\nError is %s' % e)

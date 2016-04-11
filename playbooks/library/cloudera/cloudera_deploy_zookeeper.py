@@ -97,7 +97,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_zookeeper_config(module, api, cm_host, zookeeper_hosts)
+def build_zookeeper_config(zookeeper_hosts)
     ### ZooKeeper ###
     # ZK quorum will be the first three hosts
     ZOOKEEPER_HOSTS = list(zookeeper_hosts)
@@ -115,7 +115,7 @@ def build_zookeeper_config(module, api, cm_host, zookeeper_hosts)
 
     return (ZOOKEEPER_HOSTS, ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_SERVICE_CONFIG, ZOOKEEPER_ROLE_CONFIG)
 
-def deploy_zookeeper(module, zk_name, zk_hosts, zk_service_conf, zk_role_conf):
+def deploy_zookeeper(module, api, name, zk_name, zk_hosts, zk_service_conf, zk_role_conf):
 
     changed = False
     cluster = find_cluster(module, api, name)
@@ -138,16 +138,18 @@ def deploy_zookeeper(module, zk_name, zk_hosts, zk_service_conf, zk_role_conf):
             module.fail_json(msg='Failed to build cluster.\nError is %s' % e)
 
 
-    result = dict(changed=changed, cluster=cluster.name)
-    module.exit_json(**result)
+         return zk
 
-    return zk
+result = dict(changed=changed, cluster=cluster.name)
+module.exit_json(**result)
+
 
 
 def delete_cluster(module, api, name):
 
     changed = False
     cluster = find_cluster(module, api, name)
+
     if cluster:
         try:
             api.delete_cluster(name)
@@ -205,7 +207,7 @@ def main():
     if state == "absent":
         delete_cluster(module, API, name)
     else:
-        zookeeper_service = deploy_zookeeper(CLUSTER, ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_HOSTS, ZOOKEEPER_SERVICE_CONFIG,
+        zookeeper_service = deploy_zookeeper(module, API, name, ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_HOSTS, ZOOKEEPER_SERVICE_CONFIG,
                                              ZOOKEEPER_ROLE_CONFIG)
 
     return zookeeper_service

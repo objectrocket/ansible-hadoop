@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_hive_config(module, api, CM_HOST, HIVE_METASTORE_PASSWORD, CLUSTER_HOSTS)
+def build_hive_config(CM_HOST, HIVE_METASTORE_PASSWORD, MAPRED_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME, YARN_SERVICE_NAME)
     HIVE_SERVICE_NAME = "HIVE"
     HIVE_SERVICE_CONFIG = {
         'hive_metastore_database_host': CM_HOST,
@@ -192,7 +192,11 @@ def main():
         admin_password=dict(type='str', default='admin'),
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
-        cluster_hosts=dict(type='str', default='locahots'),
+        cluster_hosts=dict(type='str', default='locahost'),
+        hive_metastore_password=dict(type='str', default='temp'),
+        mapred_service_name=dict(type='str', default='MAPRED'),
+        zookeeper_service_name=dict(type='str', default='ZOOKEEPER'),
+        yarn_service_name=dict(type='str', default='YARN')
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -207,6 +211,10 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     cluster_hosts = module.params.get('hosts')
+    hive_metastore_password = module.params.get('hive_metastore_password')
+    mapred_service_name = module.params.get('mapred_service_name')
+    zookeeper_service_name = module.params.get('zookeeper_service_name')
+    yarn_service_name = module.params.get('yarn_service_name')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
@@ -215,7 +223,7 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_hive_config(module, api, CM_HOST, HIVE_METASTORE_PASSWORD, CLUSTER_HOSTS)
+    build_hive_config(cm_host, hive_metastore_password, mapred_service_name, zookeeper_service_name, yarn_service_name)
 
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
@@ -229,7 +237,7 @@ def main():
     else:
         try:
 
-            hive_service = deploy_hive(CLUSTER, HIVE_SERVICE_NAME, HIVE_SERVICE_CONFIG, HIVE_HMS_HOST, HIVE_HMS_CONFIG,
+            hive_service = deploy_hive(module, API, name, HIVE_SERVICE_NAME, HIVE_SERVICE_CONFIG, HIVE_HMS_HOST, HIVE_HMS_CONFIG,
                                        HIVE_HS2_HOST, HIVE_HS2_CONFIG, HIVE_WHC_HOST, HIVE_WHC_CONFIG, HIVE_GW_HOSTS,
                                        HIVE_GW_CONFIG)
 

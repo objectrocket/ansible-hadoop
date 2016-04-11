@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_spark_config(module, api, cm_host, CLUSTER_HOSTS)
+def build_spark_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, DATA_NODES)
     SPARK_SERVICE_NAME = "SPARK"
     SPARK_SERVICE_CONFIG = {
         'hdfs_service': HDFS_SERVICE_NAME,
@@ -105,7 +105,7 @@ def build_spark_config(module, api, cm_host, CLUSTER_HOSTS)
     SPARK_MASTER_CONFIG = {
         #   'master_max_heapsize': 67108864,
     }
-    SPARK_WORKER_HOSTS = list(CLUSTER_HOSTS)
+    SPARK_WORKER_HOSTS = list(DATA_NODES)
     SPARK_WORKER_CONFIG = {
         #   'executor_total_max_heapsize': 67108864,
         #   'worker_max_heapsize': 67108864,
@@ -116,7 +116,7 @@ def build_spark_config(module, api, cm_host, CLUSTER_HOSTS)
     return (SPARK_SERVICE_NAME, SPARK_SERVICE_CONFIG, SPARK_MASTER_HOST, SPARK_MASTER_CONFIG, SPARK_WORKER_HOSTS, SPARK_WORKER_CONFIG, SPARK_GW_HOSTS, SPARK_GW_CONFIG)
 
 
-  def deploy_spark(cluster, spark_service_name, spark_service_config, spark_master_host, spark_master_config,
+  def deploy_spark(module, api, name, spark_service_name, spark_service_config, spark_master_host, spark_master_config,
                    spark_worker_hosts, spark_worker_config, spark_gw_hosts, spark_gw_config):
 
     changed = False
@@ -179,7 +179,9 @@ def main():
         admin_password=dict(type='str', default='admin'),
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
-        cluster_hosts=dict(type='str', default='locahots'),
+        cluster_hosts=dict(type='str', default='locahost'),
+        hdfs_service_name=dict(type='str', default='HDFS'),
+        data_nodes=dict(type='str', default='localhost'),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -194,6 +196,8 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     cluster_hosts = module.params.get('hosts')
+    hdfs_service_name = module.params.get('hdfs_service_name')
+    data_nodes = module.params.get('data_nodes')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
@@ -209,13 +213,14 @@ def main():
     except ApiException as e:
         module.fail_json(msg='Failed to connect to Cloudera Manager.\nError is %s' % e)
 
+
+    build_spark_config(cluster_hosts, hdfs_service_name, data_nodes)
+
     if state == "absent":
         delete_cluster(module, API, name)
     else:
         try:
-            build_spark_config(cm_host, cluster_hosts)
-
-            spark_service = deploy_spark(CLUSTER, SPARK_SERVICE_NAME, SPARK_SERVICE_CONFIG, SPARK_MASTER_HOST,
+            spark_service = deploy_spark(module, API, name, SPARK_SERVICE_NAME, SPARK_SERVICE_CONFIG, SPARK_MASTER_HOST,
                                          SPARK_MASTER_CONFIG, SPARK_WORKER_HOSTS, SPARK_WORKER_CONFIG, SPARK_GW_HOSTS,
                                          SPARK_GW_CONFIG)
 

@@ -104,7 +104,7 @@ def find_cluster(module, api, name):
 
     return cluster
 
-def build_amon_config(module, manager, service_host, service_pass)
+def build_amon_config(service_host, service_pass)
     # The values change every time the cloudera-scm-server-db process is restarted.
     # TBD will CM have to be reconfigured each time?
     AMON_ROLENAME = "ACTIVITYMONITOR"
@@ -155,7 +155,7 @@ def build_smon_config()
 
     return (SMON_ROLENAME, SMON_ROLE_CONFIG)
 
-def build_nav_config(module, manager, service_host, service_pass)
+def build_nav_config(service_host, service_pass)
     NAV_ROLENAME = "NAVIGATOR"
     NAV_ROLE_CONFIG = {
         'navigator_database_host': service_host + ":3306",
@@ -175,7 +175,7 @@ def build_navms_config()
 
     return (NAVMS_ROLENAME, NAVMS_ROLE_CONFIG)
 
-def build_rman_config(module, manager, service_host, service_pass)
+def build_rman_config(service_host, service_pass)
     RMAN_ROLENAME = "REPORTMANAGER"
     RMAN_ROLE_CONFIG = {
         'headlamp_database_host': service_host + ":3306",
@@ -188,16 +188,16 @@ def build_rman_config(module, manager, service_host, service_pass)
 
     return (RMAN_ROLENAME, RMAN_ROLE_CONFIG)
 
-def build_configs(module, manager, service_host, service_pass)
-    build_amon_config(module, manager, service_host, service_pass)
+def build_configs(service_host, service_pass)
+    build_amon_config(service_host, service_pass)
     build_mgmt_config()
     build_apub_config()
     build_eserv_config()
     build_hmon_config()
     build_smon_config()
-    build_nav_config(module, manager, service_host, service_pass)
+    build_nav_config(service_host, service_pass)
     build_navms_config()
-    build_rman_config(module, manager, service_host, service_pass)
+    build_rman_config(service_host, service_pass)
 
 
 def deploy_management(manager, mgmt_servicename, mgmt_service_conf, mgmt_role_conf, amon_role_name, amon_role_conf, apub_role_name, apub_role_conf, eserv_role_name, eserv_role_conf, hmon_role_name, hmon_role_conf, smon_role_name, smon_role_conf, nav_role_name, nav_role_conf, navms_role_name, navms_role_conf, rman_role_name, rman_role_conf):
@@ -247,8 +247,8 @@ def main():
         hosts=dict(type='str', default=''),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30),
-        db_service_host=dict(type='str', default='localhost'),
-        db_service_password=dict(type='str', default='temp')
+        service_host=dict(type='str', default='localhost'),
+        service_password=dict(type='str', default='temp')
         )
 
     module = AnsibleModule(
@@ -263,18 +263,15 @@ def main():
     hosts = module.params.get('hosts')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
-    reports_manager_host = module.params.get('reports_manager_host')
-    reports_manager_name = module.params.get('reports_manager_name')
-    reports_manager_username = module.params.get('reports_manager_username')
-    reports_manager_password = module.params.get('reports_manager_password')
-    reports_manager_database_type = module.params.get('reports_manager_database_type')
+    service_host = module.params.get('service_host')
+    service_pass = module.params.get('service_pass')
 
     if not name:
         module.fail_json(msg='The cluster name is required for this module')
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_configs(module, manager, service_host, service_pass)
+    build_configs(service_host, service_pass)
 
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
