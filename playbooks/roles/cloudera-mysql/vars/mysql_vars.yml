@@ -1,11 +1,11 @@
 mysql_root_pass: 'temp' 
-amon_pass: 'temp' 
-rman_pass: 'temp' 
-sentry_pass: 'temp' 
-nav_pass: 'temp' 
-navms_pass: 'temp' 
-hive_pass: 'temp' 
-scm_pass: 'temp' 
+amon_pass: services_pass
+rman_pass: services_pass
+sentry_pass: services_pass
+nav_pass: services_pass
+navms_pass: services_pass
+hive_pass: services_pass
+scm_pass: services_pass
 db_names:
   - amon
   - metastore
