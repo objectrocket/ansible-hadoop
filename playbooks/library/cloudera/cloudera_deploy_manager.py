@@ -74,9 +74,9 @@ EXAMPLES = '''
   hosts: local
   connection: local
   tasks:
-    - name: Cloudera cluster create request
+    - name: Cloudera setup manager
       local_action:
-        module: cloudera_init
+        module: cloudera_deploy_manager
         name: my-test-cluster
         fullVersion: 5.6.0
         admin_password: admin
@@ -85,9 +85,9 @@ EXAMPLES = '''
         service_host: cm_host
         service_pass: temp
         state: present
-      register: my_cdh
+      register: my_mngr
 
-    - debug: var=my_cdh
+    - debug: var=my_mngr
 '''
 
 
@@ -104,7 +104,7 @@ def find_cluster(module, api, name):
 
     return cluster
 
-def build_amon_config(service_host, service_pass)
+def build_amon_config(service_host, service_pass):
     # The values change every time the cloudera-scm-server-db process is restarted.
     # TBD will CM have to be reconfigured each time?
     AMON_ROLENAME = "ACTIVITYMONITOR"
@@ -119,7 +119,7 @@ def build_amon_config(service_host, service_pass)
     return (AMON_ROLENAME, AMON_ROLE_CONFIG)
 
 
-def build_mgmt_config()
+def build_mgmt_config():
     MGMT_SERVICENAME = "MGMT"
     MGMT_SERVICE_CONFIG = {
         'zookeeper_datadir_autocreate': 'true',
@@ -129,33 +129,33 @@ def build_mgmt_config()
     }
     return (MGMT_SERVICENAME, MGMT_SERVICE_CONFIG, MGMT_ROLE_CONFIG)
 
-def build_apub_config()
+def build_apub_config():
     APUB_ROLENAME = "ALERTPUBLISHER"
     APUB_ROLE_CONFIG = {}
 
     return (APUB_ROLENAME, APUB_ROLE_CONFIG)
 
-def build_eserv_config()
+def build_eserv_config():
     ESERV_ROLENAME = "EVENTSERVER"
     ESERV_ROLE_CONFIG = {
         'event_server_heapsize': '215964392'
     }
     return (ESERV_ROLENAME, ESERV_ROLE_CONFIG)
 
-def build_hmon_config()
+def build_hmon_config():
     HMON_ROLENAME = "HOSTMONITOR"
     HMON_ROLE_CONFIG = {}
 
     return (HMON_ROLENAME, HMON_ROLE_CONFIG)
 
 
-def build_smon_config()
+def build_smon_config():
     SMON_ROLENAME = "SERVICEMONITOR"
     SMON_ROLE_CONFIG = {}
 
     return (SMON_ROLENAME, SMON_ROLE_CONFIG)
 
-def build_nav_config(service_host, service_pass)
+def build_nav_config(service_host, service_pass):
     NAV_ROLENAME = "NAVIGATOR"
     NAV_ROLE_CONFIG = {
         'navigator_database_host': service_host + ":3306",
@@ -168,14 +168,14 @@ def build_nav_config(service_host, service_pass)
     return (NAV_ROLENAME, NAV_ROLE_CONFIG)
 
 
-def build_navms_config()
+def build_navms_config():
     NAVMS_ROLENAME = "NAVIGATORMETADATASERVER"
     NAVMS_ROLE_CONFIG = {
     }
 
     return (NAVMS_ROLENAME, NAVMS_ROLE_CONFIG)
 
-def build_rman_config(service_host, service_pass)
+def build_rman_config(service_host, service_pass):
     RMAN_ROLENAME = "REPORTMANAGER"
     RMAN_ROLE_CONFIG = {
         'headlamp_database_host': service_host + ":3306",
@@ -188,7 +188,7 @@ def build_rman_config(service_host, service_pass)
 
     return (RMAN_ROLENAME, RMAN_ROLE_CONFIG)
 
-def build_configs(service_host, service_pass)
+def build_configs(service_host, service_pass):
     build_amon_config(service_host, service_pass)
     build_mgmt_config()
     build_apub_config()
@@ -260,11 +260,11 @@ def main():
     admin_password = module.params.get('admin_password')
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
+    service_host = module.params.get('service_host')
+    service_pass = module.params.get('service_pass')
     hosts = module.params.get('hosts')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
-    service_host = module.params.get('service_host')
-    service_pass = module.params.get('service_pass')
 
     if not name:
         module.fail_json(msg='The cluster name is required for this module')
@@ -282,14 +282,15 @@ def main():
         module.fail_json(msg='Failed to connect to Cloudera Manager.\nError is %s' % e)
 
     if state == "present":
-        deploy_management(module, API, name, MANAGER, MGMT_SERVICENAME, MGMT_SERVICE_CONFIG, MGMT_ROLE_CONFIG, AMON_ROLENAME,
+        try:
+            deploy_management(module, API, name, MANAGER, MGMT_SERVICENAME, MGMT_SERVICE_CONFIG, MGMT_ROLE_CONFIG, AMON_ROLENAME,
                           AMON_ROLE_CONFIG, APUB_ROLENAME, APUB_ROLE_CONFIG, ESERV_ROLENAME, ESERV_ROLE_CONFIG,
                           HMON_ROLENAME, HMON_ROLE_CONFIG, SMON_ROLENAME, SMON_ROLE_CONFIG, NAV_ROLENAME,
                           NAV_ROLE_CONFIG, NAVMS_ROLENAME, NAVMS_ROLE_CONFIG, RMAN_ROLENAME, RMAN_ROLE_CONFIG)
-        print "Deployed CM management service " + MGMT_SERVICENAME + " to run on " + CM_HOST
 
-    else:
-        delete_cluster(module, API, name, fullVersion, hosts, cm_host)
+        except ApiException as e:
+            module.fail_json(msg='Failed to deploy manager.\nError is %s' % e)
+
 
 # import module snippets
 from ansible.module_utils.basic import *
