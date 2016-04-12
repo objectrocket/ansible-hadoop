@@ -99,7 +99,7 @@ def find_cluster(module, api, name):
 
     return cluster
 
-def get_parcels(LATEST_PARCEL_URL)
+def get_parcels(LATEST_PARCEL_URL):
 
     PARCEL_VERSION = CONFIG.get("CDH", "cdh.parcel.version")
     if PARCEL_VERSION.lower() == "latest":
@@ -161,6 +161,7 @@ def deploy_parcels(module, api, name, hosts, cm_host, parcels):
     result = dict(changed=changed, cluster=cluster.name)
     module.exit_json(**result)
 
+    return parcels
 
 def delete_cluster(module, api, name):
 
