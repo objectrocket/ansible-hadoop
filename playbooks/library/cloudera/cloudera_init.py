@@ -126,12 +126,14 @@ def start_cluster(module, api, name, fullVersion, hosts, cm_host):
 
     try:
         cluster = find_cluster(module, api, name)
-
     except ApiException as e:
         module.fail_json(msg='Failed to find cluster.\nError is %s' % e)
 
     try:
         cluster.start().wait()
+
+    except ApiException as e:
+        module.fail_json(msg='Failed to find cluster.\nError is %s' % e)
 
 
     result = dict(changed=changed, cluster=cluster.name)
@@ -150,6 +152,8 @@ def stop_cluster(module, api, name, fullVersion, hosts, cm_host):
     try:
         cluster.stop().wait()
 
+    except ApiException as e:
+        module.fail_json(msg='Failed to stop cluster.\nError is %s' % e)
 
     result = dict(changed=changed, cluster=cluster.name)
     module.exit_json(**result)
@@ -258,7 +262,7 @@ def main():
         start_cluster(module, API, name, fullVersion, hosts, cm_host)
     elif state == "finalize":
         finalize_startup(module, API, name, hdfs_service, oozie_service)
-    else
+    else:
         stop_cluster(module, API, name, fullVersion, hosts, cm_host)
 
     return cluster
