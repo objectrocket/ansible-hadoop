@@ -59,11 +59,20 @@
         hosts: "{{ groups['hadoop-cluster']|join(',') }}"
         state: present
         trial: true
+      register: my_cdh      
 
-        reports_manager_host: "{{ groups['cm-node'][0] }}"
-  tasks:
-   - name: Cloudera Manager setup
-     action: 
-     
-      hive_metastore_host: "{{ groups['cm-node'][0] }}"
-      register: my_cluster
+    - name: Cloudera setup manager
+      local_action:
+        module: cloudera_deploy_manager
+        name: "{{ cluster_name }}"
+        fullVersion: 5.6.0
+        admin_password: admin
+        cm_host: "{{ groups['cm-node'][0] }}"
+        hosts: "{{ groups['hadoop-cluster']|join(',') }}"
+        service_host: "{{ groups['cm-node'][0] }}"
+        service_pass: temp
+        state: present
+      register: my_mngr
+
+    - debug: var=my_mngr
+
