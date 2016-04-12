@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_hdfs_config(CM_HOST, CLUSTER_HOSTS, HADOOP_DATA_DIR_PREFIX)
+def build_hdfs_config(CM_HOST, CLUSTER_HOSTS, HADOOP_DATA_DIR_PREFIX):
     ### HDFS ###
     HDFS_SERVICE_NAME = "HDFS"
     HDFS_SERVICE_CONFIG = {
@@ -173,6 +173,9 @@ def deploy_hdfs(module, api, name, hdfs_service_name, hdfs_config, hdfs_nn_servi
         gateway += 1
         hdfs_service.create_role("{0}-gw-".format(hdfs_service_name) + str(gateway), "GATEWAY", host)
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
     return hdfs_service
 
 # Initializes HDFS - format the file system
@@ -181,10 +184,8 @@ def init_hdfs(hdfs_service, hdfs_name, timeout):
     if not cmd.wait(timeout).success:
         print "WARNING: Failed to format HDFS, attempting to continue with the setup"
 
-
-result = dict(changed=changed, cluster=cluster.name)
-module.exit_json(**result)
-
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
 
 
 def delete_cluster(module, api, name):
@@ -257,11 +258,11 @@ def main():
         except: ApiException as e:
             module.fail_json(msg='Failed to deploy hdfs.\nError is %s' % e)
 
-    try:
-        init_hdfs(hdfs_service, HDFS_NAMENODE_SERVICE_NAME, timeout)
+        try:
+            init_hdfs(hdfs_service, HDFS_NAMENODE_SERVICE_NAME, timeout)
 
-    except ApiException as e:
-        module.fail_json(msg='Failed to init hdfs.\nError is %s' % e)
+        except ApiException as e:
+            module.fail_json(msg='Failed to init hdfs.\nError is %s' % e)
 
 
 # import module snippets

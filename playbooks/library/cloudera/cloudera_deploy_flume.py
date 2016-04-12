@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_flume_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, HBASE_SERVICE_NAME, SEARCH_SERVICE_NAME)
+def build_flume_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, HBASE_SERVICE_NAME, SEARCH_SERVICE_NAME):
     ### Flume ###
     FLUME_SERVICE_NAME = "FLUME"
     FLUME_SERVICE_CONFIG = {
@@ -203,7 +203,7 @@ def main():
             flume_service = deploy_flume(CLUSTER, FLUME_SERVICE_NAME, FLUME_SERVICE_CONFIG, FLUME_AGENT_HOSTS,
                                          FLUME_AGENT_CONFIG)
         except: ApiException as e:
-            module.fail_json(msg='Failed to deploy hbase.\nError is %s' % e)
+            module.fail_json(msg='Failed to deploy flume.\nError is %s' % e)
 
     return flume_service
 

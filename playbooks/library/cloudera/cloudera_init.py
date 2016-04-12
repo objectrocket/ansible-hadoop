@@ -154,6 +154,44 @@ def stop_cluster(module, api, name, fullVersion, hosts, cm_host):
     result = dict(changed=changed, cluster=cluster.name)
     module.exit_json(**result)
 
+def finalize_startup(module, api, name, hdfs_service, oozie_service):
+
+    changed = False
+    cluster = find_cluster(module, api, name)
+
+    # Create HDFS temp dir
+    hdfs_service.create_hdfs_tmp()
+
+    # Create hive warehouse dir
+    shell_command = [
+        'curl -i -H "Content-Type: application/json" -X POST -u "' + ADMIN_USER + ':' + ADMIN_PASS + '" -d "serviceName=' + HIVE_SERVICE_NAME + ';clusterName=' + CLUSTER_NAME + '" http://' + CM_HOST + ':7180/api/v5/clusters/' + CLUSTER_NAME + '/services/' + HIVE_SERVICE_NAME + '/commands/hiveCreateHiveWarehouse']
+    create_hive_warehouse_output = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT,
+                                         close_fds=True).stdout.read()
+
+    # Create oozie database
+    oozie_service.stop().wait()
+    shell_command = [
+        'curl -i -H "Content-Type: application/json" -X POST -u "' + ADMIN_USER + ':' + ADMIN_PASS + '" -d "serviceName=' + OOZIE_SERVICE_NAME + ';clusterName=' + CLUSTER_NAME + '" http://' + CM_HOST + ':7180/api/v5/clusters/' + CLUSTER_NAME + '/services/' + OOZIE_SERVICE_NAME + '/commands/createOozieDb']
+    create_oozie_db_output = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT,
+                                   close_fds=True).stdout.read()
+    # give the create db command time to complete
+    time.sleep(30)
+    oozie_service.start().wait()
+
+    # Deploy client configs to all necessary hosts
+    cmd = cluster.deploy_client_config()
+    if not cmd.wait(CMD_TIMEOUT).success:
+        print "Failed to deploy client configs for {0}".format(cluster.name)
+
+    # Noe change permissions on the /user dir so YARN will work
+    shell_command = ['sudo -u hdfs hadoop fs -chmod 775 /user']
+    user_chmod_output = Popen(shell_command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT,
+                              close_fds=True).stdout.read()
+
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
+
 def delete_cluster(module, api, name):
 
     changed = False
@@ -177,7 +215,7 @@ def main():
         name=dict(type='str'),
         fullVersion=dict(type='str', default='5.6.0'),
         admin_password=dict(type='str', default='admin'),
-        state=dict(default='present', choices=['present', 'absent', 'started', 'stopped']),
+        state=dict(default='present', choices=['present', 'absent', 'started', 'stopped', 'finalize']),
         cm_host=dict(type='str', default='localhost'),
         hosts=dict(type='str', default=''),
         trial=dict(type='bool', default=False),
@@ -216,8 +254,10 @@ def main():
         delete_cluster(module, API, name)
     elif state == "present":
         init_cluster(module, API, name, fullVersion, hosts, cm_host)
-    elif state == "started"
+    elif state == "started":
         start_cluster(module, API, name, fullVersion, hosts, cm_host)
+    elif state == "finalize":
+        finalize_startup(module, API, name, hdfs_service, oozie_service)
     else
         stop_cluster(module, API, name, fullVersion, hosts, cm_host)
 

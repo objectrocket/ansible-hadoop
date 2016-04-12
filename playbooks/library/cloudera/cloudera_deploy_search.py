@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_search_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME)
+def build_search_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME):
     SEARCH_SERVICE_NAME = "SEARCH"
     SEARCH_SERVICE_CONFIG = {
         'hdfs_service': HDFS_SERVICE_NAME,
@@ -110,10 +110,11 @@ def build_search_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME
     return (SEARCH_SERVICE_NAME, SEARCH_SERVICE_CONFIG, SEARCH_SOLR_HOST, SEARCH_SOLR_CONFIG, SEARCH_GW_HOSTS, SEARCH_GW_CONFIG)
 
 
-def deploy_search(module, api, search_service_name, search_service_config, search_solr_host, search_solr_config,
+def deploy_search(module, api, name, search_service_name, search_service_config, search_solr_host, search_solr_config,
                 search_gw_hosts, search_gw_config):
 
   changed = False
+  cluster = find_cluster(module, api, name)
 
   search_service = cluster.create_service(search_service_name, "SOLR")
   search_service.update_config(search_service_config)
@@ -212,7 +213,7 @@ def main():
             search_service = deploy_search(module, API, name, SEARCH_SERVICE_NAME, SEARCH_SERVICE_CONFIG, SEARCH_SOLR_HOST,
                                            SEARCH_SOLR_CONFIG, SEARCH_GW_HOSTS, SEARCH_GW_CONFIG)
         except: ApiException as e:
-            module.fail_json(msg='Failed to deploy hbase.\nError is %s' % e)
+            module.fail_json(msg='Failed to deploy search.\nError is %s' % e)
 
     return search_service
 

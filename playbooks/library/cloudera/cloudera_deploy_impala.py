@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_impala_config(HDFS_SERVICE_NAME, HBASE_SERVICE_NAME, HIVE_SERVICE_NAME, CLUSTER_HOSTS)
+def build_impala_config(HDFS_SERVICE_NAME, HBASE_SERVICE_NAME, HIVE_SERVICE_NAME, CLUSTER_HOSTS):
     IMPALA_SERVICE_NAME = "IMPALA"
     IMPALA_SERVICE_CONFIG = {
         'hdfs_service': HDFS_SERVICE_NAME,
@@ -118,6 +118,7 @@ def build_impala_config(HDFS_SERVICE_NAME, HBASE_SERVICE_NAME, HIVE_SERVICE_NAME
 
     changed = False
     cluster = find_cluster(module, api, name)
+
     impala_service = cluster.create_service(impala_service_name, "IMPALA")
     impala_service.update_config(impala_service_config)
 
@@ -142,12 +143,10 @@ def build_impala_config(HDFS_SERVICE_NAME, HBASE_SERVICE_NAME, HIVE_SERVICE_NAME
     # impala_service.create_impala_catalog_database_tables()
     # impala_service.create_impala_user_dir()
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
     return impala_service
-
-
-result = dict(changed=changed, cluster=cluster.name)
-module.exit_json(**result)
-
 
 
 def delete_cluster(module, api, name):

@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_yarn_config(HDFS_SERVICE_NAME, CLUSTER_HOSTS, HADOOP_DATA_DIR_PREFIX)
+def build_yarn_config(HDFS_SERVICE_NAME, CLUSTER_HOSTS, HADOOP_DATA_DIR_PREFIX):
     ### YARN ###
     YARN_SERVICE_NAME = "YARN"
     YARN_SERVICE_CONFIG = {
@@ -154,12 +154,10 @@ def deploy_yarn(module, api, name, yarn_service_name, yarn_service_config, yarn_
     # yarn_service.create_yarn_job_history_dir()
     # yarn_service.create_yarn_node_manager_remote_app_log_dir()
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
     return yarn_service
-
-
-result = dict(changed=changed, cluster=cluster.name)
-module.exit_json(**result)
-
 
 
 def delete_cluster(module, api, name):

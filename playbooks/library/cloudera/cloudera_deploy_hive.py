@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_hive_config(CM_HOST, HIVE_METASTORE_PASSWORD, MAPRED_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME, YARN_SERVICE_NAME)
+def build_hive_config(CM_HOST, HIVE_METASTORE_PASSWORD, MAPRED_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME, YARN_SERVICE_NAME):
     HIVE_SERVICE_NAME = "HIVE"
     HIVE_SERVICE_CONFIG = {
         'hive_metastore_database_host': CM_HOST,
@@ -151,20 +151,23 @@ def build_hive_config(CM_HOST, HIVE_METASTORE_PASSWORD, MAPRED_SERVICE_NAME, ZOO
         gateway += 1
         hive_service.create_role("{0}-gw-".format(hive_service_name) + str(gateway), "GATEWAY", host)
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
     return hive_service
 
 
-  result = dict(changed=changed, cluster=cluster.name)
-  module.exit_json(**result)
 
 def init_hive(hive_service):
-   hive_service.create_hive_metastore_database()
-   hive_service.create_hive_metastore_tables()
-   hive_service.create_hive_warehouse()
+    hive_service.create_hive_metastore_database()
+    hive_service.create_hive_metastore_tables()
+    hive_service.create_hive_warehouse()
 
-   #don't think that the create_hive_userdir call is needed as the create_hive_warehouse already creates it
-   #hive_service.create_hive_userdir()
+    #don't think that the create_hive_userdir call is needed as the create_hive_warehouse already creates it
+    #hive_service.create_hive_userdir()
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
 
 
 def delete_cluster(module, api, name):
@@ -236,7 +239,6 @@ def main():
         delete_cluster(module, API, name)
     else:
         try:
-
             hive_service = deploy_hive(module, API, name, HIVE_SERVICE_NAME, HIVE_SERVICE_CONFIG, HIVE_HMS_HOST, HIVE_HMS_CONFIG,
                                        HIVE_HS2_HOST, HIVE_HS2_CONFIG, HIVE_WHC_HOST, HIVE_WHC_CONFIG, HIVE_GW_HOSTS,
                                        HIVE_GW_CONFIG)
@@ -244,12 +246,11 @@ def main():
         except: ApiException as e:
             module.fail_json(msg='Failed to deploy hive.\nError is %s' % e)
 
-    try:
-        init_hive(hive_service)
+        try:
+            init_hive(hive_service)
 
-    except ApiException as e:
-        module.fail_json(msg='Failed to init hive.\nError is %s' % e)
-
+        except ApiException as e:
+            module.fail_json(msg='Failed to init hive.\nError is %s' % e)
 
 # import module snippets
 from ansible.module_utils.basic import *

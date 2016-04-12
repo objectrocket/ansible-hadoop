@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_mapred_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, HADOOP_DATA_DIR_PREFIX, HDFS_DATANODE_HOSTS)
+def build_mapred_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, HADOOP_DATA_DIR_PREFIX, HDFS_DATANODE_HOSTS):
     ### MapReduce ###
     MAPRED_SERVICE_NAME = "MAPRED"
     MAPRED_SERVICE_CONFIG = {
@@ -166,12 +166,10 @@ def deploy_mapreduce(module, api, name, mapred_service_name, mapred_service_conf
         gateway += 1
         mapred_service.create_role("{0}-gw-".format(mapred_service_name) + str(gateway), "GATEWAY", host)
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
     return mapred_service
-
-
-result = dict(changed=changed, cluster=cluster.name)
-module.exit_json(**result)
-
 
 
 def delete_cluster(module, api, name):

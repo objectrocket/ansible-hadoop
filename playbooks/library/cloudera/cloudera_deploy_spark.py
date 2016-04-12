@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_spark_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, DATA_NODES)
+def build_spark_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, DATA_NODES):
     SPARK_SERVICE_NAME = "SPARK"
     SPARK_SERVICE_CONFIG = {
         'hdfs_service': HDFS_SERVICE_NAME,
@@ -121,6 +121,7 @@ def build_spark_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, DATA_NODES)
 
     changed = False
     cluster = find_cluster(module, api, name)
+
     spark_service = cluster.create_service(spark_service_name, "SPARK")
     spark_service.update_config(spark_service_config)
 
@@ -146,12 +147,10 @@ def build_spark_config(CLUSTER_HOSTS, HDFS_SERVICE_NAME, DATA_NODES)
 
     # TODO - CreateSparkUserDirCommand, SparkUploadJarServiceCommand???
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
     return spark_service
-
-
-result = dict(changed=changed, cluster=cluster.name)
-module.exit_json(**result)
-
 
 
 def delete_cluster(module, api, name):

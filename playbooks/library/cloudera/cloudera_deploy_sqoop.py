@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_sqoop_config(CLUSTER_HOSTS, YARN_SERVICE_NAME)
+def build_sqoop_config(CLUSTER_HOSTS, YARN_SERVICE_NAME):
     ### Sqoop ###
     SQOOP_SERVICE_NAME = "SQOOP"
     SQOOP_SERVICE_CONFIG = {
@@ -109,27 +109,22 @@ def build_sqoop_config(CLUSTER_HOSTS, YARN_SERVICE_NAME)
 
     return (SQOOP_SERVICE_NAME, SQOOP_SERVICE_CONFIG, SQOOP_SERVER_HOST, SQOOP_SERVER_CONFIG)
 
-def deploy_flume(module, api, name, flume_service_name, flume_service_config, flume_agent_hosts, flume_agent_config):
+def deploy_sqoop(module, api, name, sqoop_service_name, sqoop_service_config, sqoop_server_host, sqoop_server_config):
 
     changed = False
     cluster = find_cluster(module, api, name)
 
-    flume_service = cluster.create_service(flume_service_name, "FLUME")
-    flume_service.update_config(flume_service_config)
+    sqoop_service = cluster.create_service(sqoop_service_name, "SQOOP")
+    sqoop_service.update_config(sqoop_service_config)
 
-    gw = flume_service.get_role_config_group("{0}-AGENT-BASE".format(flume_service_name))
-    gw.update_config(flume_agent_config)
-
-    agent = 0
-    for host in flume_agent_hosts:
-        agent += 1
-        flume_service.create_role("{0}-agent-".format(flume_service_name) + str(agent), "AGENT", host)
-
+    oozie_server = sqoop_service.get_role_config_group("{0}-SQOOP_SERVER-BASE".format(sqoop_service_name))
+    oozie_server.update_config(sqoop_server_config)
+    sqoop_service.create_role("{0}-server".format(sqoop_service_name), "SQOOP_SERVER", sqoop_server_host)
 
     result = dict(changed=changed, cluster=cluster.name)
     module.exit_json(**result)
 
-    return flume_service
+    return sqoop_service
 
 
 def delete_cluster(module, api,  name):
@@ -158,9 +153,7 @@ def main():
         state=dict(default='present', choices=['present', 'absent']),
         cm_host=dict(type='str', default='localhost'),
         cluster_hosts=dict(type='str', default='locahost'),
-        hdfs_service_name=dict(type='str', default='HDFS'),
-        hbase_service_name=dict(type='str', default='HBASE'),
-        search_service_name=dict(type='str', default='SEARCH'),
+        yarn_service_name=dict(type='str', default='YARN'),
         wait=dict(type='bool', default=False),
         wait_timeout=dict(default=30)
     )
@@ -175,9 +168,7 @@ def main():
     state = module.params.get('state')
     cm_host = module.params.get('cm_host')
     cluster_hosts = module.params.get('hosts')
-    hdfs_service_name = module.params.get('hdfs_service_name')
-    hbase_service_name = module.params.get('hbase_service_name')
-    search_service_name = module.params.get('search_service_name')
+    yarn_service_name = module.params.get('yarn_service_name')
     wait = module.params.get('wait')
     wait_timeout = int(module.params.get('wait_timeout'))
 
@@ -186,7 +177,7 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_flume_config(cluster_hosts, hdfs_service_name, hbase_service_name, search_service_name)
+    build_sqoop_config(cluster_hosts, yarn_service_name)
 
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
@@ -200,12 +191,12 @@ def main():
 
     else:
         try:
-            flume_service = deploy_flume(CLUSTER, FLUME_SERVICE_NAME, FLUME_SERVICE_CONFIG, FLUME_AGENT_HOSTS,
-                                         FLUME_AGENT_CONFIG)
+            sqoop_service = deploy_sqoop(module, API, name, SQOOP_SERVICE_NAME, SQOOP_SERVICE_CONFIG, SQOOP_SERVER_HOST,
+                                         SQOOP_SERVER_CONFIG)
         except: ApiException as e:
-            module.fail_json(msg='Failed to deploy hbase.\nError is %s' % e)
+            module.fail_json(msg='Failed to deploy sqoop.\nError is %s' % e)
 
-    return flume_service
+    return sqoop_service
 
 # import module snippets
 from ansible.module_utils.basic import *

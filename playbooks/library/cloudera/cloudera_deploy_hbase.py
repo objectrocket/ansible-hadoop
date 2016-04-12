@@ -1,4 +1,4 @@
-  # !/usr/bin/python  # This file is part of Ansible
+# !/usr/bin/python  # This file is part of Ansible
 #
 # Ansible is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,7 +96,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_hbase_config(HDFS_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME, CLUSTER_HOSTS)
+def build_hbase_config(HDFS_SERVICE_NAME, ZOOKEEPER_SERVICE_NAME, CLUSTER_HOSTS):
     ### HBase ###
     HBASE_SERVICE_NAME = "HBASE"
     HBASE_SERVICE_CONFIG = {
@@ -156,11 +156,10 @@ def deploy_hbase(module, api, name, hbase_service_name, hbase_service_config, hb
 
     hbase_service.create_hbase_root()
 
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
+
     return hbase_service
-
-
-  result = dict(changed=changed, cluster=cluster.name)
-  module.exit_json(**result)
 
 
 def delete_cluster(module, api, name):
@@ -215,7 +214,7 @@ def main():
 
     cfg = ConfigParser.SafeConfigParser()
 
-    build_hbase_config(cm_host, cluster_hosts)
+    build_hbase_config(hdfs_service_name, zookeeper_service_name, cluster_hosts)
 
     try:
         API = ApiResource(cm_host, version=fullVersion[0], username="admin", password=admin_password)
