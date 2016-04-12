@@ -97,7 +97,7 @@ def find_cluster(module, api, name):
     return cluster
 
 
-def build_zookeeper_config(zookeeper_hosts)
+def build_zookeeper_config(zookeeper_hosts):
     ### ZooKeeper ###
     # ZK quorum will be the first three hosts
     ZOOKEEPER_HOSTS = list(zookeeper_hosts)
@@ -112,7 +112,6 @@ def build_zookeeper_config(zookeeper_hosts)
         'dataDir': '/var/lib/zookeeper',
         'maxClientCnxns': '1024',
     }
-
     return (ZOOKEEPER_HOSTS, ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_SERVICE_CONFIG, ZOOKEEPER_ROLE_CONFIG)
 
 def deploy_zookeeper(module, api, name, zk_name, zk_hosts, zk_service_conf, zk_role_conf):
@@ -121,28 +120,26 @@ def deploy_zookeeper(module, api, name, zk_name, zk_hosts, zk_service_conf, zk_r
     cluster = find_cluster(module, api, name)
 
     # Deploys and initializes ZooKeeper
-        zk = cluster.create_service(zk_name, "ZOOKEEPER")
-        zk.update_config(zk_service_conf)
+    zk = cluster.create_service(zk_name, "ZOOKEEPER")
+    zk.update_config(zk_service_conf)
 
-        zk_id = 0
+    zk_id = 0
         for zk_host in zk_hosts:
             zk_id += 1
             zk_role_conf['serverId'] = zk_id
             role = zk.create_role(zk_name + "-" + str(zk_id), "SERVER", zk_host)
             role.update_config(zk_role_conf)
 
+    try:
         zk.init_zookeeper()
 
+    except ApiException as e:
+        module.fail_json(msg='Failed to build cluster.\nError is %s' % e)
 
-        except ApiException as e:
-            module.fail_json(msg='Failed to build cluster.\nError is %s' % e)
+    result = dict(changed=changed, cluster=cluster.name)
+    module.exit_json(**result)
 
-
-         return zk
-
-result = dict(changed=changed, cluster=cluster.name)
-module.exit_json(**result)
-
+    return zk
 
 
 def delete_cluster(module, api, name):
@@ -207,8 +204,11 @@ def main():
     if state == "absent":
         delete_cluster(module, API, name)
     else:
-        zookeeper_service = deploy_zookeeper(module, API, name, ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_HOSTS, ZOOKEEPER_SERVICE_CONFIG,
+        try:
+            zookeeper_service = deploy_zookeeper(module, API, name, ZOOKEEPER_SERVICE_NAME, ZOOKEEPER_HOSTS, ZOOKEEPER_SERVICE_CONFIG,
                                              ZOOKEEPER_ROLE_CONFIG)
+        except: ApiException as e:
+            module.fail_json(msg='Failed to deploy zookeeper.\nError is %s' % e)
 
     return zookeeper_service
 
