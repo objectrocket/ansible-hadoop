@@ -11,7 +11,7 @@
         - ../vars
 
 - name: Install epel
-  yum: name={{ epel_url }} state=present update_cache=yes
+  yum: name={{ epel_yum }} state=present update_cache=yes
   when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (yum)
