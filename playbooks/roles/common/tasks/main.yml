@@ -10,9 +10,20 @@
       paths:
         - ../vars
 
-- name: Install epel
-  yum: name={{ epel_yum }} state=present update_cache=yes
+- name: Install epel-release
+  yum:
+    name: "{{ epel_yum }}"
+    state: present
+    update_cache: yes
+  ignore_errors: true
+  register: epel_result
   when: ansible_os_family == "RedHat"
+
+- name: Install epel-release (rpm)
+  yum:
+    name: "{{ epel_rpm_url }}"
+    state: present
+  when: ansible_os_family == "RedHat" and epel_result|failed
 
 - name: Ensure required packages are installed (yum)
   yum:
