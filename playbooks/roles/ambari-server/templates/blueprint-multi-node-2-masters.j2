@@ -101,6 +101,8 @@
         "yarn.nodemanager.resource.memory-mb" : "{{ ((hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] - hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb']//6)//4096)*4096 }}",
         "yarn.scheduler.maximum-allocation-mb" : "{{ ((hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] - 8192 - hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb']//6)//4096)*4096 }}",
         {% endif -%}
+        "yarn.nodemanager.local-dirs" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/yarn/local{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}",
+        "yarn.nodemanager.log-dirs" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/yarn/log{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}",
         "yarn.scheduler.minimum-allocation-mb" : "4096"
       }
     },
