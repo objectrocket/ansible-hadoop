@@ -29,7 +29,9 @@ update_grub: 'cd && grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'
 ntp_service: chronyd
 ntp_sync: "systemctl restart ntpdate"
 
-epel_url: "https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm"
+epel_rpm_url: "http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+
+epel_yum: "epel-release"
 
 resolv_conf: "/etc/resolv.conf"
 
