@@ -129,6 +129,9 @@
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
   ignore_errors: true
 
+- include: unbound-dns.yml
+  when: use_dns
+
 - name: Reconfigure resolv.conf domain
   lineinfile: dest={{ resolv_conf }}
               create=yes
