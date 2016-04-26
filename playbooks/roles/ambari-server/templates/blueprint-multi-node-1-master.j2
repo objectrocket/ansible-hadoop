@@ -210,6 +210,12 @@
     },
     {% endif -%}
     {
+      "yarn-site" : {
+        "yarn.nodemanager.local-dirs" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/yarn/local{% if not loop.last %},{% endif %}{% else %}/hadoop/yarn/local{%- endfor %}",
+        "yarn.nodemanager.log-dirs" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/yarn/log{% if not loop.last %},{% endif %}{% else %}/hadoop/yarn/log{%- endfor %}"
+      }
+    },
+    {
       "kafka-broker" : {
         "log.dirs" : "/hadoop/kafka-logs"
       }
