@@ -1,9 +1,11 @@
 ---
-- name: Install unbound package
-  action: "{{ package_info.pkg_mgr }}"
-  args: package_info.args
-  with_items:
-        - unbound
+- name: Install Unbound
+  yum:
+    name: "unbound"
+    state: present
+    update_cache: yes
+  ignore_errors: true
+  when: ansible_os_family == "RedHat"
 
 - name: Start the unbound service
   service: name=unbound state=restarted enabled=yes
