@@ -24,7 +24,7 @@
 - name: Upload db properties template
   template: src=db.mgmt.properties dest=/etc/cloudera-scm-server/
 
-- name: Enable the ambari-server service
+- name: Enable the cloudera manager server service
   service: name=cloudera-scm-server state=started enabled=yes
 
 - name: Waiting for mngr-server to start listening on port 7180
