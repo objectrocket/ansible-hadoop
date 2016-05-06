@@ -31,7 +31,7 @@ REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 # rest of the services are configured, since some of them depend on for example creating
 # directories on HDFS.
 BASE_SERVICES = ['Zookeeper', 'Hdfs', 'Yarn']
-ADDITIONAL_SERVICES = ['Spark_On_Yarn']
+ADDITIONAL_SERVICES = ['Spark_On_Yarn', 'Hbase', 'Hive', 'Impala', 'Flume', 'Oozie', 'Sqoop']
 
 
 def retry(attempts=3, delay=5):
@@ -204,6 +204,13 @@ class Service(object):
             self._service = self.cluster.create_service(self.name, self.type)
         return self._service
 
+    def started(self):
+        """
+        Check if a service is already started and running.
+        :return: service state Boolean
+        """
+        return True if self.service.serviceState == 'STARTED' else False
+
     def deploy(self):
         """
         Update group configs. Create roles and update role specific configs.
@@ -211,7 +218,8 @@ class Service(object):
         LOG.info("[%s] Deploying service", self.name)
 
         # Service creation and config updates
-
+        if self.started():
+            return
         self.service.update_config(self.config.get('config', {}))
 
         # Retrieve base role config groups, update configs for those and create individual roles
@@ -334,6 +342,98 @@ class Spark_On_Yarn(Service):
         cmd = self.service._cmd('SparkUploadJarServiceCommand', api_version=7)
         if not cmd.wait(60).success:
             LOG.error("[%s] Command SparkUploadJarService failed. %s", self.name, cmd.resultMessage)
+
+
+class Hbase(Service):
+    """
+    Service Role Groups:
+        MASTER
+        REGIONSERVER
+        HBASETHRIFTSERVER
+        GATEWAY
+    """
+    def pre_start(self):
+        cmd = self.service.create_hbase_root()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command CreateHbaseRoot failed. %s", self.name, cmd.resultMessage)
+
+
+class Hive(Service):
+    """
+    Service Role Groups:
+        HIVEMETASTORE
+        HIVESERVER2
+        WEBHCAT
+        GATEWAY
+    """
+    def pre_start(self):
+        cmd = self.service.create_hive_warehouse()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command CreateHiveWarehouse failed. %s",
+                      self.name, cmd.resultMessage)
+
+    def post_start(self):
+        # TODO(rnirmal): These commands keep failing, need to figure out why. Nothing useful in the
+        # manager logs
+        cmd = self.service.create_hive_metastore_database()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command CreateHiveMetastoreDatabase failed. %s",
+                      self.name, cmd.resultMessage)
+
+        cmd = self.service.create_hive_metastore_tables()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command CreateHiveMetastoreTables failed. %s",
+                      self.name, cmd.resultMessage)
+
+
+class Impala(Service):
+    """
+    Service Role Groups:
+        STATESTORE
+        CATALOGSERVER
+        IMPALAD
+    """
+    def pre_start(self):
+        cmd = self.service.create_impala_user_dir()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command CreateImpalaUserDir failed. %s", self.name, cmd.resultMessage)
+
+
+class Flume(Service):
+    """
+    Service Role Groups:
+        AGENT
+    """
+
+
+class Oozie(Service):
+    """
+    Service Role Groups:
+        OOZIE_SERVER
+    """
+    def pre_start(self):
+        cmd = self.service.create_oozie_db()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command CreateOozieSchema failed. %s", self.name, cmd.resultMessage)
+
+        cmd = self.service.install_oozie_sharelib()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command InstallOozieSharedLib failed. %s", self.name, cmd.resultMessage)
+
+
+class Sqoop(Service):
+    """
+    Service Role Groups:
+        SQOOP_SERVER
+    """
+    def pre_start(self):
+        cmd = self.service.create_sqoop_user_dir()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command CreateSqoopUserDir failed. %s", self.name, cmd.resultMessage)
+
+        cmd = self.service.create_sqoop_database_tables()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command CreateSqoopDBTables failed. %s", self.name, cmd.resultMessage)
 
 
 class ClouderaManager(object):
@@ -475,6 +575,8 @@ class ClouderaManager(object):
 
         # Configure and Start base services
         self.service_orchestrate(BASE_SERVICES, stop=True)
+        # TODO(rnirmal): Make sure all the HDFS required roles are running, since this will be
+        # required by some of the later services
 
         # Configure and Start remaining services
         self.service_orchestrate(ADDITIONAL_SERVICES)
