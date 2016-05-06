@@ -1,22 +1,21 @@
 # Cloudera Cluster template
+# Modify the template and replace the existing values for hosts
+# username/password and related configurations
 
 # Cloudera Manager config
 cm:
-  host: 172.99.112.28
+  host: localhost
   username: admin
   password: admin
 
 # Basic cluster information
 cluster:
-  name: hadoopPOC
+  name: cdh_hadoop
   version: 5
   fullVersion: 5.6.0
   hosts:
-    - master-01.localnet
-    - master-02.localnet
-    - slave-01.localnet
-    - slave-02.localnet
-    - slave-03.localnet
+    - master-01.local
+    - slave-01.local
 
 # Parcels
 parcel:
@@ -29,32 +28,32 @@ services:
     roles:
       - group: ACTIVITYMONITOR
         hosts:
-          - master-02.localnet
+          - master-01.local
         config:
-          firehose_database_host: master-02.localnet:3306
+          firehose_database_host: master-01.local:3306
           firehose_database_user: amon
-          firehose_database_password: temp
+          firehose_database_password: amon
           firehose_database_type: mysql
           firehose_database_name: amon
       - group: ALERTPUBLISHER
         hosts:
-          - master-02.localnet
+          - master-01.local
       - group: EVENTSERVER
         hosts:
-          - master-02.localnet
+          - master-01.local
       - group: HOSTMONITOR
         hosts:
-          - master-02.localnet
+          - master-01.local
       - group: SERVICEMONITOR
         hosts:
-          - master-02.localnet
+          - master-01.local
       - group: REPORTSMANAGER
         hosts:
-          - master-02.localnet
+          - master-01.local
         config:
-          headlamp_database_host: master-02.localnet:3306
+          headlamp_database_host: master-01.local:3306
           headlamp_database_user: rman
-          headlamp_database_password: temp
+          headlamp_database_password: rman
           headlamp_database_type: mysql
           headlamp_database_name: rman
       #- group: NAVIGATOR
@@ -65,9 +64,7 @@ services:
     roles:
       - group: SERVER
         hosts:
-          - slave-01.localnet
-          - slave-02.localnet
-          - slave-03.localnet
+          - slave-01.local
         config:
           quorumPort: 2888
           electionPort: 3888
@@ -82,20 +79,18 @@ services:
     roles:
       - group: NAMENODE
         hosts:
-          - master-01.localnet
+          - master-01.local
         config:
           dfs_name_dir_list: /var/lib/hadoop/namenode
           dfs_namenode_handler_count: 30
       - group: SECONDARYNAMENODE
         hosts:
-          - master-02.localnet
+          - master-01.local
         config:
           fs_checkpoint_dir_list: /var/lib/hadoop/namesecondary
       - group: DATANODE
         hosts:
-          - slave-01.localnet
-          - slave-02.localnet
-          - slave-03.localnet
+          - slave-01.local
         config:
           dfs_data_dir_list: /var/lib/hadoop/datanode
           dfs_datanode_handler_count: 30
@@ -108,14 +103,22 @@ services:
     roles:
       - group: RESOURCEMANAGER
         hosts:
-          - master-01.localnet
+          - master-01.local
       - group: JOBHISTORY
         hosts:
-          - master-02.localnet
+          - master-01.local
       - group: NODEMANAGER
         hosts:
-          - slave-01.localnet
-          - slave-02.localnet
-          - slave-03.localnet
+          - slave-01.local
         config:
           yarn_nodemanager_local_dirs: /var/lib/hadoop/yarn/nm
+  SPARK_ON_YARN:
+    config:
+      yarn_service: YARN
+    roles:
+      - group: SPARK_YARN_HISTORY_SERVER
+        hosts:
+          - master-01.local
+      - group: GATEWAY
+        hosts:
+          - slave-01.local
