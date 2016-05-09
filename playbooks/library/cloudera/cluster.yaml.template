@@ -122,3 +122,102 @@ services:
       - group: GATEWAY
         hosts:
           - slave-01.local
+  HBASE:
+    config:
+      hdfs_service: HDFS
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: MASTER
+        hosts:
+          - master-01.local
+      - group: REGIONSERVER
+        hosts:
+          - slave-01.local
+      - group: HBASETHRIFTSERVER
+        hosts:
+          - slave-01.local
+      - group: HBASERESTSERVER
+        hosts:
+          - master-01.local
+      - group: GATEWAY
+        hosts:
+          - slave-01.local
+  HIVE:
+    config:
+      hive_metastore_database_host: master-01.local
+      hive_metastore_database_name: metastore
+      hive_metastore_database_user: metastore
+      hive_metastore_database_password: metastore
+      hive_metastore_database_port: 3306
+      hive_metastore_database_type: mysql
+      mapreduce_yarn_service: YARN
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: HIVEMETASTORE
+        config:
+          hive_metastore_java_heapsize: 128306784
+        hosts:
+          - master-01.local
+      - group: HIVESERVER2
+        hosts:
+          - master-01.local
+      - group: WEBHCAT
+        hosts:
+          - master-01.local
+      - group: GATEWAY
+        hosts:
+          - master-01.local
+          - slave-01.local
+  IMPALA:
+    config:
+      hdfs_service: HDFS
+      hive_service: HIVE
+      hbase_service: HBASE
+    roles:
+      - group: STATESTORE
+        hosts:
+          - master-01.local
+      - group: CATALOGSERVER
+        hosts:
+          - master-01.local
+      - group: IMPALAD
+        hosts:
+          - slave-01.local
+  FLUME:
+    config:
+      hdfs_service: HDFS
+      hbase_service: HBASE
+    roles:
+      - group: AGENT
+        hosts:
+          - slave-01.local
+  OOZIE:
+    config:
+      mapreduce_yarn_service: YARN
+      zookeeper_service: ZOOKEEPER
+      hive_service: HIVE
+    roles:
+      - group: OOZIE_SERVER
+        hosts:
+          - master-01.local
+        config:
+          oozie_java_heapsize: 207881018
+          oozie_database_host: master-01.local
+          oozie_database_name: oozie
+          oozie_database_user: oozie
+          oozie_database_password: oozie
+          oozie_database_type: mysql
+  SQOOP:
+    config:
+      mapreduce_yarn_service: YARN
+    roles:
+      - group: SQOOP_SERVER
+        hosts:
+          - master-01.local
+        config:
+          sqoop_java_heapsize: 207881018
+          sqoop_repository_database_host: master-01.local
+          sqoop_repository_database_name: sqoop
+          sqoop_repository_database_user: sqoop
+          sqoop_repository_database_password: sqoop
+          sqoop_repository_database_type: derby
