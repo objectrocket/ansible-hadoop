@@ -221,3 +221,30 @@ services:
           sqoop_repository_database_user: sqoop
           sqoop_repository_database_password: sqoop
           sqoop_repository_database_type: derby
+  SOLR:
+    config:
+      hdfs_service: HDFS
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: SOLR_SERVER
+        hosts:
+          - master-01.local
+      - group: GATEWAY
+        hosts:
+          - slave-01.local
+  HUE:
+    config:
+      hive_service: HIVE
+      hbase_service: HBASE
+      impala_service: IMPALA
+      oozie_service: OOZIE
+      sqoop_service: SQOOP
+      solr_service: SOLR
+      sentry_service: SENTRY
+      zookeeper_service: ZOOKEEPER
+      hue_webhdfs: HDFS-NAMENODE-1
+      hue_hbase_thrift: HBASE-HBASETHRIFTSERVER-1
+    roles:
+      - group: HUE_SERVER
+        hosts:
+          - master-01.local

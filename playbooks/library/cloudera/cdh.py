@@ -31,7 +31,8 @@ REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 # rest of the services are configured, since some of them depend on for example creating
 # directories on HDFS.
 BASE_SERVICES = ['Zookeeper', 'Hdfs', 'Yarn']
-ADDITIONAL_SERVICES = ['Spark_On_Yarn', 'Hbase', 'Hive', 'Impala', 'Flume', 'Oozie', 'Sqoop']
+ADDITIONAL_SERVICES = ['Spark_On_Yarn', 'Hbase', 'Hive', 'Impala', 'Flume', 'Oozie', 'Sqoop',
+                       'Solr', 'Hue']
 
 
 def retry(attempts=3, delay=5):
@@ -436,6 +437,28 @@ class Sqoop(Service):
             LOG.error("[%s] Command CreateSqoopDBTables failed. %s", self.name, cmd.resultMessage)
 
 
+class Solr(Service):
+    """
+    Service Role Groups:
+        HUE_SERVER
+    """
+    def pre_start(self):
+        cmd = self.service.init_solr()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command InitSolr failed. %s", self.name, cmd.resultMessage)
+
+        cmd = self.service.create_solr_hdfs_home_dir()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command CreateSolrHdfsHomeDir failed. %s", self.name, cmd.resultMessage)
+
+
+class Hue(Service):
+    """
+    Service Role Groups:
+        HUE_SERVER
+    """
+
+
 class ClouderaManager(object):
     """
     The complete orchestration of a cluster from start to finish assuming all the hosts are
@@ -544,6 +567,10 @@ class ClouderaManager(object):
         if stop:
             self.cluster.stop().wait()
 
+        # Deploy all the client configs, since some of the services depend on other services
+        # and is essential that the client configs are in place
+        self.cluster.deploy_client_config()
+
         # Start the cluster with the specified services
         self.cluster.start().wait()
 
@@ -580,9 +607,6 @@ class ClouderaManager(object):
 
         # Configure and Start remaining services
         self.service_orchestrate(ADDITIONAL_SERVICES)
-
-        # Deploy all the client configs
-        self.cluster.deploy_client_config()
 
 
 if __name__ == '__main__':
