@@ -12,7 +12,7 @@ cm:
 cluster:
   name: cdh_hadoop
   version: 5
-  fullVersion: 5.6.0
+  fullVersion: 5.7.0
   hosts:
     - master-01.local
     - slave-01.local
@@ -22,7 +22,7 @@ parcels:
   - repo:
     product: CDH
     version: 5.7.0-1.cdh5.7.0.p0.45
-  - repo: http://archive.cloudera.com/kafka/parcels/2.0.1/
+  - repo:
     product: KAFKA
     version: 2.0.1-1.2.0.1.p0.5
 
