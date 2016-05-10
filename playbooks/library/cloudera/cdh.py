@@ -22,7 +22,7 @@ from cm_api.endpoints.services import ApiServiceSetupInfo
 
 LOG = logging.getLogger(__name__)
 
-CDH = 'CDH'
+
 REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 
 # List of services to configure in the specified order. The names
@@ -86,12 +86,13 @@ class Parcels(object):
     This class handles all the required operations on Parcels from downloading, distributing
     to activating it.
     """
-    def __init__(self, module, manager, cluster, version, repo):
+    def __init__(self, module, manager, cluster, version, repo, product='CDH'):
         self.module = module
         self.manager = manager
         self.cluster = cluster
         self.version = version
         self.repo = repo
+        self.product = product
         self.validate()
 
     @property
@@ -99,7 +100,7 @@ class Parcels(object):
         """
         :return: Parcel object from the CM API
         """
-        return self.cluster.get_parcel(CDH, self.version)
+        return self.cluster.get_parcel(self.product, self.version)
 
     def check_error(self, parcel):
         """
@@ -119,7 +120,7 @@ class Parcels(object):
             return self.parcel
 
         try:
-            self.check_error(self.cluster.get_parcel(CDH, self.version))
+            self.check_error(self.parcel)
         except ApiException:
             if self.repo is None:
                 raise Exception("None of the existing repos contain the requested "
@@ -151,6 +152,7 @@ class Parcels(object):
         """
         Download the specified parcel to the Cloudera Manager server
         """
+        LOG.info("Downloading Parcel: %s-%s", self.product, self.version)
         self.parcel.start_download()
         self.check_state(['DOWNLOADED', 'DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -158,6 +160,7 @@ class Parcels(object):
         """
         Distribute the parcel to all the nodes
         """
+        LOG.info("Distributing Parcel: %s-%s", self.product, self.version)
         self.parcel.start_distribution()
         self.check_state(['DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -165,6 +168,7 @@ class Parcels(object):
         """
         Activate the parcel for use in the cluster installation step
         """
+        LOG.info("Activating Parcel: %s-%s", self.product, self.version)
         self.parcel.activate()
         self.check_state(['ACTIVATED', 'INUSE'])
 
@@ -483,6 +487,7 @@ class ClouderaManager(object):
         Create a cluster and add hosts to the cluster. A new cluster is only created
         if another one doesn't exist with the same name.
         """
+        LOG.info("Creating cluster...")
         cluster_config = self.config['cluster']
         try:
             self.cluster = self.api.get_cluster(cluster_config['name'])
@@ -499,6 +504,16 @@ class ClouderaManager(object):
             if host not in cluster_hosts:
                 hosts.append(host)
         self.cluster.add_hosts(hosts)
+
+    def activate_parcels(self):
+        LOG.info("Setting up parcels...")
+        for parcel_cfg in self.config['parcels']:
+            parcel = Parcels(self.module, self.manager, self.cluster,
+                             parcel_cfg.get('version'), parcel_cfg.get('repo'),
+                             parcel_cfg.get('product', 'CDH'))
+            parcel.download()
+            parcel.distribute()
+            parcel.activate()
 
     @retry(attempts=20, delay=5)
     def wait_inspect_hosts(self, cmd):
@@ -583,16 +598,10 @@ class ClouderaManager(object):
         # TODO(rnirmal): Cloudera Manager SSL?
 
         # Create the cluster entity and associate hosts
-        LOG.info("Creating cluster...")
         self.create_cluster()
 
         # Download and activate the parcels
-        LOG.info("Setting up parcels...")
-        parcel = Parcels(self.module, self.manager, self.cluster,
-                         self.config['parcel']['version'], self.config['parcel']['repo'])
-        parcel.download()
-        parcel.distribute()
-        parcel.activate()
+        self.activate_parcels()
 
         # Inspect all the hosts
         self.wait_inspect_hosts(self.manager.inspect_hosts())

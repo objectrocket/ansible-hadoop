@@ -18,9 +18,13 @@ cluster:
     - slave-01.local
 
 # Parcels
-parcel:
-  repo:
-  version: 5.6.0-1.cdh5.6.0.p0.45
+parcels:
+  - repo:
+    product: CDH
+    version: 5.7.0-1.cdh5.7.0.p0.45
+  - repo: http://archive.cloudera.com/kafka/parcels/2.0.1/
+    product: KAFKA
+    version: 2.0.1-1.2.0.1.p0.5
 
 # Service. All the service definitions go here
 services:
