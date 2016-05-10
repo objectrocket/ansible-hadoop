@@ -473,14 +473,41 @@ class ClouderaManager(object):
     __class__.setup()
     """
 
-    def __init__(self, module, config):
+    def __init__(self, module, config, trial=False, license_txt=None):
         self.api = ApiResource(config['cm']['host'], username=config['cm']['username'],
                                password=config['cm']['password'])
         self.manager = self.api.get_cloudera_manager()
         self.config = config
         self.module = module
+        self.trial = trial
+        self.license_txt = license_txt
         self.cluster = None
         LOG.debug(config)
+
+    def enable_license(self):
+        """
+        Enable the requested license, either it's trial mode or a full license is entered and
+        registered.
+        """
+        try:
+            _license = self.manager.get_license()
+            LOG.info("[LICENSE] Owner: %s, UUID: %s", _license.owner, _license.uuid)
+        except ApiException:
+            LOG.error("[LICENSE] Error retrieving current license state")
+            LOG.info("[LICENSE] Enabling license")
+            if self.trial:
+                self.manager.begin_trial()
+            else:
+                if license_txt is not None:
+                    self.manager.update_license(license_txt)
+                else:
+                    fail(self.module, 'License should be provided or trial should be specified')
+
+            try:
+                _license = self.manager.get_license()
+                LOG.info("[LICENSE] Owner: %s, UUID: %s", _license.owner, _license.uuid)
+            except ApiException:
+                fail(self.module, 'Failed enabling license')
 
     def create_cluster(self):
         """
@@ -594,8 +621,10 @@ class ClouderaManager(object):
             svc.post_start()
 
     def setup(self):
-        # TODO(rnirmal): How to handle licenses?
         # TODO(rnirmal): Cloudera Manager SSL?
+
+        # Enable a full license or start a trial
+        self.enable_license()
 
         # Create the cluster entity and associate hosts
         self.create_cluster()
@@ -624,7 +653,9 @@ if __name__ == '__main__':
     # Load all the variables passed in by Ansible
     try:
         argument_spec = dict(
-            template=dict(type='str', default='/opt/cluster.yaml')
+            template=dict(type='str', default='/opt/cluster.yaml'),
+            trial=dict(type='bool', default=False),
+            license_txt=dict(type='str', default='')
         )
 
         module = AnsibleModule(
@@ -632,18 +663,22 @@ if __name__ == '__main__':
         )
 
         yaml_template = module.params.get('template')
+        trial = module.params.get('trial')
+        license_txt = module.params.get('license_txt')
 
         if not yaml_template:
             fail(module, msg='The cluster configuration template is not available')
     except ValueError as e:
         LOG.warn("Skipping ansible run and running locally")
         yaml_template = 'cluster.yaml'
+        trial = True
+        license_txt = ''
 
     # Load the cluster.yaml template and create a Cloudera cluster
     try:
         with open(yaml_template, 'r') as cluster_yaml:
             config = yaml.load(cluster_yaml)
-        cm = ClouderaManager(module, config)
+        cm = ClouderaManager(module, config, trial, license_txt)
         cm.setup()
     except IOError as e:
         fail(module, 'Error loading cluster yaml config')
