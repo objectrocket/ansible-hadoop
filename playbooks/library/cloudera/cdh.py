@@ -255,6 +255,22 @@ class Service(object):
             except ApiException:
                 self.service.create_role(role_name, group, host)
 
+    def start(self):
+        """
+        Start the service and wait for the command to finish, followed by a check that the
+        service is running and healthy
+        """
+        LOG.info("[%s] Starting", self.name)
+        self._service = None
+        if self.service.serviceState != 'STARTED':
+            cmd = self.service.start()
+            if not cmd.wait(300).success:
+                LOG.error("[%s] Command Service start failed. %s", self.name, cmd.resultMessage)
+                raise Exception("Service {} failed to start".format(self.name))
+
+        self._service = None
+        assert self.service.serviceState == 'STARTED'
+
     def pre_start(self):
         """
         Any service specific actions that needs to be performed before the cluster is started.
@@ -296,8 +312,10 @@ class Zookeeper(Service):
         """
         Initialize Zookeeper for the first runs. This commands fails silently if it's rerun
         """
-        LOG.info("[%s] Initializing Zookeeper", self.name)
-        self.service.init_zookeeper()
+        LOG.info("[%s] Initializing", self.name)
+        cmd = self.service.init_zookeeper()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command InitZookeeper failed. %s", self.name, cmd.resultMessage)
 
 
 class Hdfs(Service):
@@ -317,7 +335,9 @@ class Hdfs(Service):
                          self.name, cmd.resultMessage)
 
     def post_start(self):
-        self.service.create_hdfs_tmp()
+        cmd = self.service.create_hdfs_tmp()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command CreateHdfsTmp failed. %s", self.name, cmd.resultMessage)
 
 
 class Yarn(Service):
@@ -605,19 +625,14 @@ class ClouderaManager(object):
                 service_classes.append(svc)
 
         LOG.info("Starting services: %s on Cluster", services)
-        # Stop the cluster to make sure there's nothing running before hand
-        if stop:
-            self.cluster.stop().wait()
 
         # Deploy all the client configs, since some of the services depend on other services
         # and is essential that the client configs are in place
         self.cluster.deploy_client_config()
 
-        # Start the cluster with the specified services
-        self.cluster.start().wait()
-
-        # Post start actions for Services
+        # Start each service and run the post_start actions for each service
         for svc in service_classes:
+            svc.start()
             svc.post_start()
 
     def setup(self):
@@ -640,8 +655,6 @@ class ClouderaManager(object):
 
         # Configure and Start base services
         self.service_orchestrate(BASE_SERVICES, stop=True)
-        # TODO(rnirmal): Make sure all the HDFS required roles are running, since this will be
-        # required by some of the later services
 
         # Configure and Start remaining services
         self.service_orchestrate(ADDITIONAL_SERVICES)
@@ -681,4 +694,5 @@ if __name__ == '__main__':
         cm = ClouderaManager(module, config, trial, license_txt)
         cm.setup()
     except IOError as e:
+        LOG.error("Error creating cluster: %s", e)
         fail(module, 'Error loading cluster yaml config')
