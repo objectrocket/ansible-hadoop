@@ -252,3 +252,15 @@ services:
       - group: HUE_SERVER
         hosts:
           - master-01.local
+  KAFKA:
+    config:
+      zookeeper_service: ZOOKEEPER
+      zookeeper.chroot: /kafka
+      default.replication.factor: 3
+    roles:
+      - group: KAFKA_BROKER
+        config:
+          log.dirs: /var/lib/kafka/data
+          broker_max_heap_size: 1024
+        hosts:
+          - slave-01.local

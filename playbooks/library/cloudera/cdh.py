@@ -32,7 +32,7 @@ REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 # directories on HDFS.
 BASE_SERVICES = ['Zookeeper', 'Hdfs', 'Yarn']
 ADDITIONAL_SERVICES = ['Spark_On_Yarn', 'Hbase', 'Hive', 'Impala', 'Flume', 'Oozie', 'Sqoop',
-                       'Solr', 'Hue']
+                       'Solr', 'Hue', 'Kafka']
 
 
 def retry(attempts=3, delay=5):
@@ -482,6 +482,13 @@ class Hue(Service):
     """
     Service Role Groups:
         HUE_SERVER
+    """
+
+
+class Kafka(Service):
+    """
+    Service Role Groups:
+        KAFKA_BROKER
     """
 
 
