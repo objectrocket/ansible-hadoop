@@ -264,3 +264,20 @@ services:
           broker_max_heap_size: 1024
         hosts:
           - slave-01.local
+  SENTRY:
+    config:
+      zookeeper_service: ZOOKEEPER
+      hdfs_service: HDFS
+      sentry_server_database_host: master-01.local
+      sentry_server_database_name: sentry
+      sentry_server_database_user: sentry
+      sentry_server_database_password: sentry
+      sentry_server_database_type: mysql
+    roles:
+      - group: SENTRY_SERVER
+        hosts:
+          - master-01.local
+      - group: GATEWAY
+        hosts:
+          - master-01.local
+          - slave-01.local

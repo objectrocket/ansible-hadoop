@@ -32,7 +32,7 @@ REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 # directories on HDFS.
 BASE_SERVICES = ['Zookeeper', 'Hdfs', 'Yarn']
 ADDITIONAL_SERVICES = ['Spark_On_Yarn', 'Hbase', 'Hive', 'Impala', 'Flume', 'Oozie', 'Sqoop',
-                       'Solr', 'Hue', 'Kafka']
+                       'Solr', 'Kafka', 'Sentry', 'Hue']
 
 
 def retry(attempts=3, delay=5):
@@ -257,6 +257,7 @@ class Service(object):
             except ApiException:
                 self.service.create_role(role_name, group, host)
 
+    @retry(attempts=6, delay=10)
     def start(self):
         """
         Start the service and wait for the command to finish, followed by a check that the
@@ -268,6 +269,9 @@ class Service(object):
             cmd = self.service.start()
             if not cmd.wait(300).success:
                 LOG.error("[%s] Command Service start failed. %s", self.name, cmd.resultMessage)
+                if (cmd.resultMessage is not None and
+                        'There is already a pending command on this entity' in cmd.resultMessage):
+                    raise ApiException('Retry command')
                 raise Exception("Service {} failed to start".format(self.name))
 
         self._service = None
@@ -490,6 +494,17 @@ class Kafka(Service):
     Service Role Groups:
         KAFKA_BROKER
     """
+
+
+class Sentry(Service):
+    """
+    Service Role Groups:
+        SENTRY_SERVER
+    """
+    def pre_start(self):
+        cmd = self.service.create_sentry_database_tables()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command CreateSentryDBTables failed. %s", self.name, cmd.resultMessage)
 
 
 class ClouderaManager(object):
