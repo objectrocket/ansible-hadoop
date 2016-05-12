@@ -212,6 +212,7 @@ class Service(object):
             self._service = self.cluster.create_service(self.name, self.type)
         return self._service
 
+    @property
     def started(self):
         """
         Check if a service is already started and running.
@@ -226,8 +227,6 @@ class Service(object):
         LOG.info("[%s] Deploying service", self.name)
 
         # Service creation and config updates
-        if self.started():
-            return
         self.service.update_config(self.config.get('config', {}))
 
         # Retrieve base role config groups, update configs for those and create individual roles
@@ -265,14 +264,14 @@ class Service(object):
         """
         LOG.info("[%s] Starting", self.name)
         self._service = None
-        if self.service.serviceState != 'STARTED':
+        if not self.started:
             cmd = self.service.start()
             if not cmd.wait(300).success:
                 LOG.error("[%s] Command Service start failed. %s", self.name, cmd.resultMessage)
                 raise Exception("Service {} failed to start".format(self.name))
 
         self._service = None
-        assert self.service.serviceState == 'STARTED'
+        assert self.started
 
     def pre_start(self):
         """
@@ -623,8 +622,9 @@ class ClouderaManager(object):
             service_config = self.config['services'].get(service.upper())
             if service_config:
                 svc = getattr(sys.modules[__name__], service)(self.cluster, service_config)
-                svc.deploy()
-                svc.pre_start()
+                if not svc.started:
+                    svc.deploy()
+                    svc.pre_start()
                 service_classes.append(svc)
 
         LOG.info("[CLUSTER] Starting services: %s on Cluster", services)
@@ -635,8 +635,11 @@ class ClouderaManager(object):
 
         # Start each service and run the post_start actions for each service
         for svc in service_classes:
-            svc.start()
-            svc.post_start()
+            # Only go thru the steps if the service is not yet started. This helps with
+            # re-running the script after fixing errors
+            if not svc.started:
+                svc.start()
+                svc.post_start()
 
     def setup(self):
         # TODO(rnirmal): Cloudera Manager SSL?
