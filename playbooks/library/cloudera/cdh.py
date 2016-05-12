@@ -144,15 +144,16 @@ class Parcels(object):
         if parcel.stage in states:
             return
         else:
-            LOG.info("Parcel %s progress: %s / %s"
-                     % (states[0], parcel.state.progress, parcel.state.totalProgress))
+            LOG.info("[%s] %s progress: %s / %s",  self.__class__.__name__.upper(),
+                     states[0], parcel.state.progress, parcel.state.totalProgress)
             raise ApiException("Waiting on parcel to get to state {}".format(states[0]))
 
     def download(self):
         """
         Download the specified parcel to the Cloudera Manager server
         """
-        LOG.info("Downloading Parcel: %s-%s", self.product, self.version)
+        LOG.info("[%s] Downloading: %s-%s", self.__class__.__name__.upper(),
+                 self.product, self.version)
         self.parcel.start_download()
         self.check_state(['DOWNLOADED', 'DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -160,7 +161,8 @@ class Parcels(object):
         """
         Distribute the parcel to all the nodes
         """
-        LOG.info("Distributing Parcel: %s-%s", self.product, self.version)
+        LOG.info("[%s] Distributing: %s-%s", self.__class__.__name__.upper(),
+                 self.product, self.version)
         self.parcel.start_distribution()
         self.check_state(['DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -168,7 +170,8 @@ class Parcels(object):
         """
         Activate the parcel for use in the cluster installation step
         """
-        LOG.info("Activating Parcel: %s-%s", self.product, self.version)
+        LOG.info("[%s] Activating: %s-%s", self.__class__.__name__.upper(),
+                 self.product, self.version)
         self.parcel.activate()
         self.check_state(['ACTIVATED', 'INUSE'])
 
@@ -330,7 +333,7 @@ class Hdfs(Service):
         LOG.info("[%s] Formatting HDFS Namenode", self.name)
         cmds = self.service.format_hdfs('{}-NAMENODE-1'.format(self.name))
         for cmd in cmds:
-            if not cmd.wait(60).success:
+            if not cmd.wait(300).success:
                 LOG.warn("[%s] Failed formatting HDFS, continuing with setup. %s",
                          self.name, cmd.resultMessage)
 
@@ -534,7 +537,7 @@ class ClouderaManager(object):
         Create a cluster and add hosts to the cluster. A new cluster is only created
         if another one doesn't exist with the same name.
         """
-        LOG.info("Creating cluster...")
+        LOG.info("[CLUSTER] Creating cluster...")
         cluster_config = self.config['cluster']
         try:
             self.cluster = self.api.get_cluster(cluster_config['name'])
@@ -553,7 +556,7 @@ class ClouderaManager(object):
         self.cluster.add_hosts(hosts)
 
     def activate_parcels(self):
-        LOG.info("Setting up parcels...")
+        LOG.info("[PARCELS] Setting up parcels...")
         for parcel_cfg in self.config['parcels']:
             parcel = Parcels(self.module, self.manager, self.cluster,
                              parcel_cfg.get('version'), parcel_cfg.get('repo'),
@@ -569,13 +572,13 @@ class ClouderaManager(object):
 
         :param cmd: A command instance used for tracking the status of the command
         """
-        LOG.info("Inspecting hosts...")
+        LOG.info("[HOSTS] Inspecting hosts...")
         cmd = cmd.fetch()
         if cmd.success is None:
             raise ApiException("Waiting on command {} to finish".format(cmd))
         elif not cmd.success:
             fail(self.module, 'Host inspection failed')
-        LOG.info("Host inspection completed: %s", cmd.resultMessage)
+        LOG.info("[HOSTS] Host inspection completed: %s", cmd.resultMessage)
 
     def deploy_mgmt_services(self):
         """
@@ -605,7 +608,7 @@ class ClouderaManager(object):
         else:
             fail(self.module, "[MGMT] Cloudera Management services didn't start up properly")
 
-    def service_orchestrate(self, services, stop=False):
+    def service_orchestrate(self, services):
         """
         Create, pre-configure provided list of services
         Stop/Start those services
@@ -624,7 +627,7 @@ class ClouderaManager(object):
                 svc.pre_start()
                 service_classes.append(svc)
 
-        LOG.info("Starting services: %s on Cluster", services)
+        LOG.info("[CLUSTER] Starting services: %s on Cluster", services)
 
         # Deploy all the client configs, since some of the services depend on other services
         # and is essential that the client configs are in place
@@ -654,7 +657,7 @@ class ClouderaManager(object):
         self.deploy_mgmt_services()
 
         # Configure and Start base services
-        self.service_orchestrate(BASE_SERVICES, stop=True)
+        self.service_orchestrate(BASE_SERVICES)
 
         # Configure and Start remaining services
         self.service_orchestrate(ADDITIONAL_SERVICES)
