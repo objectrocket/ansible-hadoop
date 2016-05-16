@@ -22,7 +22,7 @@ from cm_api.endpoints.services import ApiServiceSetupInfo
 
 LOG = logging.getLogger(__name__)
 
-CDH = 'CDH'
+
 REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 
 # List of services to configure in the specified order. The names
@@ -32,7 +32,7 @@ REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 # directories on HDFS.
 BASE_SERVICES = ['Zookeeper', 'Hdfs', 'Yarn']
 ADDITIONAL_SERVICES = ['Spark_On_Yarn', 'Hbase', 'Hive', 'Impala', 'Flume', 'Oozie', 'Sqoop',
-                       'Solr', 'Hue']
+                       'Solr', 'Kafka', 'Sentry', 'Hue']
 
 
 def retry(attempts=3, delay=5):
@@ -86,12 +86,13 @@ class Parcels(object):
     This class handles all the required operations on Parcels from downloading, distributing
     to activating it.
     """
-    def __init__(self, module, manager, cluster, version, repo):
+    def __init__(self, module, manager, cluster, version, repo, product='CDH'):
         self.module = module
         self.manager = manager
         self.cluster = cluster
         self.version = version
         self.repo = repo
+        self.product = product
         self.validate()
 
     @property
@@ -99,7 +100,7 @@ class Parcels(object):
         """
         :return: Parcel object from the CM API
         """
-        return self.cluster.get_parcel(CDH, self.version)
+        return self.cluster.get_parcel(self.product, self.version)
 
     def check_error(self, parcel):
         """
@@ -119,7 +120,7 @@ class Parcels(object):
             return self.parcel
 
         try:
-            self.check_error(self.cluster.get_parcel(CDH, self.version))
+            self.check_error(self.parcel)
         except ApiException:
             if self.repo is None:
                 raise Exception("None of the existing repos contain the requested "
@@ -143,14 +144,16 @@ class Parcels(object):
         if parcel.stage in states:
             return
         else:
-            LOG.info("Parcel %s progress: %s / %s"
-                     % (states[0], parcel.state.progress, parcel.state.totalProgress))
+            LOG.info("[%s] %s progress: %s / %s",  self.__class__.__name__.upper(),
+                     states[0], parcel.state.progress, parcel.state.totalProgress)
             raise ApiException("Waiting on parcel to get to state {}".format(states[0]))
 
     def download(self):
         """
         Download the specified parcel to the Cloudera Manager server
         """
+        LOG.info("[%s] Downloading: %s-%s", self.__class__.__name__.upper(),
+                 self.product, self.version)
         self.parcel.start_download()
         self.check_state(['DOWNLOADED', 'DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -158,6 +161,8 @@ class Parcels(object):
         """
         Distribute the parcel to all the nodes
         """
+        LOG.info("[%s] Distributing: %s-%s", self.__class__.__name__.upper(),
+                 self.product, self.version)
         self.parcel.start_distribution()
         self.check_state(['DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -165,6 +170,8 @@ class Parcels(object):
         """
         Activate the parcel for use in the cluster installation step
         """
+        LOG.info("[%s] Activating: %s-%s", self.__class__.__name__.upper(),
+                 self.product, self.version)
         self.parcel.activate()
         self.check_state(['ACTIVATED', 'INUSE'])
 
@@ -205,6 +212,7 @@ class Service(object):
             self._service = self.cluster.create_service(self.name, self.type)
         return self._service
 
+    @property
     def started(self):
         """
         Check if a service is already started and running.
@@ -219,8 +227,6 @@ class Service(object):
         LOG.info("[%s] Deploying service", self.name)
 
         # Service creation and config updates
-        if self.started():
-            return
         self.service.update_config(self.config.get('config', {}))
 
         # Retrieve base role config groups, update configs for those and create individual roles
@@ -250,6 +256,26 @@ class Service(object):
                 self.service.get_role(role_name)
             except ApiException:
                 self.service.create_role(role_name, group, host)
+
+    @retry(attempts=6, delay=10)
+    def start(self):
+        """
+        Start the service and wait for the command to finish, followed by a check that the
+        service is running and healthy
+        """
+        LOG.info("[%s] Starting", self.name)
+        self._service = None
+        if not self.started:
+            cmd = self.service.start()
+            if not cmd.wait(300).success:
+                LOG.error("[%s] Command Service start failed. %s", self.name, cmd.resultMessage)
+                if (cmd.resultMessage is not None and
+                        'There is already a pending command on this entity' in cmd.resultMessage):
+                    raise ApiException('Retry command')
+                raise Exception("Service {} failed to start".format(self.name))
+
+        self._service = None
+        assert self.started
 
     def pre_start(self):
         """
@@ -292,8 +318,10 @@ class Zookeeper(Service):
         """
         Initialize Zookeeper for the first runs. This commands fails silently if it's rerun
         """
-        LOG.info("[%s] Initializing Zookeeper", self.name)
-        self.service.init_zookeeper()
+        LOG.info("[%s] Initializing", self.name)
+        cmd = self.service.init_zookeeper()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command InitZookeeper failed. %s", self.name, cmd.resultMessage)
 
 
 class Hdfs(Service):
@@ -308,12 +336,14 @@ class Hdfs(Service):
         LOG.info("[%s] Formatting HDFS Namenode", self.name)
         cmds = self.service.format_hdfs('{}-NAMENODE-1'.format(self.name))
         for cmd in cmds:
-            if not cmd.wait(60).success:
+            if not cmd.wait(300).success:
                 LOG.warn("[%s] Failed formatting HDFS, continuing with setup. %s",
                          self.name, cmd.resultMessage)
 
     def post_start(self):
-        self.service.create_hdfs_tmp()
+        cmd = self.service.create_hdfs_tmp()
+        if not cmd.wait(60).success:
+            LOG.error("[%s] Command CreateHdfsTmp failed. %s", self.name, cmd.resultMessage)
 
 
 class Yarn(Service):
@@ -459,6 +489,24 @@ class Hue(Service):
     """
 
 
+class Kafka(Service):
+    """
+    Service Role Groups:
+        KAFKA_BROKER
+    """
+
+
+class Sentry(Service):
+    """
+    Service Role Groups:
+        SENTRY_SERVER
+    """
+    def pre_start(self):
+        cmd = self.service.create_sentry_database_tables()
+        if not cmd.wait(300).success:
+            LOG.error("[%s] Command CreateSentryDBTables failed. %s", self.name, cmd.resultMessage)
+
+
 class ClouderaManager(object):
     """
     The complete orchestration of a cluster from start to finish assuming all the hosts are
@@ -469,20 +517,48 @@ class ClouderaManager(object):
     __class__.setup()
     """
 
-    def __init__(self, module, config):
+    def __init__(self, module, config, trial=False, license_txt=None):
         self.api = ApiResource(config['cm']['host'], username=config['cm']['username'],
                                password=config['cm']['password'])
         self.manager = self.api.get_cloudera_manager()
         self.config = config
         self.module = module
+        self.trial = trial
+        self.license_txt = license_txt
         self.cluster = None
         LOG.debug(config)
+
+    def enable_license(self):
+        """
+        Enable the requested license, either it's trial mode or a full license is entered and
+        registered.
+        """
+        try:
+            _license = self.manager.get_license()
+            LOG.info("[LICENSE] Owner: %s, UUID: %s", _license.owner, _license.uuid)
+        except ApiException:
+            LOG.error("[LICENSE] Error retrieving current license state")
+            LOG.info("[LICENSE] Enabling license")
+            if self.trial:
+                self.manager.begin_trial()
+            else:
+                if license_txt is not None:
+                    self.manager.update_license(license_txt)
+                else:
+                    fail(self.module, 'License should be provided or trial should be specified')
+
+            try:
+                _license = self.manager.get_license()
+                LOG.info("[LICENSE] Owner: %s, UUID: %s", _license.owner, _license.uuid)
+            except ApiException:
+                fail(self.module, 'Failed enabling license')
 
     def create_cluster(self):
         """
         Create a cluster and add hosts to the cluster. A new cluster is only created
         if another one doesn't exist with the same name.
         """
+        LOG.info("[CLUSTER] Creating cluster...")
         cluster_config = self.config['cluster']
         try:
             self.cluster = self.api.get_cluster(cluster_config['name'])
@@ -500,6 +576,16 @@ class ClouderaManager(object):
                 hosts.append(host)
         self.cluster.add_hosts(hosts)
 
+    def activate_parcels(self):
+        LOG.info("[PARCELS] Setting up parcels...")
+        for parcel_cfg in self.config['parcels']:
+            parcel = Parcels(self.module, self.manager, self.cluster,
+                             parcel_cfg.get('version'), parcel_cfg.get('repo'),
+                             parcel_cfg.get('product', 'CDH'))
+            parcel.download()
+            parcel.distribute()
+            parcel.activate()
+
     @retry(attempts=20, delay=5)
     def wait_inspect_hosts(self, cmd):
         """
@@ -507,13 +593,13 @@ class ClouderaManager(object):
 
         :param cmd: A command instance used for tracking the status of the command
         """
-        LOG.info("Inspecting hosts...")
+        LOG.info("[HOSTS] Inspecting hosts...")
         cmd = cmd.fetch()
         if cmd.success is None:
             raise ApiException("Waiting on command {} to finish".format(cmd))
         elif not cmd.success:
             fail(self.module, 'Host inspection failed')
-        LOG.info("Host inspection completed: %s", cmd.resultMessage)
+        LOG.info("[HOSTS] Host inspection completed: %s", cmd.resultMessage)
 
     def deploy_mgmt_services(self):
         """
@@ -543,7 +629,7 @@ class ClouderaManager(object):
         else:
             fail(self.module, "[MGMT] Cloudera Management services didn't start up properly")
 
-    def service_orchestrate(self, services, stop=False):
+    def service_orchestrate(self, services):
         """
         Create, pre-configure provided list of services
         Stop/Start those services
@@ -558,41 +644,36 @@ class ClouderaManager(object):
             service_config = self.config['services'].get(service.upper())
             if service_config:
                 svc = getattr(sys.modules[__name__], service)(self.cluster, service_config)
-                svc.deploy()
-                svc.pre_start()
+                if not svc.started:
+                    svc.deploy()
+                    svc.pre_start()
                 service_classes.append(svc)
 
-        LOG.info("Starting services: %s on Cluster", services)
-        # Stop the cluster to make sure there's nothing running before hand
-        if stop:
-            self.cluster.stop().wait()
+        LOG.info("[CLUSTER] Starting services: %s on Cluster", services)
 
         # Deploy all the client configs, since some of the services depend on other services
         # and is essential that the client configs are in place
         self.cluster.deploy_client_config()
 
-        # Start the cluster with the specified services
-        self.cluster.start().wait()
-
-        # Post start actions for Services
+        # Start each service and run the post_start actions for each service
         for svc in service_classes:
-            svc.post_start()
+            # Only go thru the steps if the service is not yet started. This helps with
+            # re-running the script after fixing errors
+            if not svc.started:
+                svc.start()
+                svc.post_start()
 
     def setup(self):
-        # TODO(rnirmal): How to handle licenses?
         # TODO(rnirmal): Cloudera Manager SSL?
 
+        # Enable a full license or start a trial
+        self.enable_license()
+
         # Create the cluster entity and associate hosts
-        LOG.info("Creating cluster...")
         self.create_cluster()
 
         # Download and activate the parcels
-        LOG.info("Setting up parcels...")
-        parcel = Parcels(self.module, self.manager, self.cluster,
-                         self.config['parcel']['version'], self.config['parcel']['repo'])
-        parcel.download()
-        parcel.distribute()
-        parcel.activate()
+        self.activate_parcels()
 
         # Inspect all the hosts
         self.wait_inspect_hosts(self.manager.inspect_hosts())
@@ -601,9 +682,7 @@ class ClouderaManager(object):
         self.deploy_mgmt_services()
 
         # Configure and Start base services
-        self.service_orchestrate(BASE_SERVICES, stop=True)
-        # TODO(rnirmal): Make sure all the HDFS required roles are running, since this will be
-        # required by some of the later services
+        self.service_orchestrate(BASE_SERVICES)
 
         # Configure and Start remaining services
         self.service_orchestrate(ADDITIONAL_SERVICES)
@@ -615,7 +694,9 @@ if __name__ == '__main__':
     # Load all the variables passed in by Ansible
     try:
         argument_spec = dict(
-            template=dict(type='str', default='/opt/cluster.yaml')
+            template=dict(type='str', default='/opt/cluster.yaml'),
+            trial=dict(type='bool', default=False),
+            license_txt=dict(type='str', default='')
         )
 
         module = AnsibleModule(
@@ -623,18 +704,23 @@ if __name__ == '__main__':
         )
 
         yaml_template = module.params.get('template')
+        trial = module.params.get('trial')
+        license_txt = module.params.get('license_txt')
 
         if not yaml_template:
             fail(module, msg='The cluster configuration template is not available')
     except ValueError as e:
         LOG.warn("Skipping ansible run and running locally")
         yaml_template = 'cluster.yaml'
+        trial = True
+        license_txt = ''
 
     # Load the cluster.yaml template and create a Cloudera cluster
     try:
         with open(yaml_template, 'r') as cluster_yaml:
             config = yaml.load(cluster_yaml)
-        cm = ClouderaManager(module, config)
+        cm = ClouderaManager(module, config, trial, license_txt)
         cm.setup()
     except IOError as e:
+        LOG.error("Error creating cluster: %s", e)
         fail(module, 'Error loading cluster yaml config')

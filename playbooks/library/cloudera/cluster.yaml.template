@@ -12,15 +12,19 @@ cm:
 cluster:
   name: cdh_hadoop
   version: 5
-  fullVersion: 5.6.0
+  fullVersion: 5.7.0
   hosts:
     - master-01.local
     - slave-01.local
 
 # Parcels
-parcel:
-  repo:
-  version: 5.6.0-1.cdh5.6.0.p0.45
+parcels:
+  - repo:
+    product: CDH
+    version: 5.7.0-1.cdh5.7.0.p0.45
+  - repo:
+    product: KAFKA
+    version: 2.0.1-1.2.0.1.p0.5
 
 # Service. All the service definitions go here
 services:
@@ -248,3 +252,32 @@ services:
       - group: HUE_SERVER
         hosts:
           - master-01.local
+  KAFKA:
+    config:
+      zookeeper_service: ZOOKEEPER
+      zookeeper.chroot: /kafka
+      default.replication.factor: 3
+    roles:
+      - group: KAFKA_BROKER
+        config:
+          log.dirs: /var/lib/kafka/data
+          broker_max_heap_size: 1024
+        hosts:
+          - slave-01.local
+  SENTRY:
+    config:
+      zookeeper_service: ZOOKEEPER
+      hdfs_service: HDFS
+      sentry_server_database_host: master-01.local
+      sentry_server_database_name: sentry
+      sentry_server_database_user: sentry
+      sentry_server_database_password: sentry
+      sentry_server_database_type: mysql
+    roles:
+      - group: SENTRY_SERVER
+        hosts:
+          - master-01.local
+      - group: GATEWAY
+        hosts:
+          - master-01.local
+          - slave-01.local
