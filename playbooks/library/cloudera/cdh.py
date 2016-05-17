@@ -8,7 +8,7 @@
 # Note: For any new service a `Service` class will need to be implemented.
 
 from functools import wraps
-import logging
+import json
 import sys
 import time
 
@@ -18,9 +18,6 @@ from ansible.module_utils.basic import AnsibleModule
 
 from cm_api.api_client import ApiResource, ApiException
 from cm_api.endpoints.services import ApiServiceSetupInfo
-
-
-LOG = logging.getLogger(__name__)
 
 
 REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
@@ -60,12 +57,11 @@ def retry(attempts=3, delay=5):
     return deco_retry
 
 
-def set_loggger():
-    ch = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s:%(lineno)d:: %(message)s')
-    ch.setFormatter(formatter)
-    LOG.addHandler(ch)
-    LOG.setLevel(logging.DEBUG)
+def print_json(**kwargs):
+    """
+    Print json output based on the passed in arguments
+    """
+    print json.dumps(kwargs)
 
 
 def fail(module, msg):
@@ -75,7 +71,7 @@ def fail(module, msg):
     if module:
         module.fail_json(msg=msg)
     else:
-        LOG.error(msg)
+        print_json(msg=msg)
         sys.exit(1)
 
 
@@ -144,16 +140,17 @@ class Parcels(object):
         if parcel.stage in states:
             return
         else:
-            LOG.info("[%s] %s progress: %s / %s",  self.__class__.__name__.upper(),
-                     states[0], parcel.state.progress, parcel.state.totalProgress)
+            print_json(type=self.__class__.__name__.upper(),
+                       msg="{} progress: {} / {}".format(states[0], parcel.state.progress,
+                                                         parcel.state.totalProgress))
             raise ApiException("Waiting on parcel to get to state {}".format(states[0]))
 
     def download(self):
         """
         Download the specified parcel to the Cloudera Manager server
         """
-        LOG.info("[%s] Downloading: %s-%s", self.__class__.__name__.upper(),
-                 self.product, self.version)
+        print_json(type=self.__class__.__name__.upper(),
+                   msg="Downloading: {}-{}".format(self.product, self.version))
         self.parcel.start_download()
         self.check_state(['DOWNLOADED', 'DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -161,8 +158,8 @@ class Parcels(object):
         """
         Distribute the parcel to all the nodes
         """
-        LOG.info("[%s] Distributing: %s-%s", self.__class__.__name__.upper(),
-                 self.product, self.version)
+        print_json(type=self.__class__.__name__.upper(),
+                   msg="Distributing: {}-{}".format(self.product, self.version))
         self.parcel.start_distribution()
         self.check_state(['DISTRIBUTED', 'ACTIVATED', 'INUSE'])
 
@@ -170,8 +167,8 @@ class Parcels(object):
         """
         Activate the parcel for use in the cluster installation step
         """
-        LOG.info("[%s] Activating: %s-%s", self.__class__.__name__.upper(),
-                 self.product, self.version)
+        print_json(type=self.__class__.__name__.upper(),
+                   msg="Activating: {}-{}".format(self.product, self.version))
         self.parcel.activate()
         self.check_state(['ACTIVATED', 'INUSE'])
 
@@ -224,7 +221,7 @@ class Service(object):
         """
         Update group configs. Create roles and update role specific configs.
         """
-        LOG.info("[%s] Deploying service", self.name)
+        print_json(type=self.name, msg="Deploying service")
 
         # Service creation and config updates
         self.service.update_config(self.config.get('config', {}))
@@ -263,12 +260,13 @@ class Service(object):
         Start the service and wait for the command to finish, followed by a check that the
         service is running and healthy
         """
-        LOG.info("[%s] Starting", self.name)
+        print_json(type=self.name, msg="Starting")
         self._service = None
         if not self.started:
             cmd = self.service.start()
             if not cmd.wait(300).success:
-                LOG.error("[%s] Command Service start failed. %s", self.name, cmd.resultMessage)
+                print_json(type=self.name,
+                           msg="Command Service start failed. {}".format(cmd.resultMessage))
                 if (cmd.resultMessage is not None and
                         'There is already a pending command on this entity' in cmd.resultMessage):
                     raise ApiException('Retry command')
@@ -318,10 +316,11 @@ class Zookeeper(Service):
         """
         Initialize Zookeeper for the first runs. This commands fails silently if it's rerun
         """
-        LOG.info("[%s] Initializing", self.name)
+        print_json(type=self.name, msg="Initializing")
         cmd = self.service.init_zookeeper()
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command InitZookeeper failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command InitZookeeper failed. {}".format(cmd.resultMessage))
 
 
 class Hdfs(Service):
@@ -333,17 +332,17 @@ class Hdfs(Service):
         GATEWAY
     """
     def pre_start(self):
-        LOG.info("[%s] Formatting HDFS Namenode", self.name)
+        print_json(type=self.name, msg="Formatting HDFS Namenode")
         cmds = self.service.format_hdfs('{}-NAMENODE-1'.format(self.name))
         for cmd in cmds:
             if not cmd.wait(300).success:
-                LOG.warn("[%s] Failed formatting HDFS, continuing with setup. %s",
-                         self.name, cmd.resultMessage)
+                print_json(type=self.name,
+                           msg="Failed formatting HDFS, continuing with setup. {}".format(cmd.resultMessage))
 
     def post_start(self):
         cmd = self.service.create_hdfs_tmp()
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateHdfsTmp failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name, msg="Command CreateHdfsTmp failed. {}".format(cmd.resultMessage))
 
 
 class Yarn(Service):
@@ -366,13 +365,18 @@ class Spark_On_Yarn(Service):
     def pre_start(self):
         cmd = self.service._cmd('CreateSparkUserDirCommand', api_version=7)
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateSparkUserDir failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateSparkUserDir failed. {}".format(cmd.resultMessage))
+
         cmd = self.service._cmd('CreateSparkHistoryDirCommand', api_version=7)
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateSparkHistoryDir failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateSparkHistoryDir failed. {}".format(cmd.resultMessage))
+
         cmd = self.service._cmd('SparkUploadJarServiceCommand', api_version=7)
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command SparkUploadJarService failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command SparkUploadJarService failed. {}".format(cmd.resultMessage))
 
 
 class Hbase(Service):
@@ -386,7 +390,8 @@ class Hbase(Service):
     def pre_start(self):
         cmd = self.service.create_hbase_root()
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateHbaseRoot failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateHbaseRoot failed. {}".format(cmd.resultMessage))
 
 
 class Hive(Service):
@@ -400,21 +405,21 @@ class Hive(Service):
     def pre_start(self):
         cmd = self.service.create_hive_warehouse()
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateHiveWarehouse failed. %s",
-                      self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateHiveWarehouse failed. {}".format(cmd.resultMessage))
 
     def post_start(self):
         # TODO(rnirmal): These commands keep failing, need to figure out why. Nothing useful in the
         # manager logs
         cmd = self.service.create_hive_metastore_database()
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateHiveMetastoreDatabase failed. %s",
-                      self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateHiveMetastoreDatabase failed. {}".format(cmd.resultMessage))
 
         cmd = self.service.create_hive_metastore_tables()
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateHiveMetastoreTables failed. %s",
-                      self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateHiveMetastoreTables failed. {}".format(cmd.resultMessage))
 
 
 class Impala(Service):
@@ -427,7 +432,8 @@ class Impala(Service):
     def pre_start(self):
         cmd = self.service.create_impala_user_dir()
         if not cmd.wait(60).success:
-            LOG.error("[%s] Command CreateImpalaUserDir failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateImpalaUserDir failed. {}".format(cmd.resultMessage))
 
 
 class Flume(Service):
@@ -445,11 +451,13 @@ class Oozie(Service):
     def pre_start(self):
         cmd = self.service.create_oozie_db()
         if not cmd.wait(300).success:
-            LOG.error("[%s] Command CreateOozieSchema failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateOozieSchema failed. {}".format(cmd.resultMessage))
 
         cmd = self.service.install_oozie_sharelib()
         if not cmd.wait(300).success:
-            LOG.error("[%s] Command InstallOozieSharedLib failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command InstallOozieSharedLib failed. {}".format(cmd.resultMessage))
 
 
 class Sqoop(Service):
@@ -460,11 +468,13 @@ class Sqoop(Service):
     def pre_start(self):
         cmd = self.service.create_sqoop_user_dir()
         if not cmd.wait(300).success:
-            LOG.error("[%s] Command CreateSqoopUserDir failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateSqoopUserDir failed. {}".format(cmd.resultMessage))
 
         cmd = self.service.create_sqoop_database_tables()
         if not cmd.wait(300).success:
-            LOG.error("[%s] Command CreateSqoopDBTables failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateSqoopDBTables failed. {}".format(cmd.resultMessage))
 
 
 class Solr(Service):
@@ -475,11 +485,13 @@ class Solr(Service):
     def pre_start(self):
         cmd = self.service.init_solr()
         if not cmd.wait(300).success:
-            LOG.error("[%s] Command InitSolr failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command InitSolr failed. {}".format(cmd.resultMessage))
 
         cmd = self.service.create_solr_hdfs_home_dir()
         if not cmd.wait(300).success:
-            LOG.error("[%s] Command CreateSolrHdfsHomeDir failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateSolrHdfsHomeDir failed. {}".format(cmd.resultMessage))
 
 
 class Hue(Service):
@@ -504,7 +516,8 @@ class Sentry(Service):
     def pre_start(self):
         cmd = self.service.create_sentry_database_tables()
         if not cmd.wait(300).success:
-            LOG.error("[%s] Command CreateSentryDBTables failed. %s", self.name, cmd.resultMessage)
+            print_json(type=self.name,
+                       msg="Command CreateSentryDBTables failed. {}".format(cmd.resultMessage))
 
 
 class ClouderaManager(object):
@@ -526,7 +539,6 @@ class ClouderaManager(object):
         self.trial = trial
         self.license_txt = license_txt
         self.cluster = None
-        LOG.debug(config)
 
     def enable_license(self):
         """
@@ -535,10 +547,8 @@ class ClouderaManager(object):
         """
         try:
             _license = self.manager.get_license()
-            LOG.info("[LICENSE] Owner: %s, UUID: %s", _license.owner, _license.uuid)
         except ApiException:
-            LOG.error("[LICENSE] Error retrieving current license state")
-            LOG.info("[LICENSE] Enabling license")
+            print_json(type="LICENSE", msg="Enabling license")
             if self.trial:
                 self.manager.begin_trial()
             else:
@@ -549,21 +559,23 @@ class ClouderaManager(object):
 
             try:
                 _license = self.manager.get_license()
-                LOG.info("[LICENSE] Owner: %s, UUID: %s", _license.owner, _license.uuid)
             except ApiException:
                 fail(self.module, 'Failed enabling license')
+        print_json(type="LICENSE",
+                   msg="Owner: {}, UUID: {}".format(_license.owner, _license.uuid))
 
     def create_cluster(self):
         """
         Create a cluster and add hosts to the cluster. A new cluster is only created
         if another one doesn't exist with the same name.
         """
-        LOG.info("[CLUSTER] Creating cluster...")
+        print_json(type="CLUSTER", msg="Creating cluster")
         cluster_config = self.config['cluster']
         try:
             self.cluster = self.api.get_cluster(cluster_config['name'])
         except ApiException:
-            LOG.info("Creating Cluster entity: %s", cluster_config['name'])
+            print_json(type="CLUSTER",
+                       msg="Creating Cluster entity: {}".format(cluster_config['name']))
             self.cluster = self.api.create_cluster(cluster_config['name'],
                                                    cluster_config['version'],
                                                    cluster_config['fullVersion'])
@@ -577,7 +589,7 @@ class ClouderaManager(object):
         self.cluster.add_hosts(hosts)
 
     def activate_parcels(self):
-        LOG.info("[PARCELS] Setting up parcels...")
+        print_json(type="PARCELS", msg="Setting up parcels")
         for parcel_cfg in self.config['parcels']:
             parcel = Parcels(self.module, self.manager, self.cluster,
                              parcel_cfg.get('version'), parcel_cfg.get('repo'),
@@ -593,30 +605,30 @@ class ClouderaManager(object):
 
         :param cmd: A command instance used for tracking the status of the command
         """
-        LOG.info("[HOSTS] Inspecting hosts...")
+        print_json(type="HOSTS", msg="Inspecting hosts")
         cmd = cmd.fetch()
         if cmd.success is None:
             raise ApiException("Waiting on command {} to finish".format(cmd))
         elif not cmd.success:
             fail(self.module, 'Host inspection failed')
-        LOG.info("[HOSTS] Host inspection completed: %s", cmd.resultMessage)
+        print_json(type="HOSTS", msg="Host inspection completed: {}".format(cmd.resultMessage))
 
     def deploy_mgmt_services(self):
         """
         Configure, deploy and start all the Cloudera Management Services.
         """
-        LOG.info("[MGMT] Deploying Management Services")
+        print_json(type="MGMT", msg="Deploying Management Services")
         try:
             mgmt = self.manager.get_service()
             if mgmt.serviceState == 'STARTED':
                 return
         except ApiException:
-            LOG.warn("[MGMT] Management Services don't exist. Creating...")
+            print_json(type="MGMT", msg="Management Services don't exist. Creating.")
             mgmt = self.manager.create_mgmt_service(ApiServiceSetupInfo())
 
         for role in config['services']['MGMT']['roles']:
             if not len(mgmt.get_roles_by_type(role['group'])) > 0:
-                LOG.info("[MGMT] Creating role for %s", role['group'])
+                print_json(type="MGMT", msg="Creating role for {}".format(role['group']))
                 mgmt.create_role('{}-1'.format(role['group']), role['group'], role['hosts'][0])
 
         for role in config['services']['MGMT']['roles']:
@@ -625,7 +637,7 @@ class ClouderaManager(object):
 
         mgmt.start().wait()
         if self.manager.get_service().serviceState == 'STARTED':
-            LOG.info("[MGMT] Management Services started")
+            print_json(type="MGMT", msg="Management Services started")
         else:
             fail(self.module, "[MGMT] Cloudera Management services didn't start up properly")
 
@@ -649,7 +661,7 @@ class ClouderaManager(object):
                     svc.pre_start()
                 service_classes.append(svc)
 
-        LOG.info("[CLUSTER] Starting services: %s on Cluster", services)
+        print_json(type="CLUSTER", msg="Starting services: {} on Cluster".format(services))
 
         # Deploy all the client configs, since some of the services depend on other services
         # and is essential that the client configs are in place
@@ -689,7 +701,6 @@ class ClouderaManager(object):
 
 
 if __name__ == '__main__':
-    set_loggger()
     module = None
     # Load all the variables passed in by Ansible
     try:
@@ -710,7 +721,7 @@ if __name__ == '__main__':
         if not yaml_template:
             fail(module, msg='The cluster configuration template is not available')
     except ValueError as e:
-        LOG.warn("Skipping ansible run and running locally")
+        print_json(msg="Skipping ansible run and running locally")
         yaml_template = 'cluster.yaml'
         trial = True
         license_txt = ''
@@ -721,6 +732,7 @@ if __name__ == '__main__':
             config = yaml.load(cluster_yaml)
         cm = ClouderaManager(module, config, trial, license_txt)
         cm.setup()
+        if module:
+            module.exit_json(changed=True)
     except IOError as e:
-        LOG.error("Error creating cluster: %s", e)
-        fail(module, 'Error loading cluster yaml config')
+        fail(module, "Error creating cluster {}".format(e))
