@@ -6,7 +6,7 @@
 ## using the default public network    ##
 #########################################
 
-cluster_interface: 'eth1'
+cluster_interface: 'eth0'
 cloud_nodes_count: 3
 cloud_image: 'CentOS 7 (PVHVM)'
 # cloud_image: 'CentOS 6 (PVHVM)'
