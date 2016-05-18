@@ -44,4 +44,4 @@
   template: src=config.ini dest=/etc/cloudera-scm-agent/
 
 - name: Enable the Cloudera agent
-  service: name=cloudera-scm-agent state=started enabled=yes
+  service: name=cloudera-scm-agent state=restarted enabled=yes

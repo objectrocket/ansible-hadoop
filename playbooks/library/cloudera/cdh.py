@@ -1,4 +1,5 @@
-# !/usr/bin/python  # This file is part of Ansible
+#!/usr/bin/python  
+# This file is part of Ansible
 
 # This module performs the cluster configuration and installation from start to finish
 # given the services, configuration and host information. All the information required
@@ -14,7 +15,7 @@ import time
 
 import yaml
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import *
 
 from cm_api.api_client import ApiResource, ApiException
 from cm_api.endpoints.services import ApiServiceSetupInfo
