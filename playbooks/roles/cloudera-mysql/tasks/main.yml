@@ -62,6 +62,14 @@
   mysql_user: name=metastore password={{ hive_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=hive.*:ALL state=present
   with_items: "{{ play_hosts }}"
 
+- name: setup Oozie DB user
+  mysql_user: name=oozie password={{ oozie_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=oozie.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup Sqoop DB user
+  mysql_user: name=sqoop password={{ sqoop_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=sqoop.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
 - name: setup SCM DB user
   mysql_user: name=scm password={{ scm_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=scm.*:ALL state=present
   with_items: "{{ play_hosts }}"
