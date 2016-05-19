@@ -18,6 +18,8 @@
   with_items: "{{ pkgs }}"
   when: ansible_os_family == "RedHat"
 
+- include_vars: group_vars/cloudera
+
 - include_vars: mysql_vars.yml
 
 - name: mysql config template

@@ -11,7 +11,7 @@ install_storm: false
 install_kafka: false
 install_falcon: false
 admin_password: 'admin'
-services_password: 'temp'
+services_pass: 'temp'
 alerts_contact: 'root@localhost.localdomain'
 data_disks_filesystem: xfs
 configure_firewall: true
