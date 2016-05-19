@@ -40,6 +40,9 @@
   with_items: "{{ package_info.pkgs }}"
   when: ansible_os_family == "Debian"
 
+- include: unbound-dns.yml
+  when: use_dns
+
 - name: install agent config
   template: src=config.ini dest=/etc/cloudera-scm-agent/
 

@@ -23,5 +23,8 @@
   notify: Restart unbound
 
 - name: Configure unbound cluster zone on the master node
-  template: src=redhat-unbound-zonefile.j2 dest=/etc/unbound/local.d/{{ ansible_domain }}_zone.conf
+  template: src=redhat-unbound-zonefile.j2 dest=/etc/unbound/local.d/{{ ansible_domain }}_zone.conf force=yes
   notify: Restart unbound
+
+- name: Place resolv template in place
+  template: src=resolv.conf.j2 dest={{ resolv_conf }}
