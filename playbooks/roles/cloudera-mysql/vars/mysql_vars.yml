@@ -16,4 +16,5 @@ db_names:
   - rman
   - scm
   - sentry
-
+  - oozie
+  - sqoop
