@@ -1,7 +1,7 @@
 ---
 cluster_name: 'hadoop-poc'
 hdp_version: '2.4'
-ambari_version: '2.2.1.1'
+ambari_version: '2.2.2.0'
 admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
