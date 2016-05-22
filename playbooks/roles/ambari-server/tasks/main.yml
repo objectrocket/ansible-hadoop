@@ -1,13 +1,17 @@
 ---
-- include: prerequisites.yml
+- name: Include prerequisites.yml
+  include: prerequisites.yml
 
-- include: single-node.yml
+- name: Include single-node.yml
+  include: single-node.yml
   when: not custom_blueprint and groups['master-nodes']|length == 1 and ('slave-nodes' not in groups or groups['slave-nodes']|length == 0)
 
-- include: multi-nodes.yml
+- name: Include multi-nodes.yml
+  include: multi-nodes.yml
   when: not custom_blueprint and groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
 
-- include: custom.yml
+- name: Include custom.yml
+  include: custom.yml
   when: custom_blueprint
 
 - name: Upload HDP Repo

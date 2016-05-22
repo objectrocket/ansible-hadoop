@@ -20,7 +20,8 @@
 
 - meta: flush_handlers
 
-- include: spark_stack.yml
+- name: Include spark_stack.yml
+  include: spark_stack.yml
   when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Run Ambari Server setup
