@@ -579,6 +579,9 @@ class ClouderaManager(object):
         if cmd.success is None:
             raise ApiException("Waiting on command {} to finish".format(cmd))
         elif not cmd.success:
+            if (cmd.resultMessage is not None and
+                    'is not currently available for execution' in cmd.resultMessage):
+                raise ApiException('Retry Command')
             fail(self.module, 'Host inspection failed')
         print_json(type="HOSTS", msg="Host inspection completed: {}".format(cmd.resultMessage))
 
