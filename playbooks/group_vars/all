@@ -5,6 +5,8 @@ ambari_version: '2.2.2.0'
 admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
+wait: true
+wait_timeout: 1800   # 30 minutes
 
 install_spark: true
 install_flume: true

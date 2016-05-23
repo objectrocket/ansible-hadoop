@@ -124,6 +124,31 @@
        status_code=200,201,202
   when: current_cluster.status==404
 
+- name: Wait for the cluster to be built
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/clusters/{{ cluster_name }}/requests/1
+       method=GET
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_Content-Type="application/json"
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202
+       return_content=yes
+  register: cluster_create_task
+  until: ((cluster_create_task.content|from_json).Requests.request_status == 'COMPLETED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')
+  retries: "{{ wait_timeout // 10 }}"
+  delay: 10
+  when: wait
+
+- name: Check the cluster creation status
+  fail: msg="Failed to build the {{ cluster_name }} cluster. Status is {{ (cluster_create_task.content|from_json).Requests.request_status }}"
+  when: ((cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')
+
 - name: Change Ambari admin user password
   uri: url=http://{{ ansible_nodename }}:8080/api/v1/users/admin
        method=PUT
