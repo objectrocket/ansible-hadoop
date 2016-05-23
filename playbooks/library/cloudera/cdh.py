@@ -9,10 +9,6 @@
 # Note: For any new service a `Service` class will need to be implemented.
 
 from functools import wraps
-import json
-import sys
-import time
-
 import yaml
 
 from ansible.module_utils.basic import *
@@ -218,6 +214,19 @@ class Service(object):
         """
         return True if self.service.serviceState == 'STARTED' else False
 
+    @retry(attempts=10, delay=30)
+    def run_cmd(self, func, timeout, fail_msg, *args, **kwargs):
+        """
+        Wrap retry checks for pre and post start commands that sometimes are not available to
+        execute immediately after configuring or starting a service
+        """
+        cmd = func(*args, **kwargs)
+        if not cmd.wait(timeout).success:
+            if (cmd.resultMessage is not None and
+                    "is not currently available for execution" in cmd.resultMessage):
+                raise ApiException('Retry command')
+            print_json(type=self.name, msg="{}. {}".format(fail_msg, cmd.resultMessage))
+
     def deploy(self):
         """
         Update group configs. Create roles and update role specific configs.
@@ -261,7 +270,7 @@ class Service(object):
         Start the service and wait for the command to finish, followed by a check that the
         service is running and healthy
         """
-        print_json(type=self.name, msg="Starting")
+        print_json(type=self.name, msg="Starting service")
         self._service = None
         if not self.started:
             cmd = self.service.start()
@@ -318,10 +327,7 @@ class Zookeeper(Service):
         Initialize Zookeeper for the first runs. This commands fails silently if it's rerun
         """
         print_json(type=self.name, msg="Initializing")
-        cmd = self.service.init_zookeeper()
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command InitZookeeper failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.init_zookeeper, 60, "Command InitZookeeper failed")
 
 
 class Hdfs(Service):
@@ -341,9 +347,7 @@ class Hdfs(Service):
                            msg="Failed formatting HDFS, continuing with setup. {}".format(cmd.resultMessage))
 
     def post_start(self):
-        cmd = self.service.create_hdfs_tmp()
-        if not cmd.wait(60).success:
-            print_json(type=self.name, msg="Command CreateHdfsTmp failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.create_hdfs_tmp, 60, "Command CreateHdfsTmp failed")
 
 
 class Yarn(Service):
@@ -364,20 +368,14 @@ class Spark_On_Yarn(Service):
         GATEWAY
     """
     def pre_start(self):
-        cmd = self.service._cmd('CreateSparkUserDirCommand', api_version=7)
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command CreateSparkUserDir failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service._cmd, 60, "Command CreateSparkUserDir failed",
+                     'CreateSparkUserDirCommand', api_version=7)
 
-        cmd = self.service._cmd('CreateSparkHistoryDirCommand', api_version=7)
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command CreateSparkHistoryDir failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service._cmd, 60, "Command CreateSparkHistoryDirCommand failed",
+                     'CreateSparkHistoryDirCommand', api_version=7)
 
-        cmd = self.service._cmd('SparkUploadJarServiceCommand', api_version=7)
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command SparkUploadJarService failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service._cmd, 60, "Command SparkUploadJarServiceCommand failed",
+                     'SparkUploadJarServiceCommand', api_version=7)
 
 
 class Hbase(Service):
@@ -389,10 +387,7 @@ class Hbase(Service):
         GATEWAY
     """
     def pre_start(self):
-        cmd = self.service.create_hbase_root()
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command CreateHbaseRoot failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.create_hbase_root, 60, "Command CreateHbaseRoot failed")
 
 
 class Hive(Service):
@@ -404,23 +399,17 @@ class Hive(Service):
         GATEWAY
     """
     def pre_start(self):
-        cmd = self.service.create_hive_warehouse()
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command CreateHiveWarehouse failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.create_hive_warehouse, 60, "Command CreateHiveWarehouse failed")
 
     def post_start(self):
+        pass
         # TODO(rnirmal): These commands keep failing, need to figure out why. Nothing useful in the
         # manager logs
-        cmd = self.service.create_hive_metastore_database()
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command CreateHiveMetastoreDatabase failed. {}".format(cmd.resultMessage))
-
-        cmd = self.service.create_hive_metastore_tables()
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command CreateHiveMetastoreTables failed. {}".format(cmd.resultMessage))
+        # self.run_cmd(self.service.create_hive_metastore_database, 60,
+        #              "Command CreateHiveMetastoreDatabase failed")
+        #
+        # self.run_cmd(self.service.create_hive_metastore_tables, 60,
+        #              "Command CreateHiveMetastoreTables failed")
 
 
 class Impala(Service):
@@ -431,10 +420,7 @@ class Impala(Service):
         IMPALAD
     """
     def pre_start(self):
-        cmd = self.service.create_impala_user_dir()
-        if not cmd.wait(60).success:
-            print_json(type=self.name,
-                       msg="Command CreateImpalaUserDir failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.create_impala_user_dir, 60, "Command CreateImpalaUserDir failed")
 
 
 class Flume(Service):
@@ -450,15 +436,10 @@ class Oozie(Service):
         OOZIE_SERVER
     """
     def pre_start(self):
-        cmd = self.service.create_oozie_db()
-        if not cmd.wait(300).success:
-            print_json(type=self.name,
-                       msg="Command CreateOozieSchema failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.create_oozie_db, 300, "Command CreateOozieSchema failed")
 
-        cmd = self.service.install_oozie_sharelib()
-        if not cmd.wait(300).success:
-            print_json(type=self.name,
-                       msg="Command InstallOozieSharedLib failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.install_oozie_sharelib, 300,
+                     "Command InstallOozieSharedLib failed")
 
 
 class Sqoop(Service):
@@ -467,15 +448,10 @@ class Sqoop(Service):
         SQOOP_SERVER
     """
     def pre_start(self):
-        cmd = self.service.create_sqoop_user_dir()
-        if not cmd.wait(300).success:
-            print_json(type=self.name,
-                       msg="Command CreateSqoopUserDir failed. {}".format(cmd.resultMessage))
-
-        cmd = self.service.create_sqoop_database_tables()
-        if not cmd.wait(300).success:
-            print_json(type=self.name,
-                       msg="Command CreateSqoopDBTables failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.create_sqoop_user_dir, 300,
+                     "Command CreateSqoopUserDir failed")
+        self.run_cmd(self.service.create_sqoop_database_tables, 300,
+                     "Command CreateSqoopDBTables failed")
 
 
 class Solr(Service):
@@ -484,15 +460,9 @@ class Solr(Service):
         HUE_SERVER
     """
     def pre_start(self):
-        cmd = self.service.init_solr()
-        if not cmd.wait(300).success:
-            print_json(type=self.name,
-                       msg="Command InitSolr failed. {}".format(cmd.resultMessage))
-
-        cmd = self.service.create_solr_hdfs_home_dir()
-        if not cmd.wait(300).success:
-            print_json(type=self.name,
-                       msg="Command CreateSolrHdfsHomeDir failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.init_solr, 300, "Command InitSolr failed")
+        self.run_cmd(self.service.create_solr_hdfs_home_dir, 300,
+                     "Command CreateSolrHdfsHomeDir failed")
 
 
 class Hue(Service):
@@ -515,10 +485,8 @@ class Sentry(Service):
         SENTRY_SERVER
     """
     def pre_start(self):
-        cmd = self.service.create_sentry_database_tables()
-        if not cmd.wait(300).success:
-            print_json(type=self.name,
-                       msg="Command CreateSentryDBTables failed. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.create_sentry_database_tables, 300,
+                     "Command CreateSentryDBTables failed")
 
 
 class ClouderaManager(object):
@@ -611,6 +579,9 @@ class ClouderaManager(object):
         if cmd.success is None:
             raise ApiException("Waiting on command {} to finish".format(cmd))
         elif not cmd.success:
+            if (cmd.resultMessage is not None and
+                    'is not currently available for execution' in cmd.resultMessage):
+                raise ApiException('Retry Command')
             fail(self.module, 'Host inspection failed')
         print_json(type="HOSTS", msg="Host inspection completed: {}".format(cmd.resultMessage))
 
