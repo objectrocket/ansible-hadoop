@@ -30,24 +30,24 @@
     name: "{{ item }}"
     update_cache: yes
     state: installed
-  with_items: "{{ packages }}"
-  when: ansible_os_family == "RedHat" and "{{ packages|length > 0 }}"
+  with_items: "{{ packages|default([]) }}"
+  when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
   apt:
     name: "{{ item }}"
     update_cache: yes
     state: installed
-  with_items: "{{ packages }}"
-  when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
+  with_items: "{{ packages|default([]) }}"
+  when: ansible_os_family == "Debian"
 
 - name: Upgrade all packages (yum)
   yum: name=* state=latest
-  when: ansible_os_family == "RedHat" and "{{ packages|length > 0 }}"
+  when: ansible_os_family == "RedHat"
 
 - name: Upgrade all packages (apt)
   apt: upgrade=dist
-  when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
+  when: ansible_os_family == "Debian"
 
 - name: Include spark_stack.yml
   include: spark_stack.yml
@@ -119,7 +119,7 @@
   lineinfile: dest=/etc/default/grub
               state=present
               line='GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
-  when: "{{ ansible_distribution_major_version|int }} > 6"
+  when: ansible_distribution_major_version|int > 6
   notify: Run update-grub
 
 - meta: flush_handlers
