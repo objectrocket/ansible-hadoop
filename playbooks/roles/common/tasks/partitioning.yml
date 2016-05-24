@@ -14,4 +14,4 @@
 
 - name: Disable periodic fsck on {{ item }}
   shell: tune2fs -c0 -i0 /dev/{{ item }}1
-  when: ansible_devices[item] is defined and {{ data_disks_filesystem }}
+  when: ansible_devices[item] is defined and (data_disks_filesystem == "ext4" or data_disks_filesystem == "ext3")
