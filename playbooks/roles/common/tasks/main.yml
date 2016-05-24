@@ -112,8 +112,7 @@
               state=present
               regexp='(^\s*kernel(\s+(?!transparent_hugepage=never)[\w=/\-\.\,]+)*)\s*$'
               line='\1 transparent_hugepage=never'
-  register: result
-  with_items: "{{ grep_result.stdout_lines }}"
+  with_items: "{{ grep_result.stdout_lines | default('') }}"
   when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
 
 - name: Disable Transparent Huge Pages in Grub 2
