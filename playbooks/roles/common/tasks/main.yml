@@ -120,10 +120,9 @@
               state=present
               line='GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
   when: "{{ ansible_distribution_major_version|int }} > 6"
+  notify: Run update-grub
 
-- name: Run update-grub in Grub 2
-  shell: "{{ update_grub }}"
-  when: "{{ ansible_distribution_major_version|int }} > 6"
+- meta: flush_handlers
 
 - name: Disable Transparent Huge Pages until reboot
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
@@ -139,6 +138,7 @@
               regexp='^domain\s+(?! {{ ansible_domain }} ).*$'
               line='domain {{ ansible_domain }}'
   when: ansible_domain != ""
+  notify: Run resolvconf
 
 - name: Reconfigure resolv.conf search
   lineinfile: dest={{ resolv_conf }}
@@ -146,10 +146,9 @@
               regexp='^search\s+(?! {{ ansible_domain }} ).*$'
               line='search {{ ansible_domain }}'
   when: ansible_domain != ""
+  notify: Run resolvconf
 
-- name: Run resolvconf
-  shell: resolvconf -u
-  when: ansible_os_family == "Debian"
+- meta: flush_handlers
 
 - name: Configure bonding
   include: bonding.yml
