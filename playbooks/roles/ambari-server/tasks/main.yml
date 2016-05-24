@@ -23,7 +23,7 @@
   register: hdprepo
   when: custom_repo
 
-- name: modify repo base_url
+- name: Modify repo base_url
   uri: url=http://{{ ansible_nodename }}:8080/{{ custom_repo_target }}
        method=PUT
        force_basic_auth=yes
