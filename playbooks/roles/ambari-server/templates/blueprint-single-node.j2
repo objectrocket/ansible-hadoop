@@ -30,6 +30,11 @@
       }
     },
     {
+      "hbase-env" : {
+        "hbase_master_heapsize" : "2048m"
+        }
+    },
+    {
       "hadoop-env" : {
         "namenode_heapsize" : "4096m",
         "namenode_opt_maxnewsize" : "512m",
@@ -56,6 +61,11 @@
         "hive.metastore.heapsize" : "1024",
         "hive.client.heapsize" : "1024"
       }
+    },
+    {
+      "hbase-env" : {
+        "hbase_master_heapsize" : "2048m"
+        }
     },
     {
       "hadoop-env" : {
@@ -124,9 +134,8 @@
     },
     {
       "hbase-env" : {
-        "hbase_master_heapsize" : "2048m",
         "hbase_regionserver_heapsize" : "8192m",
-        "hbase_regionserver_xmn_max" : "2048"
+        "hbase_regionserver_xmn_max" : "1536"
         }
     },
     {% elif ansible_memtotal_mb > 59000 -%}
@@ -177,9 +186,8 @@
     },
     {
       "hbase-env" : {
-        "hbase_master_heapsize" : "2048m",
         "hbase_regionserver_heapsize" : "4096m",
-        "hbase_regionserver_xmn_max" : "1024"
+        "hbase_regionserver_xmn_max" : "768"
         }
     },
     {% elif ansible_memtotal_mb > 24000 -%}
@@ -230,7 +238,6 @@
     },
     {
       "hbase-env" : {
-        "hbase_master_heapsize" : "1024m",
         "hbase_regionserver_heapsize" : "2048m",
         "hbase_regionserver_xmn_max" : "512"
         }
