@@ -14,7 +14,29 @@
         "hadoop.proxyuser.hue.hosts" : "*"
       }
     },
-    {% if hostvars[groups['master-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
+    {% if hostvars[groups['master-nodes'][0]]['ansible_memtotal_mb'] > 89000 -%}
+    {
+      "ams-hbase-env" : {
+        "regionserver_xmn_size" : "512m",
+        "hbase_regionserver_heapsize" : "4096m",
+        "hbase_master_heapsize" : "4096m",
+        "hbase_master_xmn_size" : "512m"
+      }
+    },
+    {
+      "ams-env" : {
+        "metrics_collector_heapsize" : "2048m"
+      }
+    },
+    {
+      "hadoop-env" : {
+        "dtnode_heapsize" : "2048m",
+        "namenode_heapsize" : "8192m",
+        "namenode_opt_maxnewsize" : "512m",
+        "namenode_opt_newsize" : "512m"
+      }
+    },
+    {% elif hostvars[groups['master-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
     {
       "ams-hbase-env" : {
         "regionserver_xmn_size" : "512m",
