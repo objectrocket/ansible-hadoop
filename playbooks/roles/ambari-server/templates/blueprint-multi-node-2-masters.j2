@@ -37,7 +37,6 @@
     },
     {
       "hadoop-env" : {
-        "dtnode_heapsize" : "2048m",
         "namenode_heapsize" : "8192m",
         "namenode_opt_maxnewsize" : "512m",
         "namenode_opt_newsize" : "512m"
@@ -66,7 +65,6 @@
     },
     {
       "hadoop-env" : {
-        "dtnode_heapsize" : "2048m",
         "namenode_heapsize" : "4096m",
         "namenode_opt_maxnewsize" : "512m",
         "namenode_opt_newsize" : "512m"
@@ -95,7 +93,6 @@
     },
     {
       "hadoop-env" : {
-        "dtnode_heapsize" : "1024m",
         "namenode_heapsize" : "2048m",
         "namenode_opt_maxnewsize" : "384m",
         "namenode_opt_newsize" : "384m"
@@ -135,6 +132,11 @@
     },
     {% endif -%}
     {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 119000 -%}
+    {
+      "hadoop-env" : {
+        "dtnode_heapsize" : "4096m"
+      }
+    },
     {
       "yarn-site" : {
         {% if install_hbase == true -%}
@@ -184,6 +186,11 @@
     },
     {% elif hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 59000 -%}
     {
+      "hadoop-env" : {
+        "dtnode_heapsize" : "2048m"
+      }
+    },
+    {
       "yarn-site" : {
         {% if install_hbase == true -%}
         "yarn.nodemanager.resource.memory-mb" : "{{ ((hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] - 8192 - hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb']//8)//4096)*4096 }}",
@@ -231,6 +238,11 @@
         }
     },
     {% elif hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 24000 -%}
+    {
+      "hadoop-env" : {
+        "dtnode_heapsize" : "1024m"
+      }
+    },
     {
       "yarn-site" : {
         {% if install_hbase == true -%}
