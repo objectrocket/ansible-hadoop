@@ -25,7 +25,14 @@
     },
     {
       "ams-env" : {
-        "metrics_collector_heapsize" : "2048m"
+        "metrics_collector_heapsize" : "4096m"
+      }
+    },
+    {
+      "hive-env" : {
+        "hive.heapsize" : "8192",
+        "hive.metastore.heapsize" : "8192",
+        "hive.client.heapsize" : "2048"
       }
     },
     {
@@ -51,6 +58,13 @@
       }
     },
     {
+      "hive-env" : {
+        "hive.heapsize" : "4096",
+        "hive.metastore.heapsize" : "1024",
+        "hive.client.heapsize" : "1024"
+      }
+    },
+    {
       "hadoop-env" : {
         "dtnode_heapsize" : "2048m",
         "namenode_heapsize" : "4096m",
@@ -70,6 +84,13 @@
     {
       "ams-env" : {
         "metrics_collector_heapsize" : "1024m"
+      }
+    },
+    {
+      "hive-env" : {
+        "hive.heapsize" : "1024",
+        "hive.metastore.heapsize" : "1024",
+        "hive.client.heapsize" : "1024"
       }
     },
     {
