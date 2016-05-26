@@ -4,7 +4,6 @@
 
 - name: Reload firewalld
   command: firewall-cmd --reload
-  notify: Gather facts
 
 - name: Run update-grub
   shell: "{{ update_grub }}"
@@ -19,13 +18,9 @@
   with_flattened:
     - cluster_interface
     - bond_interfaces
-  notify: Gather facts
 
 - name: Restart unbound
   service: name=unbound state=restarted enabled=yes
-
-- name: Gather facts
-  action: setup
 
 - name: Run depmod
   command: depmod
