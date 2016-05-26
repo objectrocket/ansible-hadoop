@@ -1,5 +1,5 @@
 ---
-- name: "Create CBS Volumes"
+- name: Create CBS Volumes
   local_action:
     module: rax_cbs
     credentials: "{{ cloud_config.rax_credentials_file }}"
@@ -13,7 +13,7 @@
     - "{{ rax.instances }}"
     - "{{ datanode_disks }}"
 
-- name: "Attach CBS Volumes"
+- name: Attach CBS Volumes
   local_action:
     module: rax_cbs_attachments
     credentials: "{{ cloud_config.rax_credentials_file }}"

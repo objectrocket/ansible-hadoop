@@ -1,12 +1,12 @@
 ---
 - include: create_groups.yml
 
-- name: "Apply the ambari-agent role to all nodes"
+- name: Apply the ambari-agent role to all nodes
   hosts: hadoop-cluster
   any_errors_fatal: true
   become: yes
   pre_tasks:
-    - name: "Show hadoop-cluster info"
+    - name: Show hadoop-cluster info
       debug: var=hostvars[inventory_hostname]
       when: debug
   roles:
@@ -14,7 +14,7 @@
   tags:
     - ambari-agent-only
 
-- name: "Apply the ambari-server role to ambari-node group"
+- name: Apply the ambari-server role to ambari-node group
   hosts: ambari-node
   become: yes
   roles:
