@@ -33,30 +33,30 @@ services:
     roles:
       - group: ACTIVITYMONITOR
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
         config:
-          firehose_database_host: {{ groups['cm_node'] }}:3306
+          firehose_database_host: {{ groups['cm_node'][0] }}:3306
           firehose_database_user: amon
           firehose_database_password: {{ amon_pass }}
           firehose_database_type: mysql
           firehose_database_name: amon
       - group: ALERTPUBLISHER
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: EVENTSERVER
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: HOSTMONITOR
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: SERVICEMONITOR
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: REPORTSMANAGER
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
         config:
-          headlamp_database_host: {{ groups['cm_node'] }}:3306
+          headlamp_database_host: {{ groups['cm_node'][0] }}:3306
           headlamp_database_user: rman
           headlamp_database_password: {{ rman_pass }}
           headlamp_database_type: mysql
@@ -159,7 +159,7 @@ services:
           - {{ groups['slave-nodes'][1] }}
   HIVE:
     config:
-      hive_metastore_database_host: {{ groups['cm_node'] }}
+      hive_metastore_database_host: {{ groups['cm_node'][0] }}
       hive_metastore_database_name: hive
       hive_metastore_database_user: metastore
       hive_metastore_database_password: {{ hive_pass }}
@@ -172,17 +172,17 @@ services:
         config:
           hive_metastore_java_heapsize: 128306784
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: HIVESERVER2
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: WEBHCAT
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: GATEWAY
         hosts:
-          - {{ groups['cm_node'] }}
-          - {{ groups[slave-nodes][0] }}
+          - {{ groups['cm_node'][0] }}
+          - {{ groups['slave-nodes'][0] }}
   IMPALA:
     config:
       hdfs_service: HDFS
@@ -287,7 +287,7 @@ services:
     config:
       zookeeper_service: ZOOKEEPER
       hdfs_service: HDFS
-      sentry_server_database_host: {{ groups['cm_node'] }}
+      sentry_server_database_host: {{ groups['cm_node'][0] }}
       sentry_server_database_name: sentry
       sentry_server_database_user: sentry
       sentry_server_database_password: {{ sentry_pass }}
@@ -295,8 +295,8 @@ services:
     roles:
       - group: SENTRY_SERVER
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
       - group: GATEWAY
         hosts:
-          - {{ groups['cm_node'] }}
+          - {{ groups['cm_node'][0] }}
           - {{ groups['slave-nodes'][0] }}
