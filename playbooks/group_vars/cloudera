@@ -1,8 +1,10 @@
 ---
 cloudera_version: '5'
+full_version: '5.7.0'
 custom_repo: false
 
 adminnode: 'cm-node'
+
 
 install_spark: true
 install_flume: false
