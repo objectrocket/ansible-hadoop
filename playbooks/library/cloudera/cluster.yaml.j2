@@ -68,10 +68,10 @@ services:
       zookeeper_datadir_autocreate: true
     roles:
       - group: SERVER
-        hosts
-         {% for host in groups['master-nodes'] %}
-           - {{ host }}
-         {% endfor %} 
+        hosts:
+{% for host in groups['master-nodes'] %}
+          - {{ host }}
+{% endfor %} 
         config:
           quorumPort: 2888
           electionPort: 3888
@@ -97,11 +97,12 @@ services:
           fs_checkpoint_dir_list: /hadoop/namesecondary
       - group: DATANODE
         hosts:
-        {% for host in groups['slave-nodes'] %}
-           - {{ host }}
-        {% endfor %}
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %}
         config:
           dfs_data_dir_list: {% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}
+
           dfs_datanode_handler_count: 30
           dfs_datanode_du_reserved: 1073741824
           dfs_datanode_failed_volumes_tolerated: 0
@@ -118,9 +119,9 @@ services:
           - {{ groups['master-nodes'][1] }}
       - group: NODEMANAGER
         hosts:
-        {% for host in groups['slave-nodes'] %}
+{% for host in groups['slave-nodes'] %}
           - {{ host }}
-        {% endfor %} 
+{% endfor %} 
         config:
           yarn_nodemanager_local_dirs: /hadoop/yarn/nm
   SPARK_ON_YARN:
@@ -143,14 +144,14 @@ services:
           - {{ groups['master-nodes'][1] }}
       - group: REGIONSERVER
         hosts:
-        {% for host in groups['slave-nodes'] %}
+{% for host in groups['slave-nodes'] %}
           - {{ host }}
-        {% endfor %}
+{% endfor %}
       - group: HBASETHRIFTSERVER
         hosts:
-        {% for host in groups['slave-nodes'] %}
+{% for host in groups['slave-nodes'] %}
           - {{ host }}
-        {% endfor %}
+{% endfor %}
       - group: HBASERESTSERVER
         hosts:
           - {{ groups['master-nodes'][1] }}
@@ -197,9 +198,9 @@ services:
           - {{ groups['master-nodes'][0] }}
       - group: IMPALAD
         hosts:
-        {% for host in groups['slave-nodes'] %}
+{% for host in groups['slave-nodes'] %}
           - {{ host }}
-        {% endfor %} 
+{% endfor %} 
   FLUME:
     config:
       hdfs_service: HDFS
@@ -207,9 +208,9 @@ services:
     roles:
       - group: AGENT
         hosts:
-        {% for host in groups['slave-nodes'] %}
+{% for host in groups['slave-nodes'] %}
           - {{ host }}
-        {% endfor %}
+{% endfor %}
   OOZIE:
     config:
       mapreduce_yarn_service: YARN
@@ -250,9 +251,9 @@ services:
           - {{ groups['master-nodes'][1] }}
       - group: GATEWAY
         hosts:
-        {% for host in groups['slave-nodes'] %}
+{% for host in groups['slave-nodes'] %}
           - {{ host }}
-        {% endfor %}
+{% endfor %}
   HUE:
     config:
       hive_service: HIVE
@@ -280,9 +281,9 @@ services:
           log.dirs: /var/lib/kafka/data
           broker_max_heap_size: 1024
         hosts:
-        {% for host in groups['slave-nodes'] %}
+{% for host in groups['slave-nodes'] %}
           - {{ host }}
-        {% endfor %}
+{% endfor %}
   SENTRY:
     config:
       zookeeper_service: ZOOKEEPER
