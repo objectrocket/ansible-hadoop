@@ -10,16 +10,13 @@ cm:
 
 # Basic cluster information
 cluster:
-  name: cdh_hadoop
-  version: 5
-  fullVersion: 5.7.0
+  name: {{ cluster_name }}
+  version: {{ cloudera_version }}
+  fullVersion:{{ full_version }}
   hosts:
-    - master-01.localnet
-    - master-02.localnet
-    - master-03.localnet
-    - slave-01.localnet
-    - slave-02.localnet
-    - slave-03.localnet
+{% for host in groups['hadoop-cluster'] %}
+    - {{ host }}
+{% endfor %}
 
 # Parcels
 parcels:
@@ -36,32 +33,32 @@ services:
     roles:
       - group: ACTIVITYMONITOR
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
         config:
-          firehose_database_host: master-01.localnet:3306
+          firehose_database_host: {{ cm-node }}:3306
           firehose_database_user: amon
-          firehose_database_password: temp
+          firehose_database_password: {{ amon_pass }}
           firehose_database_type: mysql
           firehose_database_name: amon
       - group: ALERTPUBLISHER
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
       - group: EVENTSERVER
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
       - group: HOSTMONITOR
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
       - group: SERVICEMONITOR
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
       - group: REPORTSMANAGER
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
         config:
-          headlamp_database_host: master-01.localnet:3306
+          headlamp_database_host: {{ cm-node }}:3306
           headlamp_database_user: rman
-          headlamp_database_password: temp
+          headlamp_database_password: {{ rman_pass }}
           headlamp_database_type: mysql
           headlamp_database_name: rman
       #- group: NAVIGATOR
@@ -71,8 +68,10 @@ services:
       zookeeper_datadir_autocreate: true
     roles:
       - group: SERVER
-        hosts:
-          - slave-01.localnet
+        hosts
+         {% for host in groups['master-nodes'] %}
+           - {{ host }}
+         {% endfor %} 
         config:
           quorumPort: 2888
           electionPort: 3888
@@ -81,28 +80,28 @@ services:
           maxClientCnxns: 1024
   HDFS:
     config:
-      dfs_replication: 3
+      dfs_replication: {{ hdfs.dfs_replication }}
       dfs_permissions: false
       dfs_block_local_path_access_user: impala,hbase,mapred,spark
     roles:
       - group: NAMENODE
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][0]] }}
         config:
-          dfs_name_dir_list: /var/lib/hadoop/namenode
+          dfs_name_dir_list: /hadoop/namenode  
           dfs_namenode_handler_count: 30
       - group: SECONDARYNAMENODE
         hosts:
-          - master-02.localnet
+          - {{ groups['master-nodes'][1]] }}
         config:
-          fs_checkpoint_dir_list: /var/lib/hadoop/namesecondary
+          fs_checkpoint_dir_list: /hadoop/namesecondary
       - group: DATANODE
         hosts:
-          - slave-01.localnet
-          - slave-02.localnet
-          - slave-03.localnet
+        {% for host in groups['slave-nodes'] %}
+           - {{ host }}
+        {% endfor %}
         config:
-          dfs_data_dir_list: /var/lib/hadoop/datanode
+          dfs_data_dir_list: {% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}
           dfs_datanode_handler_count: 30
           dfs_datanode_du_reserved: 1073741824
           dfs_datanode_failed_volumes_tolerated: 0
@@ -113,25 +112,27 @@ services:
     roles:
       - group: RESOURCEMANAGER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][1]] }}
       - group: JOBHISTORY
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][1]] }}
       - group: NODEMANAGER
         hosts:
-          - slave-01.localnet
+        {% for host in groups['slave-nodes'] %}
+          - {{ host }}
+        {% endfor %} 
         config:
-          yarn_nodemanager_local_dirs: /var/lib/hadoop/yarn/nm
+          yarn_nodemanager_local_dirs: /hadoop/yarn/nm
   SPARK_ON_YARN:
     config:
       yarn_service: YARN
     roles:
       - group: SPARK_YARN_HISTORY_SERVER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][1]] }}
       - group: GATEWAY
         hosts:
-          - slave-01.localnet
+          - {{ groups['slave-nodes'][1]] }}
   HBASE:
     config:
       hdfs_service: HDFS
@@ -139,25 +140,29 @@ services:
     roles:
       - group: MASTER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][1]] }}
       - group: REGIONSERVER
         hosts:
-          - slave-01.localnet
+        {% for host in groups['slave-nodes'] %}
+          - {{ host }}
+        {% endfor %}
       - group: HBASETHRIFTSERVER
         hosts:
-          - slave-01.localnet
+        {% for host in groups['slave-nodes'] %}
+          - {{ host }}
+        {% endfor %}
       - group: HBASERESTSERVER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][1]] }}
       - group: GATEWAY
         hosts:
-          - slave-01.localnet
+          - {{ groups['slave-nodes'][1]] }}
   HIVE:
     config:
-      hive_metastore_database_host: master-01.localnet
+      hive_metastore_database_host: {{ cm-node }}
       hive_metastore_database_name: hive
       hive_metastore_database_user: metastore
-      hive_metastore_database_password: temp
+      hive_metastore_database_password: {{ hive_pass }}
       hive_metastore_database_port: 3306
       hive_metastore_database_type: mysql
       mapreduce_yarn_service: YARN
@@ -167,17 +172,17 @@ services:
         config:
           hive_metastore_java_heapsize: 128306784
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
       - group: HIVESERVER2
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
       - group: WEBHCAT
         hosts:
-          - master-01.localnet
+          - {{ cm-node }}
       - group: GATEWAY
         hosts:
-          - master-01.localnet
-          - slave-01.localnet
+          - {{ cm-node }}
+          - {{ groups[slave-nodes][0] }}
   IMPALA:
     config:
       hdfs_service: HDFS
@@ -186,13 +191,15 @@ services:
     roles:
       - group: STATESTORE
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][0] }}
       - group: CATALOGSERVER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][0] }}
       - group: IMPALAD
         hosts:
-          - slave-01.localnet
+        {% for host in groups['slave-nodes'] %}
+          - {{ host }}
+        {% endfor %} 
   FLUME:
     config:
       hdfs_service: HDFS
@@ -200,7 +207,9 @@ services:
     roles:
       - group: AGENT
         hosts:
-          - slave-01.localnet
+        {% for host in groups['slave-nodes'] %}
+          - {{ host }}
+        {% endfor %}
   OOZIE:
     config:
       mapreduce_yarn_service: YARN
@@ -209,13 +218,13 @@ services:
     roles:
       - group: OOZIE_SERVER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][0] }}
         config:
           oozie_java_heapsize: 207881018
-          oozie_database_host: master-01.localnet
+          oozie_database_host: {{ groups['master-nodes'][0] }}
           oozie_database_name: oozie
           oozie_database_user: oozie
-          oozie_database_password: temp
+          oozie_database_password: {{ oozie_pass }}
           oozie_database_type: mysql
   SQOOP:
     config:
@@ -223,14 +232,14 @@ services:
     roles:
       - group: SQOOP_SERVER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][0] }}
         config:
           sqoop_java_heapsize: 207881018
-          sqoop_repository_database_host: master-01.localnet
+          sqoop_repository_database_host: {{ groups['master-nodes'][0] }}
           sqoop_repository_database_name: sqoop
           sqoop_repository_database_user: sqoop
-          sqoop_repository_database_password: temp
-          sqoop_repository_database_type: derby
+          sqoop_repository_database_password: {{ sqoop_pass }}
+          sqoop_repository_database_type: mysql
   SOLR:
     config:
       hdfs_service: HDFS
@@ -238,10 +247,12 @@ services:
     roles:
       - group: SOLR_SERVER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][1] }}
       - group: GATEWAY
         hosts:
-          - slave-01.localnet
+        {% for host in groups['slave-nodes'] %}
+          - {{ host }}
+        {% endfor %}
   HUE:
     config:
       hive_service: HIVE
@@ -257,7 +268,7 @@ services:
     roles:
       - group: HUE_SERVER
         hosts:
-          - master-01.localnet
+          - {{ groups['master-nodes'][2] }}
   KAFKA:
     config:
       zookeeper_service: ZOOKEEPER
@@ -269,21 +280,23 @@ services:
           log.dirs: /var/lib/kafka/data
           broker_max_heap_size: 1024
         hosts:
-          - slave-01.localnet
+        {% for host in groups['slave-nodes'] %}
+          - {{ host }}
+        {% endfor %}
   SENTRY:
     config:
       zookeeper_service: ZOOKEEPER
       hdfs_service: HDFS
-      sentry_server_database_host: master-01.localnet
+      sentry_server_database_host: {{ cm-node }}
       sentry_server_database_name: sentry
       sentry_server_database_user: sentry
-      sentry_server_database_password: temp
+      sentry_server_database_password: {{ sentry_pass }}
       sentry_server_database_type: mysql
     roles:
       - group: SENTRY_SERVER
         hosts:
-          - master-01.localnet
+          - {{ cm_node }}
       - group: GATEWAY
         hosts:
-          - master-01.localnet
-          - slave-01.localnet
+          - {{ cm-node }}
+          - {{ groups['slave-nodes'][0] }}
