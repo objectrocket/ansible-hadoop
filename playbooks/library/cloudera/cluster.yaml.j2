@@ -12,7 +12,7 @@ cm:
 cluster:
   name: {{ cluster_name }}
   version: {{ cloudera_version }}
-  fullVersion:{{ full_version }}
+  fullVersion: {{ full_version }}
   hosts:
 {% for host in groups['hadoop-cluster'] %}
     - {{ host }}
@@ -33,30 +33,30 @@ services:
     roles:
       - group: ACTIVITYMONITOR
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
         config:
-          firehose_database_host: {{ cm-node }}:3306
+          firehose_database_host: {{ groups['cm_node'] }}:3306
           firehose_database_user: amon
           firehose_database_password: {{ amon_pass }}
           firehose_database_type: mysql
           firehose_database_name: amon
       - group: ALERTPUBLISHER
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
       - group: EVENTSERVER
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
       - group: HOSTMONITOR
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
       - group: SERVICEMONITOR
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
       - group: REPORTSMANAGER
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
         config:
-          headlamp_database_host: {{ cm-node }}:3306
+          headlamp_database_host: {{ groups['cm_node'] }}:3306
           headlamp_database_user: rman
           headlamp_database_password: {{ rman_pass }}
           headlamp_database_type: mysql
@@ -86,13 +86,13 @@ services:
     roles:
       - group: NAMENODE
         hosts:
-          - {{ groups['master-nodes'][0]] }}
+          - {{ groups['master-nodes'][0] }}
         config:
           dfs_name_dir_list: /hadoop/namenode  
           dfs_namenode_handler_count: 30
       - group: SECONDARYNAMENODE
         hosts:
-          - {{ groups['master-nodes'][1]] }}
+          - {{ groups['master-nodes'][1] }}
         config:
           fs_checkpoint_dir_list: /hadoop/namesecondary
       - group: DATANODE
@@ -112,10 +112,10 @@ services:
     roles:
       - group: RESOURCEMANAGER
         hosts:
-          - {{ groups['master-nodes'][1]] }}
+          - {{ groups['master-nodes'][1] }}
       - group: JOBHISTORY
         hosts:
-          - {{ groups['master-nodes'][1]] }}
+          - {{ groups['master-nodes'][1] }}
       - group: NODEMANAGER
         hosts:
         {% for host in groups['slave-nodes'] %}
@@ -129,10 +129,10 @@ services:
     roles:
       - group: SPARK_YARN_HISTORY_SERVER
         hosts:
-          - {{ groups['master-nodes'][1]] }}
+          - {{ groups['master-nodes'][1] }}
       - group: GATEWAY
         hosts:
-          - {{ groups['slave-nodes'][1]] }}
+          - {{ groups['slave-nodes'][1] }}
   HBASE:
     config:
       hdfs_service: HDFS
@@ -140,7 +140,7 @@ services:
     roles:
       - group: MASTER
         hosts:
-          - {{ groups['master-nodes'][1]] }}
+          - {{ groups['master-nodes'][1] }}
       - group: REGIONSERVER
         hosts:
         {% for host in groups['slave-nodes'] %}
@@ -153,13 +153,13 @@ services:
         {% endfor %}
       - group: HBASERESTSERVER
         hosts:
-          - {{ groups['master-nodes'][1]] }}
+          - {{ groups['master-nodes'][1] }}
       - group: GATEWAY
         hosts:
-          - {{ groups['slave-nodes'][1]] }}
+          - {{ groups['slave-nodes'][1] }}
   HIVE:
     config:
-      hive_metastore_database_host: {{ cm-node }}
+      hive_metastore_database_host: {{ groups['cm_node'] }}
       hive_metastore_database_name: hive
       hive_metastore_database_user: metastore
       hive_metastore_database_password: {{ hive_pass }}
@@ -172,16 +172,16 @@ services:
         config:
           hive_metastore_java_heapsize: 128306784
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
       - group: HIVESERVER2
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
       - group: WEBHCAT
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
       - group: GATEWAY
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
           - {{ groups[slave-nodes][0] }}
   IMPALA:
     config:
@@ -287,7 +287,7 @@ services:
     config:
       zookeeper_service: ZOOKEEPER
       hdfs_service: HDFS
-      sentry_server_database_host: {{ cm-node }}
+      sentry_server_database_host: {{ groups['cm_node'] }}
       sentry_server_database_name: sentry
       sentry_server_database_user: sentry
       sentry_server_database_password: {{ sentry_pass }}
@@ -295,8 +295,8 @@ services:
     roles:
       - group: SENTRY_SERVER
         hosts:
-          - {{ cm_node }}
+          - {{ groups['cm_node'] }}
       - group: GATEWAY
         hosts:
-          - {{ cm-node }}
+          - {{ groups['cm_node'] }}
           - {{ groups['slave-nodes'][0] }}
