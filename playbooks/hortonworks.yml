@@ -19,5 +19,13 @@
   become: yes
   roles:
     - ambari-server
+  post_tasks:
+    - name: Cleanup the temporary files
+      file: path={{ item }} state=absent
+      with_items:
+        - /tmp/cluster_blueprint
+        - /tmp/cluster_template
+        - /tmp/alert_targets
+        - /tmp/hdprepo
   tags:
     - ambari-server-only
