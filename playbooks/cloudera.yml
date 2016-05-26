@@ -49,10 +49,11 @@
       pip: name='cm_api' state=latest
 
     - name: Copy cluster template
-      template: src=library/cloudera/cluster.yaml dest=/opt/
+      template: src=library/cloudera/cluster.yamlj2 dest=/opt/
     
     - include_vars: roles/cloudera-mysql/vars/mysql_vars.yml   
-    
+
+    - include_vars: group_vars/cloudera
 
   tasks:
     - name: Cloudera cluster create request
