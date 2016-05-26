@@ -145,7 +145,7 @@
 
 - name: Check the cluster creation status
   fail: msg="Failed to build the {{ cluster_name }} cluster. Status is {{ (cluster_create_task.content|from_json).Requests.request_status }}"
-  when: ((cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
+  when: wait and ((cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
          (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
          (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')
 
