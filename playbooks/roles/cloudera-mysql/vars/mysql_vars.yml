@@ -1,3 +1,4 @@
+services_pass: 'temp'
 mysql_root_pass: 'temp' 
 amon_pass: "{{ services_pass }}"
 rman_pass: "{{ services_pass }}"
