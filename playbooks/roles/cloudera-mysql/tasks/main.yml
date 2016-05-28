@@ -75,3 +75,9 @@
 - name: setup SCM DB user
   mysql_user: name=scm password={{ scm_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=scm.*:ALL state=present
   with_items: "{{ play_hosts }}"
+
+- name: put modified scm_prepare_database script in place
+  copy: src=scm_prepare_database.sh dest=/usr/share/cmf/schema/
+
+- name: setup SCM DB
+  command: /usr/share/cmf/schema/scm_prepare_database.sh mysql -h {{ groups['cm_node'][0] }} scm scm {{ scm_pass }}

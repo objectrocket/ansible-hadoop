@@ -15,8 +15,8 @@ db_names:
   - navms
   - nav
   - rman
-  - scm
   - sentry
   - oozie
   - sqoop
   - hive
+  - scm
