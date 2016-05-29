@@ -60,8 +60,8 @@
   mysql_user: name=navms password={{ navms_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=navms.*:ALL state=present
   with_items: "{{ play_hosts }}"
 
-- name: setup Hive DB user
-  mysql_user: name=metastore password={{ hive_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=hive.*:ALL state=present
+- name: setup Hive Metastore DB user
+  mysql_user: name=metastore password={{ hive_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=metastore.*:ALL state=present
   with_items: "{{ play_hosts }}"
 
 - name: setup Oozie DB user
@@ -81,3 +81,16 @@
 
 - name: setup SCM DB
   command: /usr/share/cmf/schema/scm_prepare_database.sh mysql -h {{ groups['cm_node'][0] }} scm scm {{ scm_pass }}
+
+- name: copy hive schema
+  copy: src=hive-schema-1.1.0.mysql.sql dest=/opt/cloudera/
+
+- name: copy hive txn schema
+  copy: src=hive-txn-schema-0.13.0.mysql.sql dest=/opt/cloudera/
+  
+- name: copy hive schema script
+  copy: src=scripts/hive-schema-mysql.sh dest=/opt/cloudera/
+
+- name: setup Hive Metastore
+  command: /bin/bash /opt/cloudera/hive-schema-mysql.sh {{ groups['master-nodes'][0] }} metastore {{ hive_pass }} metastore
+

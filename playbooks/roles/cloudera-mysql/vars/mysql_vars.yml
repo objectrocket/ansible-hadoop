@@ -18,5 +18,4 @@ db_names:
   - sentry
   - oozie
   - sqoop
-  - hive
   - scm
