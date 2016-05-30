@@ -161,7 +161,7 @@ services:
   HIVE:
     config:
       hive_metastore_database_host: {{ groups['cm_node'][0] }}
-      hive_metastore_database_name: hive
+      hive_metastore_database_name: metastore
       hive_metastore_database_user: metastore
       hive_metastore_database_password: {{ hive_pass }}
       hive_metastore_database_port: 3306

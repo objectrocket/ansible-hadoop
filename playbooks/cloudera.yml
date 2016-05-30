@@ -14,8 +14,8 @@
   roles:
     - cloudera-agent
 
-- name: "setup mysql on master nodes"
-  hosts: master-nodes
+- name: "setup mysql on cloudera manager node"
+  hosts: cm_node
   any_errors_fatal: true
   become: yes
   pre_tasks:
