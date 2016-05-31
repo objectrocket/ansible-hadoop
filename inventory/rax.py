@@ -355,12 +355,9 @@ def get_cache_file_path(regions):
 
 
 def _list(regions, refresh_cache=True):
-    cache_max_age = int(get_config(p, 'rax', 'cache_max_age',
-                                   'RAX_CACHE_MAX_AGE', 600))
-
     if (not os.path.exists(get_cache_file_path(regions)) or
         refresh_cache or
-        (time() - os.stat(get_cache_file_path(regions))[-1]) > cache_max_age):
+        (time() - os.stat(get_cache_file_path(regions))[-1]) > 600):
         # Cache file doesn't exist or older than 10m or refresh cache requested
         _list_into_cache(regions)
 
@@ -376,7 +373,7 @@ def parse_args():
     group.add_argument('--list', action='store_true',
                        help='List active servers')
     group.add_argument('--host', help='List details about the specific host')
-    parser.add_argument('--refresh-cache', action='store_true', default=False,
+    parser.add_argument('--refresh-cache', action='store_true', default=True,
                         help=('Force refresh of cache, making API requests to'
                               'RackSpace (default: False - use cache files)'))
     return parser.parse_args()

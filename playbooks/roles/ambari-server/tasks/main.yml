@@ -1,13 +1,17 @@
 ---
-- include: prerequisites.yml
+- name: Include prerequisites.yml
+  include: prerequisites.yml
 
-- include: single-node.yml
+- name: Include single-node.yml
+  include: single-node.yml
   when: not custom_blueprint and groups['master-nodes']|length == 1 and ('slave-nodes' not in groups or groups['slave-nodes']|length == 0)
 
-- include: multi-nodes.yml
+- name: Include multi-nodes.yml
+  include: multi-nodes.yml
   when: not custom_blueprint and groups['master-nodes']|length > 0 and 'slave-nodes' in groups and groups['slave-nodes']|length > 0
 
-- include: custom.yml
+- name: Include custom.yml
+  include: custom.yml
   when: custom_blueprint
 
 - name: Upload HDP Repo
@@ -19,7 +23,7 @@
   register: hdprepo
   when: custom_repo
 
-- name: modify repo base_url
+- name: Modify repo base_url
   uri: url=http://{{ ansible_nodename }}:8080/{{ custom_repo_target }}
        method=PUT
        force_basic_auth=yes
@@ -98,6 +102,16 @@
   slurp: src=/tmp/cluster_template
   register: cluster_template
 
+- name: Check if a cluster {{ cluster_name }} already exists
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/clusters/{{ cluster_name }}
+       method=GET
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202,404
+  register: current_cluster
+
 - name: Create the cluster instance
   uri: url=http://{{ ansible_nodename }}:8080/api/v1/clusters/{{ cluster_name }}
        method=POST
@@ -108,6 +122,32 @@
        body=" {{ cluster_template.content | b64decode }}"
        body_format=raw
        status_code=200,201,202
+  when: current_cluster.status==404
+
+- name: Wait for the cluster to be built
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/clusters/{{ cluster_name }}/requests/1
+       method=GET
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_Content-Type="application/json"
+       HEADER_X-Requested-By="ambari"
+       status_code=200,201,202
+       return_content=yes
+  register: cluster_create_task
+  until: ((cluster_create_task.content|from_json).Requests.request_status == 'COMPLETED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')
+  retries: "{{ wait_timeout // 10 }}"
+  delay: 10
+  when: wait
+
+- name: Fail if the cluster create task is in an error state
+  fail: msg="Failed to build the {{ cluster_name }} cluster. Status is {{ (cluster_create_task.content|from_json).Requests.request_status }}"
+  when: wait and ((cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')
 
 - name: Change Ambari admin user password
   uri: url=http://{{ ansible_nodename }}:8080/api/v1/users/admin
