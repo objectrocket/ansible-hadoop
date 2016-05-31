@@ -1,10 +1,10 @@
 ---
-- name: "Add nodes to required groups"
+- name: Add nodes to required groups
   hosts: localhost
   connection: local
   gather_facts: False
   tasks:
-    - name: "Add all cluster nodes to the hadoop-cluster group"
+    - name: Add all cluster nodes to the hadoop-cluster group
       always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
@@ -29,7 +29,7 @@
       include_vars: group_vars/hortonworks
       when: distro == "hdp"
 
-    - name: "Add the last masternode to admin-node variable group"
+    - name: Add the last masternode to ambari-node variable group
       always_run: yes
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"

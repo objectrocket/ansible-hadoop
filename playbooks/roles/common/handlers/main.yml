@@ -2,22 +2,25 @@
 - name: Restart iptables
   service: name=iptables state=restarted enabled=yes
 
-- name: reload firewalld
+- name: Reload firewalld
   command: firewall-cmd --reload
-  notify: Gather facts
+
+- name: Run update-grub
+  shell: "{{ update_grub }}"
+  when: ansible_distribution_major_version|int > 6
+
+- name: Run resolvconf
+  shell: resolvconf -u
+  when: ansible_os_family == "Debian"
 
 - name: Restart network interfaces
   shell: ifdown {{ item }}; ifup {{ item }}; ifup {{ cluster_interface }}
   with_flattened:
     - cluster_interface
     - bond_interfaces
-  notify: Gather facts
 
 - name: Restart unbound
   service: name=unbound state=restarted enabled=yes
-
-- name: Gather facts
-  action: setup
 
 - name: Run depmod
   command: depmod

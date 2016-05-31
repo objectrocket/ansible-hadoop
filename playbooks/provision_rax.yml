@@ -1,5 +1,5 @@
 ---
-- name: "Build the environment"
+- name: Build the environment
   hosts: localhost
   connection: local
   gather_facts: False
@@ -15,7 +15,7 @@
     - name: Include master-nodes group variables
       include_vars: group_vars/master-nodes
 
-    - name: "Create master nodes"
+    - name: Create master nodes
       local_action:
         module: rax
         credentials: "{{ cloud_config.rax_credentials_file }}"
@@ -34,14 +34,14 @@
       register: rax
       when: cloud_nodes_count > 0
 
-    - name: "Build Rackspace CBS for master nodes"
+    - name: Build Rackspace CBS for master nodes
       include: provision_cbs.yml
       when: cloud_nodes_count > 0 and build_datanode_cbs is defined and build_datanode_cbs
 
     - name: Include slave-nodes group variables
       include_vars: group_vars/slave-nodes
 
-    - name: "Create slave nodes"
+    - name: Create slave nodes
       local_action:
         module: rax
         credentials: "{{ cloud_config.rax_credentials_file }}"
@@ -60,14 +60,14 @@
       register: rax
       when: cloud_nodes_count > 0
 
-    - name: "Build Rackspace CBS for slave nodes"
+    - name: Build Rackspace CBS for slave nodes
       include: provision_cbs.yml
       when: cloud_nodes_count > 0 and build_datanode_cbs is defined and build_datanode_cbs
 
     - name: Include edge-nodes group variables
       include_vars: group_vars/edge-nodes
 
-    - name: "Create edge nodes"
+    - name: Create edge nodes
       local_action:
         module: rax
         credentials: "{{ cloud_config.rax_credentials_file }}"

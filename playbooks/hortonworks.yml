@@ -1,12 +1,12 @@
 ---
 - include: create_groups.yml
 
-- name: "Apply the ambari-agent role to all nodes"
+- name: Apply the ambari-agent role to all nodes
   hosts: hadoop-cluster
   any_errors_fatal: true
   become: yes
   pre_tasks:
-    - name: "Show hadoop-cluster info"
+    - name: Show hadoop-cluster info
       debug: var=hostvars[inventory_hostname]
       when: debug
   roles:
@@ -27,8 +27,18 @@
         groups: ambari-node
       with_items: "{{ groups['admin-nodes']|sort|last }}"
 
-- name: "Apply the ambari-server role to ambari-node group"
+- name: Apply the ambari-server role to ambari-node group
   hosts: ambari-node
   become: yes
   roles:
     - ambari-server
+  post_tasks:
+    - name: Cleanup the temporary files
+      file: path={{ item }} state=absent
+      with_items:
+        - /tmp/cluster_blueprint
+        - /tmp/cluster_template
+        - /tmp/alert_targets
+        - /tmp/hdprepo
+  tags:
+    - ambari-server-only
