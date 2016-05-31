@@ -1,0 +1,26 @@
+---
+- name: Install Unbound
+  yum:
+    name: "unbound"
+    state: present
+    update_cache: yes
+  ignore_errors: true
+  when: ansible_os_family == "RedHat"
+
+- name: Start the unbound service
+  service: name=unbound state=restarted enabled=yes
+
+- name: Rearrange Ubuntu unbound configuration to match default RHEL
+  shell: sed -i 's/unbound\.conf\.d/conf\.d/g' /etc/unbound/unbound.conf;
+         mv /etc/unbound/unbound.conf.d /etc/unbound/conf.d;
+         mkdir /etc/unbound/local.d;
+         grep -q -F '/etc/unbound/local.d/*.conf' /etc/unbound/unbound.conf || echo "include{{ ":" }} \"/etc/unbound/local.d/*.conf\"" >> /etc/unbound/unbound.conf;
+         sed -i 's/RESOLVCONF_FORWARDERS=true/RESOLVCONF_FORWARDERS=false/g' /etc/default/unbound
+  when: ansible_os_family == "Debian"
+
+- name: Configure unbound service
+  template: src=redhat-unbound.j2 dest=/etc/unbound/conf.d/mbd.conf
+  notify: Restart unbound
+
+- name: Place resolv template in place
+  template: src=resolv.conf.j2 dest={{ resolv_conf }}

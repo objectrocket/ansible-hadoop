@@ -28,7 +28,7 @@ The following steps must be followed to install Ansible and the prerequisites on
   ```
   sudo su -
   yum -y remove python-crypto
-  yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  yum -y install epel-release || yum -y install http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
   yum repolist; yum install gcc gcc-c++ python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
   ```
 
@@ -51,7 +51,7 @@ The following steps must be followed to install Ansible and the prerequisites on
 
   ```
   sudo su -
-  yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+  yum -y install epel-release || yum -y install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   yum repolist; yum install gcc gcc-c++ python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
   ```
 
@@ -137,8 +137,8 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set m
 | cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
 | cloud_nodes_count  | Should be set to the desired number of master-nodes (1, 2 or 3).   |
 | cloud_image        | The OS image to be used. Can be `CentOS 6 (PVHVM)`, `CentOS 7 (PVHVM)` or `Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)`. |
-| cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) of the nodes. Minimum `general1-8` for Hadoop nodes. |
-| hadoop_disk        | The disk that will be mounted under `/hadoop`. If the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk, set this to `xvde`. Remove this variable if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
+| cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#supported-flavors-for-cloud-servers) of the nodes. Minimum `general1-8` for Hadoop nodes. |
+| hadoop_disk        | The disk that will be mounted under `/hadoop`. If the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#supported-flavors-for-cloud-servers) provides with an ephemeral disk, set this to `xvde`. Remove this variable if `/hadoop` should just be a folder on the root filesystem or if the disk has already been partitioned and mounted. |
 | datanode_disks     | Only used for single-nodes clusters. The disks that will be mounted under `/grid/{0..n}`. Should be set if one or more separate disk devices are used for storing HDFS data. |
 
 For single-node clusters, if Rackspace Cloud Block Storage is to be built for storing HDFS data, set the following options:
@@ -195,8 +195,8 @@ Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set sl
 | cluster_interface  | Should be set to the network device that the HDP nodes will use to communicate between them. |
 | cloud_nodes_count  | Should be set to the desired number of slave-nodes (0 or more).    |
 | cloud_image        | The OS image to be used. Can be `CentOS 6 (PVHVM)`, `CentOS 7 (PVHVM)` or `Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)`. |
-| cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) of the nodes. Minimum `general1-8` for Hadoop nodes. |
-| datanode_disks     | The disks that will be mounted under `/grid/{0..n}`. Should be set if one or more separate disk devices are used for storing HDFS data and remove it if the data should be stored on the root filesystem. Can be set to `['xvde']` or `['xvde', 'xvdf']` if the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#list-flavors-with-nova) provides with an ephemeral disk. Alternatively, you can let the playbook build Cloud Block Storage for this purpose. |
+| cloud_flavor       | [Size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#supported-flavors-for-cloud-servers) of the nodes. Minimum `general1-8` for Hadoop nodes. |
+| datanode_disks     | The disks that will be mounted under `/grid/{0..n}`. Should be set if one or more separate disk devices are used for storing HDFS data and remove it if the data should be stored on the root filesystem. Can be set to `['xvde']` or `['xvde', 'xvdf']` if the [size flavor](https://developer.rackspace.com/docs/cloud-servers/v2/developer-guide/#supported-flavors-for-cloud-servers) provides with an ephemeral disk. Alternatively, you can let the playbook build Cloud Block Storage for this purpose. |
 
 If Rackspace Cloud Block Storage is to be built for storing HDFS data, set the following options:
 
@@ -313,7 +313,7 @@ The following steps must be followed to install Ansible and the prerequisites on
 
   ```
   sudo su -
-  yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  yum -y install epel-release || yum -y install http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
   yum repolist; yum install python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
   ```
 
@@ -330,7 +330,7 @@ The following steps must be followed to install Ansible and the prerequisites on
 
   ```
   sudo su -
-  yum install https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+  yum -y install epel-release || yum -y install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   yum repolist; yum install python-virtualenv python-pip python-devel sshpass git vim-enhanced -y
   ```
 

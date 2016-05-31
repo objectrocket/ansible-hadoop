@@ -36,27 +36,28 @@
     name: "{{ item }}"
     update_cache: yes
     state: installed
-  with_items: "{{ packages }}"
-  when: ansible_os_family == "RedHat" and "{{ packages|length > 0 }}"
+  with_items: "{{ packages|default([]) }}"
+  when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
   apt:
     name: "{{ item }}"
     update_cache: yes
     state: installed
-  with_items: "{{ packages }}"
-  when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
+  with_items: "{{ packages|default([]) }}"
+  when: ansible_os_family == "Debian"
 
 - name: Upgrade all packages (yum)
   yum: name=* state=latest
-  when: ansible_os_family == "RedHat" and "{{ packages|length > 0 }}"
+  when: ansible_os_family == "RedHat"
 
 - name: Upgrade all packages (apt)
   apt: upgrade=dist
-  when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
+  when: ansible_os_family == "Debian"
 
-- include: spark_stack.yml
-  when: distro == "hdp" and spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+- name: Include spark_stack.yml
+  include: spark_stack.yml
+  when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Make sure the NTP service is stopped
   service: name={{ ntp_service }} state=stopped
@@ -117,25 +118,24 @@
               state=present
               regexp='(^\s*kernel(\s+(?!transparent_hugepage=never)[\w=/\-\.\,]+)*)\s*$'
               line='\1 transparent_hugepage=never'
-  register: result
-  with_items: "{{ grep_result.stdout_lines }}"
+  with_items: "{{ grep_result.stdout_lines | default('') }}"
   when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
 
 - name: Disable Transparent Huge Pages in Grub 2
   lineinfile: dest=/etc/default/grub
               state=present
               line='GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
-  when: "{{ ansible_distribution_major_version|int }} > 6"
+  when: ansible_distribution_major_version|int > 6
+  notify: Run update-grub
 
-- name: Run update-grub in Grub 2
-  shell: "{{ update_grub }}"
-  when: "{{ ansible_distribution_major_version|int }} > 6"
+- meta: flush_handlers
 
 - name: Disable Transparent Huge Pages until reboot
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
   ignore_errors: true
 
-- include: unbound-dns.yml
+- name: Include unbound-dns.yml
+  include: unbound-dns.yml
   when: use_dns
 
 - name: Reconfigure resolv.conf domain
@@ -144,17 +144,17 @@
               regexp='^domain\s+(?! {{ ansible_domain }} ).*$'
               line='domain {{ ansible_domain }}'
   when: ansible_domain != ""
+  notify: Run resolvconf
 
 - name: Reconfigure resolv.conf search
   lineinfile: dest={{ resolv_conf }}
               create=yes
               regexp='^search\s+(?! {{ ansible_domain }} ).*$'
               line='search {{ ansible_domain }}'
-  when: ansible_domain != ""
+  when: ansible_domain != "" and not use_dns
+  notify: Run resolvconf
 
-- name: Run resolvconf
-  shell: resolvconf -u
-  when: ansible_os_family == "Debian"
+- meta: flush_handlers
 
 - name: Configure bonding
   include: bonding.yml

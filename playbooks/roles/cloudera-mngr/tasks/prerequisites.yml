@@ -18,6 +18,9 @@
   with_items: "{{ pkgs }}"
   when: ansible_os_family == "RedHat"
 
+- include: unbound-dns.yml
+  when: use_dns
+
 - name: Upload db properties template
   template: src=db.properties dest=/etc/cloudera-scm-server/
 

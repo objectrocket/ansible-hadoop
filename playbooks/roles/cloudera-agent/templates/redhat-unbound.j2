@@ -1,0 +1,17 @@
+server:
+    interface: 127.0.0.1
+    access-control: 127.0.0.0/8 allow
+    access-control: 10.0.0.0/8 allow
+    domain-insecure: "{{ ansible_domain }}"
+    local-zone: "10.in-addr.arpa." nodefault
+
+stub-zone:
+    name: "10.in-addr.arpa."
+    stub-addr: {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}
+
+forward-zone:
+    name: "."
+    forward-addr: {{ hostvars[groups['master-nodes'][0]][['ansible_', hostvars[groups['master-nodes'][0]]['cluster_interface']]|join]['ipv4']['address'] }}
+
+remote-control:
+    control-interface: 127.0.0.1
