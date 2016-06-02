@@ -1,0 +1,289 @@
+# Cloudera Cluster template
+# Modify the template and replace the existing values for hosts
+# username/password and related configurations
+
+# Cloudera Manager config
+cm:
+  host: localhost
+  username: admin
+  password: admin
+
+# Basic cluster information
+cluster:
+  name: cdh_hadoop
+  version: 5
+  fullVersion: 5.7.0
+  hosts:
+    - master-01.localnet
+    - master-02.localnet
+    - master-03.localnet
+    - slave-01.localnet
+    - slave-02.localnet
+    - slave-03.localnet
+
+# Parcels
+parcels:
+  - repo:
+    product: CDH
+    version: 5.7.0-1.cdh5.7.0.p0.45
+  - repo:
+    product: KAFKA
+    version: 2.0.1-1.2.0.1.p0.5
+
+# Service. All the service definitions go here
+services:
+  MGMT:
+    roles:
+      - group: ACTIVITYMONITOR
+        hosts:
+          - master-01.localnet
+        config:
+          firehose_database_host: master-01.localnet:3306
+          firehose_database_user: amon
+          firehose_database_password: temp
+          firehose_database_type: mysql
+          firehose_database_name: amon
+      - group: ALERTPUBLISHER
+        hosts:
+          - master-01.localnet
+      - group: EVENTSERVER
+        hosts:
+          - master-01.localnet
+      - group: HOSTMONITOR
+        hosts:
+          - master-01.localnet
+      - group: SERVICEMONITOR
+        hosts:
+          - master-01.localnet
+      - group: REPORTSMANAGER
+        hosts:
+          - master-01.localnet
+        config:
+          headlamp_database_host: master-01.localnet:3306
+          headlamp_database_user: rman
+          headlamp_database_password: temp
+          headlamp_database_type: mysql
+          headlamp_database_name: rman
+      #- group: NAVIGATOR
+      #- group: NAVIGATORMETADATASTORE
+  ZOOKEEPER:
+    config:
+      zookeeper_datadir_autocreate: true
+    roles:
+      - group: SERVER
+        hosts:
+          - slave-01.localnet
+        config:
+          quorumPort: 2888
+          electionPort: 3888
+          dataLogDir: /var/lib/zookeeper
+          dataDir: /var/lib/zookeeper
+          maxClientCnxns: 1024
+  HDFS:
+    config:
+      dfs_replication: 3
+      dfs_permissions: false
+      dfs_block_local_path_access_user: impala,hbase,mapred,spark
+    roles:
+      - group: NAMENODE
+        hosts:
+          - master-01.localnet
+        config:
+          dfs_name_dir_list: /var/lib/hadoop/namenode
+          dfs_namenode_handler_count: 30
+      - group: SECONDARYNAMENODE
+        hosts:
+          - master-02.localnet
+        config:
+          fs_checkpoint_dir_list: /var/lib/hadoop/namesecondary
+      - group: DATANODE
+        hosts:
+          - slave-01.localnet
+          - slave-02.localnet
+          - slave-03.localnet
+        config:
+          dfs_data_dir_list: /var/lib/hadoop/datanode
+          dfs_datanode_handler_count: 30
+          dfs_datanode_du_reserved: 1073741824
+          dfs_datanode_failed_volumes_tolerated: 0
+          dfs_datanode_data_dir_perm: 755
+  YARN:
+    config:
+      hdfs_service: HDFS
+    roles:
+      - group: RESOURCEMANAGER
+        hosts:
+          - master-01.localnet
+      - group: JOBHISTORY
+        hosts:
+          - master-01.localnet
+      - group: NODEMANAGER
+        hosts:
+          - slave-01.localnet
+        config:
+          yarn_nodemanager_local_dirs: /var/lib/hadoop/yarn/nm
+  SPARK_ON_YARN:
+    config:
+      yarn_service: YARN
+    roles:
+      - group: SPARK_YARN_HISTORY_SERVER
+        hosts:
+          - master-01.localnet
+      - group: GATEWAY
+        hosts:
+          - slave-01.localnet
+  HBASE:
+    config:
+      hdfs_service: HDFS
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: MASTER
+        hosts:
+          - master-01.localnet
+      - group: REGIONSERVER
+        hosts:
+          - slave-01.localnet
+      - group: HBASETHRIFTSERVER
+        hosts:
+          - slave-01.localnet
+      - group: HBASERESTSERVER
+        hosts:
+          - master-01.localnet
+      - group: GATEWAY
+        hosts:
+          - slave-01.localnet
+  HIVE:
+    config:
+      hive_metastore_database_host: master-01.localnet
+      hive_metastore_database_name: hive
+      hive_metastore_database_user: metastore
+      hive_metastore_database_password: temp
+      hive_metastore_database_port: 3306
+      hive_metastore_database_type: mysql
+      mapreduce_yarn_service: YARN
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: HIVEMETASTORE
+        config:
+          hive_metastore_java_heapsize: 128306784
+        hosts:
+          - master-01.localnet
+      - group: HIVESERVER2
+        hosts:
+          - master-01.localnet
+      - group: WEBHCAT
+        hosts:
+          - master-01.localnet
+      - group: GATEWAY
+        hosts:
+          - master-01.localnet
+          - slave-01.localnet
+  IMPALA:
+    config:
+      hdfs_service: HDFS
+      hive_service: HIVE
+      hbase_service: HBASE
+    roles:
+      - group: STATESTORE
+        hosts:
+          - master-01.localnet
+      - group: CATALOGSERVER
+        hosts:
+          - master-01.localnet
+      - group: IMPALAD
+        hosts:
+          - slave-01.localnet
+  FLUME:
+    config:
+      hdfs_service: HDFS
+      hbase_service: HBASE
+    roles:
+      - group: AGENT
+        hosts:
+          - slave-01.localnet
+  OOZIE:
+    config:
+      mapreduce_yarn_service: YARN
+      zookeeper_service: ZOOKEEPER
+      hive_service: HIVE
+    roles:
+      - group: OOZIE_SERVER
+        hosts:
+          - master-01.localnet
+        config:
+          oozie_java_heapsize: 207881018
+          oozie_database_host: master-01.localnet
+          oozie_database_name: oozie
+          oozie_database_user: oozie
+          oozie_database_password: temp
+          oozie_database_type: mysql
+  SQOOP:
+    config:
+      mapreduce_yarn_service: YARN
+    roles:
+      - group: SQOOP_SERVER
+        hosts:
+          - master-01.localnet
+        config:
+          sqoop_java_heapsize: 207881018
+          sqoop_repository_database_host: master-01.localnet
+          sqoop_repository_database_name: sqoop
+          sqoop_repository_database_user: sqoop
+          sqoop_repository_database_password: temp
+          sqoop_repository_database_type: derby
+  SOLR:
+    config:
+      hdfs_service: HDFS
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: SOLR_SERVER
+        hosts:
+          - master-01.localnet
+      - group: GATEWAY
+        hosts:
+          - slave-01.localnet
+  HUE:
+    config:
+      hive_service: HIVE
+      hbase_service: HBASE
+      impala_service: IMPALA
+      oozie_service: OOZIE
+      sqoop_service: SQOOP
+      solr_service: SOLR
+      sentry_service: SENTRY
+      zookeeper_service: ZOOKEEPER
+      hue_webhdfs: HDFS-NAMENODE-1
+      hue_hbase_thrift: HBASE-HBASETHRIFTSERVER-1
+    roles:
+      - group: HUE_SERVER
+        hosts:
+          - master-01.localnet
+  KAFKA:
+    config:
+      zookeeper_service: ZOOKEEPER
+      zookeeper.chroot: /kafka
+      default.replication.factor: 3
+    roles:
+      - group: KAFKA_BROKER
+        config:
+          log.dirs: /var/lib/kafka/data
+          broker_max_heap_size: 1024
+        hosts:
+          - slave-01.localnet
+  SENTRY:
+    config:
+      zookeeper_service: ZOOKEEPER
+      hdfs_service: HDFS
+      sentry_server_database_host: master-01.localnet
+      sentry_server_database_name: sentry
+      sentry_server_database_user: sentry
+      sentry_server_database_password: temp
+      sentry_server_database_type: mysql
+    roles:
+      - group: SENTRY_SERVER
+        hosts:
+          - master-01.localnet
+      - group: GATEWAY
+        hosts:
+          - master-01.localnet
+          - slave-01.localnet

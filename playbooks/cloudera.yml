@@ -1,0 +1,90 @@
+---
+- include: create_groups.yml
+  tags:
+    - always
+
+- name: "Apply the ambari-agent role to all nodes"
+  hosts: hadoop-cluster
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  roles:
+    - cloudera-agent
+
+- name: "setup mysql on cloudera manager node"
+  hosts: cm_node
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: "Show cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  roles:
+    - cloudera-mysql
+
+- name: "Apply the cloudera-mngr role to cm-node group"
+  hosts: cm_node
+  become: yes
+  pre_tasks:
+    - name: "Show cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  roles:
+    - cloudera-mngr
+
+- name: Build a Cloudera cluster
+  gather_facts: True
+  hosts: cm_node
+  pre_tasks:
+    - name: Install python-pip (yum)
+      yum: name='python-pip' state=installed
+      when: ansible_os_family == "RedHat"
+      tags:
+        - cluster_deploy
+
+    - name: Install python-pip (apt)
+      apt: name='python-pip' state=installed
+      when: ansible_os_family == "Debian"
+      tags:
+        - cluster_deploy 
+
+    - name: Install cm_api
+      pip: name='cm_api' state=latest
+      tags:
+        - cluster_deploy 
+
+    - include_vars: roles/cloudera-mysql/vars/mysql_vars.yml   
+      tags:
+        - cluster_deploy 
+
+    - include_vars: group_vars/cloudera
+      tags:
+        - cluster_deploy 
+
+    - debug: var=vars
+
+    - name: Copy cluster template
+      template: src=library/cloudera/cluster.yaml.j2 dest=/opt/cluster.yaml
+      tags:
+        - cluster_deploy 
+    
+    - include_vars: roles/cloudera-mysql/vars/mysql_vars.yml   
+      tags:
+        - cluster_deploy 
+
+    - include_vars: group_vars/cloudera
+      tags:
+        - cluster_deploy 
+
+
+  tasks:
+    - name: Cloudera cluster create request
+      action:
+        module: cdh.py
+        trial: true
+      register: my_cdh      
+  tags: 
+    - cluster_deploy

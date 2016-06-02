@@ -10,6 +10,12 @@
       paths:
         - ../vars
 
+- include_vars: group_vars/cloudera
+  when: distro == "cdh"
+
+- include_vars: group_vars/hortonworks
+  when: distro == "hdp"
+
 - name: Install epel-release
   yum:
     name: "{{ epel_yum }}"
@@ -145,7 +151,7 @@
               create=yes
               regexp='^search\s+(?! {{ ansible_domain }} ).*$'
               line='search {{ ansible_domain }}'
-  when: ansible_domain != ""
+  when: ansible_domain != "" and not use_dns
   notify: Run resolvconf
 
 - meta: flush_handlers

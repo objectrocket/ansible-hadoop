@@ -1,0 +1,10 @@
+package_info:
+  pkg_mgr: apt
+  args:
+    name: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 600
+    state: latest
+  pkgs:
+    - cloudera-manager-server
+    - cloudera-manager-daemons

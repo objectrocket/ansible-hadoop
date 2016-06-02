@@ -1,0 +1,7 @@
+pkgs:
+  - mariadb-server
+  - mysql-connector-java
+
+mycnf_template: my.cnf-mariadb
+
+mysql_service: mariadb

@@ -1,0 +1,40 @@
+---
+- include: create_groups.yml
+
+- name: "remove clouder-agent role to all nodes"
+  hosts: hadoop-cluster
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  tasks:
+    - name: "remove agent"
+      yum: name='cloudera-manager-agent' state=removed
+
+- name: "drop scm mysql mysql db on master nodes"
+  hosts: master-nodes
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: "Show cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  tasks:
+    - name: 'remove scm db from master nodes'
+      mysql_db: name='scm' state=absent
+
+- name: "remove cloudera-mngr role to cm-node group"
+  hosts: cm_node
+  become: yes
+  pre_tasks:
+    - name: "Show cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  tasks:
+    - name: "remove cloudera manager"
+      yum: name={{ item }} state=removed
+      with_items:
+        - cloudera-manager-server
+        - cloudera-manager-daemons

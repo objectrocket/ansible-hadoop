@@ -1,6 +1,6 @@
 ansible-hadoop
 ---------
-These Ansible playbooks will build a Hadoop cluster (Hortonworks Data Platform).
+These Ansible playbooks will build a Hadoop cluster.
 
 You can pre-build a Rackspace cloud environment or run the playbooks against an existing environment.
 
