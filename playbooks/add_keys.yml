@@ -10,4 +10,4 @@
       when: debug
   tasks:
     - name: "add key"
-      authorized_key: user=root key="{{ lookup('file', 'keys/nirmal-key') }}"
+      authorized_key: user=root key="{{ lookup('file', 'keys/some-key') }}"
