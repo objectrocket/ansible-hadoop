@@ -1,7 +1,7 @@
 ---
 cluster_name: 'hadoop-poc'
 adminnode: 'ambari-node' 
-hdp_version: '2.4'
+hdp_version: '2.3'
 ambari_version: '2.2.2.0'
 admin_password: 'admin'
 services_password: 'AsdQwe123'
@@ -34,6 +34,15 @@ spark_stack_config:
   zeppelin_spark_executor_memory: '1g'
   zeppelin_spark_cores_max: '1'
   default_user: 'dgrier'
+
+#requires HDP2.3 RHEL/CentOS 6
+#available in 2 and 3 masternode blueprints
+arcadia: true
+arcadia_config:
+  archive_file: arcadia-enterprise-ambari.tar.gz
+  archive_src: 'http://get.arcadiadata.com'
+  archive_dest: '/var/lib/ambari-server/resources/stacks/HDP/2.3/services/'
+  hdfs-site: 'dfs.datanode.hdfs-blocks-metadata.enabled'
 
 hdfs:
   dfs_replication: 3
