@@ -135,6 +135,9 @@
         "dfs.datanode.balance.bandwidthPerSec" : "12500000",
         "dfs.datanode.max.transfer.threads": "4096",
         {% endif -%}
+        {% if arcadia == true -%}
+        "dfs.datanode.hdfs-blocks-metadata.enabled" : "true",
+        {% endif -%}
         "dfs.datanode.failed.volumes.tolerated" : "{% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{% if loop.last %}{% if loop.index > 1 %}{{ hdfs.failed_volumes_tolerated }}{% else %}0{% endif %}{% endif %}{% else %}0{%- endfor %}",
         "dfs.replication" : "{{ hdfs.dfs_replication }}"
       }
@@ -495,6 +498,11 @@
           "name" : "HBASE_REGIONSERVER"
         },
         {% endif -%}
+        {% if arcadia == true -%}
+        {
+          "name" : "ARCENGINE"
+        },
+        {% endif -%}
         {
           "name" : "METRICS_MONITOR"
         }
@@ -747,6 +755,17 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if arcadia == true -%}
+        {
+          "name" : "ARCENGINE_STATESTORE"
+        },
+        {
+          "name" : "ARCVIZ"
+        },
+        {
+          "name" : "ARCENGINE_CATALOG"
+        },
+        {% endif -%}
         {
           "name" : "METRICS_MONITOR"
         }
@@ -919,6 +938,11 @@
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"
+        },
+        {% endif -%}
+        {% if arcadia == true -%}
+        {
+          "name" : "ARCENGINE"
         },
         {% endif -%}
         {
