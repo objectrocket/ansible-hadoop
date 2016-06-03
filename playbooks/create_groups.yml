@@ -40,4 +40,6 @@
         ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
         groups: "{{ adminnode }}"
       with_items: "{{ groups['master-nodes']|sort|last }}"
+      register: "{{ adminnode }}"
       when: "'ambari-node' not in groups or groups['ambari-node']|length < 1"
+      
