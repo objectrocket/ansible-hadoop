@@ -134,19 +134,7 @@
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
   ignore_errors: true
 
-- name: Include unbound-dns.yml
-  include: unbound-dns.yml
-  when: use_dns
-
-- name: Reconfigure resolv.conf domain
-  lineinfile: dest={{ resolv_conf }}
-              create=yes
-              regexp='^domain\s+(?! {{ ansible_domain }} ).*$'
-              line='domain {{ ansible_domain }}'
-  when: ansible_domain != ""
-  notify: Run resolvconf
-
-- name: Reconfigure resolv.conf search
+`- name: Reconfigure resolv.conf search
   lineinfile: dest={{ resolv_conf }}
               create=yes
               regexp='^search\s+(?! {{ ansible_domain }} ).*$'
