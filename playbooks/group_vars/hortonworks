@@ -1,0 +1,53 @@
+---
+cluster_name: 'hadoop-poc'
+adminnode: 'ambari-node' 
+hdp_version: '2.3'
+ambari_version: '2.2.2.0'
+admin_password: 'admin'
+services_password: 'AsdQwe123'
+alerts_contact: 'root@localhost.localdomain'
+wait: true
+wait_timeout: 1800   # 30 minutes
+
+install_spark: true
+install_flume: true
+install_hbase: false
+install_storm: true
+install_kafka: true
+install_falcon: true
+tachyon_service: false
+
+data_disks_filesystem: xfs
+configure_firewall: false
+use_dns: false
+custom_blueprint: false
+custom_repo: false
+custom_repo_url: ''
+custom_repo_target: 'api/v1/stacks/HDP/versions/2.4/operating_systems/redhat6/repositories/HDP-2.4'
+
+spark_stack: false
+spark_stack_config:
+  tachyon_worker_memory: '1GB'
+  spark_exector_memory: '1g'
+  spark_driver_memory: '1g'
+  spark_driver_maxResultSize: '512M'
+  zeppelin_spark_executor_memory: '1g'
+  zeppelin_spark_cores_max: '1'
+  default_user: 'dgrier'
+
+#requires HDP2.3 RHEL/CentOS 6
+#available in 2 and 3 masternode blueprints
+arcadia: true
+arcadia_config:
+  archive_file: arcadia-enterprise-ambari.tar.gz
+  archive_src: 'http://get.arcadiadata.com'
+  archive_dest: '/var/lib/ambari-server/resources/stacks/HDP/2.3/services/'
+  hdfs-site: 'dfs.datanode.hdfs-blocks-metadata.enabled'
+
+hdfs:
+  dfs_replication: 3
+  failed_volumes_tolerated: 1
+  ha_namenode: true
+
+# set to true to show host variables
+debug: false

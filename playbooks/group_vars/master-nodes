@@ -1,4 +1,18 @@
 ---
+###############################
+##  Arcadia Testing         ##
+###############################
+cluster_interface: 'eth0'
+cloud_nodes_count: 3
+# cloud_image: 'CentOS 7 (PVHVM)'
+cloud_image: 'CentOS 6 (PVHVM)'
+cloud_flavor: 'performance2-15'
+build_datanode_cbs: true
+cbs_disks_size: 200
+cbs_disks_type: 'SATA'
+hadoop_disk: xvde
+datanode_disks: ['xvdf', 'xvdg']
+
 #########################################
 ## example for Rackspace cloud servers ##
 ## general1-8 flavor and CentOS 7      ##
@@ -6,11 +20,16 @@
 ## using the default public network    ##
 #########################################
 
-cloud_nodes_count: 2
-cloud_image: 'CentOS 7 (PVHVM)'
-# cloud_image: 'CentOS 6 (PVHVM)'
-cloud_flavor: 'general1-8'
-
+#cluster_interface: 'eth0'
+#cloud_nodes_count: 3
+#cloud_image: 'CentOS 7 (PVHVM)'
+## cloud_image: 'CentOS 6 (PVHVM)'
+#cloud_flavor: 'performance2-15'
+#build_datanode_cbs: true
+#cbs_disks_size: 200
+#cbs_disks_type: 'SATA'
+#hadoop_disk: xvde
+#datanode_disks: ['xvdf', 'xvdg']
 
 #############################################
 ## example for Rackspace cloud servers     ##

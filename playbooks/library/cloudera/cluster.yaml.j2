@@ -1,0 +1,303 @@
+# Cloudera Cluster template
+# Modify the template and replace the existing values for hosts
+# username/password and related configurations
+
+# Cloudera Manager config
+cm:
+  host: localhost
+  username: admin
+  password: admin
+
+# Basic cluster information
+cluster:
+  name: {{ cluster_name }}
+  version: {{ cloudera_version }}
+  fullVersion: {{ full_version }}
+  hosts:
+{% for host in groups['hadoop-cluster'] %}
+    - {{ host }}
+{% endfor %}
+
+# Parcels
+parcels:
+  - repo:
+    product: CDH
+    version: 5.7.0-1.cdh5.7.0.p0.45
+  - repo:
+    product: KAFKA
+    version: 2.0.1-1.2.0.1.p0.5
+
+# Service. All the service definitions go here
+services:
+  MGMT:
+    roles:
+      - group: ACTIVITYMONITOR
+        hosts:
+          - {{ groups['cm_node'][0] }}
+        config:
+          firehose_database_host: {{ groups['cm_node'][0] }}:3306
+          firehose_database_user: amon
+          firehose_database_password: {{ amon_pass }}
+          firehose_database_type: mysql
+          firehose_database_name: amon
+      - group: ALERTPUBLISHER
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: EVENTSERVER
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: HOSTMONITOR
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: SERVICEMONITOR
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: REPORTSMANAGER
+        hosts:
+          - {{ groups['cm_node'][0] }}
+        config:
+          headlamp_database_host: {{ groups['cm_node'][0] }}:3306
+          headlamp_database_user: rman
+          headlamp_database_password: {{ rman_pass }}
+          headlamp_database_type: mysql
+          headlamp_database_name: rman
+      #- group: NAVIGATOR
+      #- group: NAVIGATORMETADATASTORE
+  ZOOKEEPER:
+    config:
+      zookeeper_datadir_autocreate: true
+    roles:
+      - group: SERVER
+        hosts:
+{% for host in groups['master-nodes'] %}
+          - {{ host }}
+{% endfor %} 
+        config:
+          quorumPort: 2888
+          electionPort: 3888
+          dataLogDir: /var/lib/zookeeper
+          dataDir: /var/lib/zookeeper
+          maxClientCnxns: 1024
+  HDFS:
+    config:
+      dfs_replication: {{ hdfs.dfs_replication }}
+      dfs_permissions: false
+      dfs_block_local_path_access_user: impala,hbase,mapred,spark
+    roles:
+      - group: NAMENODE
+        hosts:
+          - {{ groups['master-nodes'][0] }}
+        config:
+          dfs_name_dir_list: /hadoop/namenode  
+          dfs_namenode_handler_count: 30
+      - group: SECONDARYNAMENODE
+        hosts:
+          - {{ groups['master-nodes'][1] }}
+        config:
+          fs_checkpoint_dir_list: /hadoop/namesecondary
+      - group: DATANODE
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %}
+        config:
+          dfs_data_dir_list: {% for disk in hostvars[groups['slave-nodes'][0]]['ansible_mounts'] if disk.mount | match("/grid/*") %}{{ disk.mount }}/hadoop/hdfs/data{% if not loop.last %},{% endif %}{% else %}/hadoop/hdfs/data{%- endfor %}
+
+          dfs_datanode_handler_count: 30
+          dfs_datanode_du_reserved: 1073741824
+          dfs_datanode_failed_volumes_tolerated: 0
+          dfs_datanode_data_dir_perm: 755
+  YARN:
+    config:
+      hdfs_service: HDFS
+    roles:
+      - group: RESOURCEMANAGER
+        hosts:
+          - {{ groups['master-nodes'][1] }}
+      - group: JOBHISTORY
+        hosts:
+          - {{ groups['master-nodes'][1] }}
+      - group: NODEMANAGER
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %} 
+        config:
+          yarn_nodemanager_local_dirs: /hadoop/yarn/nm
+  SPARK_ON_YARN:
+    config:
+      yarn_service: YARN
+    roles:
+      - group: SPARK_YARN_HISTORY_SERVER
+        hosts:
+          - {{ groups['master-nodes'][1] }}
+      - group: GATEWAY
+        hosts:
+          - {{ groups['slave-nodes'][1] }}
+  HBASE:
+    config:
+      hdfs_service: HDFS
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: MASTER
+        hosts:
+          - {{ groups['master-nodes'][1] }}
+      - group: REGIONSERVER
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %}
+      - group: HBASETHRIFTSERVER
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %}
+      - group: HBASERESTSERVER
+        hosts:
+          - {{ groups['master-nodes'][1] }}
+      - group: GATEWAY
+        hosts:
+          - {{ groups['slave-nodes'][1] }}
+  HIVE:
+    config:
+      hive_metastore_database_host: {{ groups['cm_node'][0] }}
+      hive_metastore_database_name: metastore
+      hive_metastore_database_user: metastore
+      hive_metastore_database_password: {{ hive_pass }}
+      hive_metastore_database_port: 3306
+      hive_metastore_database_type: mysql
+      mapreduce_yarn_service: YARN
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: HIVEMETASTORE
+        config:
+          hive_metastore_java_heapsize: 128306784
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: HIVESERVER2
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: WEBHCAT
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: GATEWAY
+        hosts:
+          - {{ groups['cm_node'][0] }}
+          - {{ groups['slave-nodes'][0] }}
+  IMPALA:
+    config:
+      hdfs_service: HDFS
+      hive_service: HIVE
+      hbase_service: HBASE
+    roles:
+      - group: STATESTORE
+        hosts:
+          - {{ groups['master-nodes'][0] }}
+      - group: CATALOGSERVER
+        hosts:
+          - {{ groups['master-nodes'][0] }}
+      - group: IMPALAD
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %} 
+  FLUME:
+    config:
+      hdfs_service: HDFS
+      hbase_service: HBASE
+    roles:
+      - group: AGENT
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %}
+  OOZIE:
+    config:
+      mapreduce_yarn_service: YARN
+      zookeeper_service: ZOOKEEPER
+      hive_service: HIVE
+    roles:
+      - group: OOZIE_SERVER
+        hosts:
+          - {{ groups['master-nodes'][0] }}
+        config:
+          oozie_java_heapsize: 207881018
+          oozie_database_host: {{ groups['master-nodes'][0] }}
+          oozie_database_name: oozie
+          oozie_database_user: oozie
+          oozie_database_password: {{ oozie_pass }}
+          oozie_database_type: mysql
+  SQOOP:
+    config:
+      mapreduce_yarn_service: YARN
+    roles:
+      - group: SQOOP_SERVER
+        hosts:
+          - {{ groups['master-nodes'][0] }}
+        config:
+          sqoop_java_heapsize: 207881018
+          sqoop_repository_database_host: {{ groups['master-nodes'][0] }}
+          sqoop_repository_database_name: sqoop
+          sqoop_repository_database_user: sqoop
+          sqoop_repository_database_password: {{ sqoop_pass }}
+          sqoop_repository_database_type: derby
+  SOLR:
+    config:
+      hdfs_service: HDFS
+      zookeeper_service: ZOOKEEPER
+    roles:
+      - group: SOLR_SERVER
+        hosts:
+          - {{ groups['master-nodes'][1] }}
+      - group: GATEWAY
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %}
+  HUE:
+    config:
+      hive_service: HIVE
+      hbase_service: HBASE
+      impala_service: IMPALA
+      oozie_service: OOZIE
+      sqoop_service: SQOOP
+      solr_service: SOLR
+      sentry_service: SENTRY
+      zookeeper_service: ZOOKEEPER
+      hue_webhdfs: HDFS-NAMENODE-1
+      hue_hbase_thrift: HBASE-HBASETHRIFTSERVER-1
+    roles:
+      - group: HUE_SERVER
+        hosts:
+          - {{ groups['master-nodes'][2] }}
+  KAFKA:
+    config:
+      zookeeper_service: ZOOKEEPER
+      zookeeper.chroot: /kafka
+      default.replication.factor: 3
+    roles:
+      - group: KAFKA_BROKER
+        config:
+          log.dirs: /var/lib/kafka/data
+          broker_max_heap_size: 1024
+        hosts:
+{% for host in groups['slave-nodes'] %}
+          - {{ host }}
+{% endfor %}
+  SENTRY:
+    config:
+      zookeeper_service: ZOOKEEPER
+      hdfs_service: HDFS
+      sentry_server_database_host: {{ groups['cm_node'][0] }}
+      sentry_server_database_name: sentry
+      sentry_server_database_user: sentry
+      sentry_server_database_password: {{ sentry_pass }}
+      sentry_server_database_type: mysql
+    roles:
+      - group: SENTRY_SERVER
+        hosts:
+          - {{ groups['cm_node'][0] }}
+      - group: GATEWAY
+        hosts:
+          - {{ groups['cm_node'][0] }}
+          - {{ groups['slave-nodes'][0] }}

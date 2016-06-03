@@ -10,35 +10,53 @@
       paths:
         - ../vars
 
-- name: Install epel
-  yum: name={{ epel_url }} state=present update_cache=yes
+- include_vars: group_vars/cloudera
+  when: distro == "cdh"
+
+- include_vars: group_vars/hortonworks
+  when: distro == "hdp"
+
+- name: Install epel-release
+  yum:
+    name: "{{ epel_yum }}"
+    state: present
+    update_cache: yes
+  ignore_errors: true
+  register: epel_result
   when: ansible_os_family == "RedHat"
+
+- name: Install epel-release (rpm)
+  yum:
+    name: "{{ epel_rpm_url }}"
+    state: present
+  when: ansible_os_family == "RedHat" and epel_result|failed
 
 - name: Ensure required packages are installed (yum)
   yum:
     name: "{{ item }}"
     update_cache: yes
     state: installed
-  with_items: "{{ packages }}"
-  when: ansible_os_family == "RedHat" and "{{ packages|length > 0 }}"
+  with_items: "{{ packages|default([]) }}"
+  when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
   apt:
     name: "{{ item }}"
     update_cache: yes
     state: installed
-  with_items: "{{ packages }}"
-  when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
+  with_items: "{{ packages|default([]) }}"
+  when: ansible_os_family == "Debian"
 
 - name: Upgrade all packages (yum)
   yum: name=* state=latest
-  when: ansible_os_family == "RedHat" and "{{ packages|length > 0 }}"
+  when: ansible_os_family == "RedHat"
 
 - name: Upgrade all packages (apt)
   apt: upgrade=dist
-  when: ansible_os_family == "Debian" and "{{ packages|length > 0 }}"
+  when: ansible_os_family == "Debian"
 
-- include: spark_stack.yml
+- name: Include spark_stack.yml
+  include: spark_stack.yml
   when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
 
 - name: Make sure the NTP service is stopped
@@ -100,23 +118,25 @@
               state=present
               regexp='(^\s*kernel(\s+(?!transparent_hugepage=never)[\w=/\-\.\,]+)*)\s*$'
               line='\1 transparent_hugepage=never'
-  register: result
-  with_items: "{{ grep_result.stdout_lines }}"
+  with_items: "{{ grep_result.stdout_lines | default('') }}"
   when: ansible_os_family == "RedHat" and (ansible_distribution == "Amazon" or ansible_distribution_major_version == "6")
 
 - name: Disable Transparent Huge Pages in Grub 2
   lineinfile: dest=/etc/default/grub
               state=present
               line='GRUB_CMDLINE_LINUX=$GRUB_CMDLINE_LINUX" transparent_hugepage=never"'
-  when: "{{ ansible_distribution_major_version|int }} > 6"
+  when: ansible_distribution_major_version|int > 6
+  notify: Run update-grub
 
-- name: Run update-grub in Grub 2
-  shell: "{{ update_grub }}"
-  when: "{{ ansible_distribution_major_version|int }} > 6"
+- meta: flush_handlers
 
 - name: Disable Transparent Huge Pages until reboot
   shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled && echo never > /sys/kernel/mm/transparent_hugepage/defrag
   ignore_errors: true
+
+- name: Include unbound-dns.yml
+  include: unbound-dns.yml
+  when: use_dns
 
 - name: Reconfigure resolv.conf domain
   lineinfile: dest={{ resolv_conf }}
@@ -124,17 +144,17 @@
               regexp='^domain\s+(?! {{ ansible_domain }} ).*$'
               line='domain {{ ansible_domain }}'
   when: ansible_domain != ""
+  notify: Run resolvconf
 
 - name: Reconfigure resolv.conf search
   lineinfile: dest={{ resolv_conf }}
               create=yes
               regexp='^search\s+(?! {{ ansible_domain }} ).*$'
               line='search {{ ansible_domain }}'
-  when: ansible_domain != ""
+  when: ansible_domain != "" and not use_dns
+  notify: Run resolvconf
 
-- name: Run resolvconf
-  shell: resolvconf -u
-  when: ansible_os_family == "Debian"
+- meta: flush_handlers
 
 - name: Configure bonding
   include: bonding.yml

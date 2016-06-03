@@ -1,0 +1,21 @@
+services_pass: 'temp'
+mysql_root_pass: 'temp' 
+amon_pass: "{{ services_pass }}"
+rman_pass: "{{ services_pass }}"
+sentry_pass: "{{ services_pass }}"
+nav_pass: "{{ services_pass }}"
+navms_pass: "{{ services_pass }}"
+hive_pass: "{{ services_pass }}"
+sqoop_pass: "{{ services_pass }}"
+oozie_pass: "{{ services_pass }}"
+scm_pass: "{{ services_pass }}"
+db_names:
+  - amon
+  - metastore
+  - navms
+  - nav
+  - rman
+  - sentry
+  - oozie
+  - sqoop
+  - scm

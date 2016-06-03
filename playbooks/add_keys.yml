@@ -1,0 +1,13 @@
+- include: create_groups.yml
+
+- name: "add keys to the cluster"
+  hosts: hadoop-cluster
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: "Show hadoop-cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+  tasks:
+    - name: "add key"
+      authorized_key: user=root key="{{ lookup('file', 'keys/some-key') }}"

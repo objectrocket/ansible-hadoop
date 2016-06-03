@@ -1,0 +1,16 @@
+package_info:
+  pkg_mgr: yum
+  args:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  pkgs:
+    - cloudera-manager-agent
+    - cloudera-manager-daemons
+    - oracle-j2sdk1.7
+    - mysql-connector-java
+
+resolv_conf: "/etc/resolv.conf"
+
+cloudera_repo: "https://archive.cloudera.com/cm{{ cloudera_version }}/redhat/{{ ansible_distribution_major_version }}/x86_64/cm/cloudera-manager.repo"
+cloudera_repo_file: "/etc/yum.repos.d/cloudera.repo"

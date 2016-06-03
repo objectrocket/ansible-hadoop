@@ -1,0 +1,7 @@
+pkgs:
+  - mysql-connector-java
+  - cloudera-manager-server-db-2
+  - cloudera-manager-server
+  - cloudera-manager-daemons
+
+resolv_conf: "/etc/resolv.conf"

@@ -1,0 +1,4 @@
+---
+- include_vars: group_vars/cloudera
+
+- include: prerequisites.yml

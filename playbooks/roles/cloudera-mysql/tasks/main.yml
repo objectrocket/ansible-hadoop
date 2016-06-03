@@ -1,0 +1,96 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- name: Ensure required packages are installed (yum)
+  yum:
+    name: "{{ item }}"
+    update_cache: yes
+    state: installed
+  with_items: "{{ pkgs }}"
+  when: ansible_os_family == "RedHat"
+
+- include_vars: group_vars/cloudera
+
+- include_vars: mysql_vars.yml
+
+- name: mysql config template
+  template: src={{ mycnf_template }} dest=/etc/my.cnf
+
+- name: start mysql
+  service: name={{ mysql_service }}  state=started enabled=yes
+
+- name: copy db dump to server
+  copy: src={{ item }}.sql dest=/tmp
+  with_items: "{{ db_names }}"
+
+- name: create DB references
+  mysql_db: name={{ item }} state=present
+  with_items: "{{ db_names }}"
+
+- name: import DBs
+  mysql_db: name={{ item }} state=import target=/tmp/{{ item }}.sql
+  with_items: "{{ db_names }}"
+
+- name: setup Activity Monitor DB user
+  mysql_user: name=amon password={{ amon_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=amon.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+ 
+- name: setup Report Manager DB user
+  mysql_user: name=rman password={{ rman_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=rman.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup Sentry DB user
+  mysql_user: name=sentry password={{ sentry_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=sentry.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup Cloudera Navigator DB user
+  mysql_user: name=nav password={{ nav_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=nav.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup Cloudera Navigator Metadata DB user
+  mysql_user: name=navms password={{ navms_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=navms.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup Hive Metastore DB user
+  mysql_user: name=metastore password={{ hive_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=metastore.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup Oozie DB user
+  mysql_user: name=oozie password={{ oozie_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=oozie.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup Sqoop DB user
+  mysql_user: name=sqoop password={{ sqoop_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=sqoop.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: setup SCM DB user
+  mysql_user: name=scm password={{ scm_pass }} host="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" priv=scm.*:ALL state=present
+  with_items: "{{ play_hosts }}"
+
+- name: put modified scm_prepare_database script in place
+  copy: src=scm_prepare_database.sh dest=/usr/share/cmf/schema/
+
+- name: setup SCM DB
+  command: /usr/share/cmf/schema/scm_prepare_database.sh mysql -h {{ groups['cm_node'][0] }} scm scm {{ scm_pass }}
+
+- name: copy hive schema
+  copy: src=hive-schema-1.1.0.mysql.sql dest=/opt/cloudera/
+
+- name: copy hive txn schema
+  copy: src=hive-txn-schema-0.13.0.mysql.sql dest=/opt/cloudera/
+  
+- name: copy hive schema script
+  copy: src=scripts/hive-schema-mysql.sh dest=/opt/cloudera/
+
+- name: setup Hive Metastore
+  command: /bin/bash /opt/cloudera/hive-schema-mysql.sh {{ groups['master-nodes'][0] }} metastore {{ hive_pass }} metastore
+

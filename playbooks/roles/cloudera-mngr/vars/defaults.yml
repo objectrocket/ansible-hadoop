@@ -1,0 +1,43 @@
+---
+ansible_ssh_user: 'root'
+cluster_name: 'hadoop-poc'
+cloudera_version: '5'
+custom_repo: false
+install_spark: true
+install_flume: false
+install_hbase: false
+install_storm: false
+install_kafka: false
+install_falcon: false
+tachyon_service: false
+custom_blueprint: false
+admin_password: 'admin'
+services_password: 'AsdQwe123'
+alerts_contact: 'root@localhost.localdomain'
+
+
+spark_stack_config:
+  tachyon_worker_memory: '1GB'
+  spark_exector_memory: '1g'
+  spark_driver_memory: '1g'
+  spark_driver_maxResultSize: '512M'
+  zeppelin_spark_executor_memory: '1g'
+  zeppelin_spark_cores_max: '1'
+  default_user: 'dgrier'
+
+hdfs:
+  dfs_replication: 3
+  failed_volumes_tolerated: 1
+  ha_namenode: true
+
+cloud_config:
+  rax_credentials_file: '~/.raxpub'
+  rax_region: 'DFW'
+  domain: 'localnet'
+  allowed_external_ips: ['127.0.0.1']
+  ssh:
+    keyname: 'hadoop-ssh-key'
+    keyfile: '~/.ssh/id_rsa.pub'
+
+# set to true to show host variables
+debug: false

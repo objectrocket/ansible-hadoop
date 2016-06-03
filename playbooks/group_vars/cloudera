@@ -1,0 +1,29 @@
+---
+cloudera_version: '5'
+full_version: '5.7.0'
+custom_repo: false
+
+adminnode: 'cm_node'
+
+
+install_spark: true
+install_flume: false
+install_hbase: false
+install_storm: false
+install_kafka: false
+install_falcon: false
+admin_password: 'admin'
+services_pass: 'temp'
+alerts_contact: 'root@localhost.localdomain'
+data_disks_filesystem: xfs
+configure_firewall: true
+
+
+hdfs:
+  dfs_replication: 3
+  failed_volumes_tolerated: 1
+  ha_namenode: true
+
+
+# set to true to show host variables
+debug: true

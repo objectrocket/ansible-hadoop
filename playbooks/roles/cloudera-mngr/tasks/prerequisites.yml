@@ -1,0 +1,35 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: ../../cloudera-mysql/vars/mysql_vars.yml
+
+- name: Ensure required packages are installed (yum)
+  yum:
+    name: "{{ item }}"
+    update_cache: yes
+    state: installed
+  with_items: "{{ pkgs }}"
+  when: ansible_os_family == "RedHat"
+
+- include: unbound-dns.yml
+  when: use_dns
+
+- name: Upload db properties template
+  template: src=db.properties dest=/etc/cloudera-scm-server/
+
+- name: Upload db properties template
+  template: src=db.mgmt.properties dest=/etc/cloudera-scm-server/
+
+- name: Enable the cloudera manager server service
+  service: name=cloudera-scm-server state=started enabled=yes
+
+- name: Waiting for mngr-server to start listening on port 7180
+  wait_for: host={{ ansible_nodename }} port=7180
+

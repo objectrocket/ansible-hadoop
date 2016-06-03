@@ -1,0 +1,7 @@
+---
+- name: copy arcadia enterprise to target server
+  copy: src={{ arcadia_config.archive_file }} dest=/tmp/
+
+- name: Extract archive file to ambari service destination
+  command: tar -zxf /tmp/{{ arcadia_config.archive_file }} -C {{ arcadia_config.archive_dest }}
+
