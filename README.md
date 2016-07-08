@@ -8,7 +8,7 @@ You can pre-build a Rackspace cloud environment or run the playbooks against an 
 
 ## [Installation] (id:installation)
 
-See [INSTALL.md](../master/INSTALL.md) for installation and build instructions.
+See [INSTALL-ENV.md](../master/INSTALL-ENV.md) for installation and build instructions.
 
 
 ## [Requirements] (id:requirements)
