@@ -22,7 +22,7 @@ cluster:
 parcels:
   - repo:
     product: CDH
-    version: 5.7.0-1.cdh5.7.0.p0.45
+    version: 5.7.1-1.cdh5.7.1.p0.11
   - repo:
     product: KAFKA
     version: 2.0.1-1.2.0.1.p0.5
@@ -124,6 +124,13 @@ services:
 {% endfor %} 
         config:
           yarn_nodemanager_local_dirs: /hadoop/yarn/nm
+      - group: GATEWAY
+        config:
+          mapred_submit_replication: 3
+        hosts:
+{% for host in groups['master-nodes'] %}
+          - {{ host }}
+{% endfor %}
   SPARK_ON_YARN:
     config:
       yarn_service: YARN
