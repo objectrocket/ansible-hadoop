@@ -22,7 +22,7 @@ cluster:
 parcels:
   - repo:
     product: CDH
-    version: 5.7.0-1.cdh5.7.0.p0.45
+    version: 5.7.1-1.cdh5.7.1.p0.11
   - repo:
     product: KAFKA
     version: 2.0.1-1.2.0.1.p0.5
@@ -75,26 +75,27 @@ services:
         config:
           quorumPort: 2888
           electionPort: 3888
-          dataLogDir: /var/lib/zookeeper
-          dataDir: /var/lib/zookeeper
-          maxClientCnxns: 1024
+          dataLogDir: /hadoop/ms/zookeeper/log
+          dataDir: /hadoop/ms/zookeeper/data
   HDFS:
     config:
       dfs_replication: {{ hdfs.dfs_replication }}
       dfs_permissions: false
       dfs_block_local_path_access_user: impala,hbase,mapred,spark
+#      dfs_client_use_trash: true
     roles:
       - group: NAMENODE
         hosts:
           - {{ groups['master-nodes'][0] }}
         config:
-          dfs_name_dir_list: /hadoop/namenode  
+          dfs_name_dir_list: /hadoop/nn/namenode/data
           dfs_namenode_handler_count: 30
       - group: SECONDARYNAMENODE
         hosts:
           - {{ groups['master-nodes'][1] }}
         config:
-          fs_checkpoint_dir_list: /hadoop/namesecondary
+          fs_checkpoint_dir_list: /hadoop/nn/namenode/checkpoint
+
       - group: DATANODE
         hosts:
 {% for host in groups['slave-nodes'] %}
@@ -110,6 +111,7 @@ services:
   YARN:
     config:
       hdfs_service: HDFS
+#      mapred_submit_replication: {{ groups['slave-nodes']|length }}
     roles:
       - group: RESOURCEMANAGER
         hosts:
@@ -123,7 +125,7 @@ services:
           - {{ host }}
 {% endfor %} 
         config:
-          yarn_nodemanager_local_dirs: /hadoop/yarn/nm
+          yarn_nodemanager_local_dirs: /hadoop/ms/yarn/nm
   SPARK_ON_YARN:
     config:
       yarn_service: YARN
@@ -133,6 +135,10 @@ services:
           - {{ groups['master-nodes'][1] }}
       - group: GATEWAY
         hosts:
+{% for host in groups['master-nodes'] %}
+          - {{ host }}
+{% endfor %}
+
           - {{ groups['slave-nodes'][1] }}
   HBASE:
     config:
@@ -167,6 +173,7 @@ services:
       hive_metastore_database_port: 3306
       hive_metastore_database_type: mysql
       mapreduce_yarn_service: YARN
+      spark_on_yarn_service: SPARK_ON_YARN
       zookeeper_service: ZOOKEEPER
     roles:
       - group: HIVEMETASTORE
@@ -221,26 +228,11 @@ services:
         hosts:
           - {{ groups['master-nodes'][0] }}
         config:
-          oozie_java_heapsize: 207881018
           oozie_database_host: {{ groups['master-nodes'][0] }}
           oozie_database_name: oozie
           oozie_database_user: oozie
           oozie_database_password: {{ oozie_pass }}
           oozie_database_type: mysql
-  SQOOP:
-    config:
-      mapreduce_yarn_service: YARN
-    roles:
-      - group: SQOOP_SERVER
-        hosts:
-          - {{ groups['master-nodes'][0] }}
-        config:
-          sqoop_java_heapsize: 207881018
-          sqoop_repository_database_host: {{ groups['master-nodes'][0] }}
-          sqoop_repository_database_name: sqoop
-          sqoop_repository_database_user: sqoop
-          sqoop_repository_database_password: {{ sqoop_pass }}
-          sqoop_repository_database_type: derby
   SOLR:
     config:
       hdfs_service: HDFS
@@ -278,7 +270,7 @@ services:
     roles:
       - group: KAFKA_BROKER
         config:
-          log.dirs: /var/lib/kafka/data
+          log.dirs: /hadoop/ms/kafka/data
           broker_max_heap_size: 1024
         hosts:
 {% for host in groups['slave-nodes'] %}
