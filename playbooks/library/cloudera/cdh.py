@@ -14,7 +14,7 @@ import yaml
 from ansible.module_utils.basic import *
 
 from cm_api.api_client import ApiResource, ApiException
-from cm_api.endpoints.services import ApiServiceSetupInfo
+from cm_api.endpoints.services import ApiServiceSetupInfo, ApiBulkCommandList
 
 
 REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
@@ -212,7 +212,12 @@ class Service(object):
         Check if a service is already started and running.
         :return: service state Boolean
         """
-        return True if self.service.serviceState == 'STARTED' else False
+        if self.service.serviceState == 'STARTED':
+            for role in self.service.get_all_roles():
+                if role.roleState != 'STARTED':
+                    return False
+            return True
+        return False
 
     @retry(attempts=10, delay=30)
     def run_cmd(self, func, timeout, fail_msg, *args, **kwargs):
@@ -220,12 +225,20 @@ class Service(object):
         Wrap retry checks for pre and post start commands that sometimes are not available to
         execute immediately after configuring or starting a service
         """
+        def check(self, cmd, fail_msg, timeout, retry=True):
+            if not cmd.wait(timeout).success:
+                if retry:
+                    if (cmd.resultMessage is not None and
+                            "is not currently available for execution" in cmd.resultMessage):
+                        raise ApiException('Retry command')
+                print_json(type=self.name, msg="{}. {}".format(fail_msg, cmd.resultMessage))
+
         cmd = func(*args, **kwargs)
-        if not cmd.wait(timeout).success:
-            if (cmd.resultMessage is not None and
-                    "is not currently available for execution" in cmd.resultMessage):
-                raise ApiException('Retry command')
-            print_json(type=self.name, msg="{}. {}".format(fail_msg, cmd.resultMessage))
+        if isinstance(cmd, ApiBulkCommandList):
+            for cmdi in cmd:
+                check(self, cmdi, fail_msg, timeout, retry=False)
+        else:
+            check(self, cmd, fail_msg, timeout)
 
     def deploy(self):
         """
@@ -256,7 +269,7 @@ class Service(object):
         :param group: Role group name
         """
         role_id = 0
-        for host in role['hosts']:
+        for host in role.get('hosts', []):
             role_id += 1
             role_name = '{}-{}-{}'.format(self.name, group, role_id)
             try:
@@ -337,14 +350,82 @@ class Hdfs(Service):
         SECONDARYNAMENODE
         DATANODE
         GATEWAY
+        JOURNALNODE
+        FAILOVERCONTROLLER
     """
-    def pre_start(self):
+    @property
+    def active_namenode(self):
+        return '{}-NAMENODE-1'.format(self.name)
+
+    @property
+    def standby_namenode(self):
+        return '{}-NAMENODE-2'.format(self.name)
+
+    @property
+    def failover_primary(self):
+        return '{}-FAILOVERCONTROLLER-1'.format(self.name)
+
+    @property
+    def failover_secondary(self):
+        return '{}-FAILOVERCONTROLLER-2'.format(self.name)
+
+    @property
+    def ha(self):
+        try:
+            self.service.get_role('SECONDARYNAMENODE')
+            return False
+        except ApiException:
+            return True
+
+    def format_namenode(self):
+        """Format only the primary/active Namenode"""
         print_json(type=self.name, msg="Formatting HDFS Namenode")
-        cmds = self.service.format_hdfs('{}-NAMENODE-1'.format(self.name))
-        for cmd in cmds:
-            if not cmd.wait(300).success:
-                print_json(type=self.name,
-                           msg="Failed formatting HDFS, continuing with setup. {}".format(cmd.resultMessage))
+        self.run_cmd(self.service.format_hdfs, 300, "Failed formatting HDFS, continuing with setup",
+                     self.active_namenode)
+
+    def pre_start(self):
+        # For non-HA mode only format the namenode
+        if not self.ha:
+            self.format_namenode()
+            return
+
+        # For HA HDFS the below operations need to be performed in this order
+        # Initialize the failover controller znode
+        print_json(type=self.name, msg="Setup HDFS Failover controller")
+        self.run_cmd(self.service.init_hdfs_auto_failover, 300, "Failed setting up Failover Controller",
+                     self.failover_primary)
+
+        # Start the Journal Nodes
+        print_json(type=self.name, msg="Starting Journal Nodes")
+        roles = [role.name for role in self.service.get_roles_by_type('JOURNALNODE')]
+        self.run_cmd(self.service.start_roles, 300, "Command Service start failed",
+                     *roles)
+
+        self.format_namenode()
+
+        # Start the Active Namenode
+        print_json(type=self.name, msg="Starting Active Namenode")
+        self.run_cmd(self.service.start_roles, 300, "Command Service start failed",
+                     self.active_namenode)
+
+        # Bootstrap standby Namenode
+        print_json(type=self.name, msg="Bootstrap Standby Namenode")
+        self.run_cmd(self.service.bootstrap_hdfs_stand_by, 300, "Command Bootstrap Standby Namenode failed",
+                     self.standby_namenode)
+
+        # Start the standby Namenode
+        print_json(type=self.name, msg="Starting Standby Namenode")
+        self.run_cmd(self.service.start_roles, 300, "Command Service start failed",
+                     self.standby_namenode)
+
+        # Start failover controller 1
+        print_json(type=self.name, msg="Starting Failover Controllers")
+        self.run_cmd(self.service.start_roles, 300, "Command Service start failed",
+                     self.failover_primary)
+
+        # Start failover controller 2
+        self.run_cmd(self.service.start_roles, 300, "Command Service start failed",
+                     self.failover_secondary)
 
     def post_start(self):
         self.run_cmd(self.service.create_hdfs_tmp, 60, "Command CreateHdfsTmp failed")
@@ -356,7 +437,13 @@ class Yarn(Service):
         RESOURCEMANAGER
         JOBHISTORY
         NODEMANAGER
+        GATEWAY
     """
+    def pre_start(self):
+        self.run_cmd(self.service.create_yarn_job_history_dir, 60, "Command Create Job History Dir failed")
+
+        self.run_cmd(self.service.create_yarn_node_manager_remote_app_log_dir, 60,
+                     "Command Create NodeManager app dir failed")
 
 
 class Spark_On_Yarn(Service):
@@ -500,14 +587,27 @@ class ClouderaManager(object):
     """
 
     def __init__(self, module, config, trial=False, license_txt=None):
-        self.api = ApiResource(config['cm']['host'], username=config['cm']['username'],
-                               password=config['cm']['password'])
-        self.manager = self.api.get_cloudera_manager()
         self.config = config
         self.module = module
         self.trial = trial
         self.license_txt = license_txt
         self.cluster = None
+        self._api = None
+        self._manager = None
+
+    @property
+    def api(self):
+        if self._api is None:
+            self._api = ApiResource(self.config['cm']['host'],
+                                    username=self.config['cm']['username'],
+                                    password=self.config['cm']['password'])
+        return self._api
+
+    @property
+    def manager(self):
+        if self._manager is None:
+            self._manager = self.api.get_cloudera_manager()
+        return self._manager
 
     def enable_license(self):
         """
@@ -666,7 +766,10 @@ class ClouderaManager(object):
         self.deploy_mgmt_services()
 
         # Configure and Start base services
-        self.service_orchestrate(BASE_SERVICES)
+        # Note: The base services needs to be started one at a time, since there's
+        # a dependency of services in the specified order
+        for service in BASE_SERVICES:
+            self.service_orchestrate([service])
 
         # Configure and Start remaining services
         self.service_orchestrate(ADDITIONAL_SERVICES)
