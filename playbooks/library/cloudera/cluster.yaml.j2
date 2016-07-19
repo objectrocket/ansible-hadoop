@@ -126,6 +126,13 @@ services:
 {% endfor %} 
         config:
           yarn_nodemanager_local_dirs: /hadoop/ms/yarn/nm
+      - group: GATEWAY
+        config:
+          mapred_submit_replication: 3
+        hosts:
+{% for host in groups['master-nodes'] %}
+          - {{ host }}
+{% endfor %}
   SPARK_ON_YARN:
     config:
       yarn_service: YARN
