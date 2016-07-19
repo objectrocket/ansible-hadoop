@@ -1,17 +1,43 @@
 ---
-###################################
-## Arcadia Testing              ##
-###################################
+#####################
+#Cloudera Cloud
+####################
 cluster_interface: 'eth0'
 cloud_nodes_count: 3
-# cloud_image: 'CentOS 7 (PVHVM)'
-cloud_image: 'CentOS 6 (PVHVM)'
+cloud_image: 'CentOS 7 (PVHVM)'
+#cloud_image: 'CentOS 6 (PVHVM)'
 #cloud_flavor: 'general1-8'
 cloud_flavor: 'performance2-15'
 build_datanode_cbs: true
 cbs_disks_size: 200
 cbs_disks_type: 'SATA'
 datanode_disks: ['xvdf','xvdg']
+
+###################
+#Cloudera OnMetal #
+###################
+#cluster_interface: 'bond0.101'
+#cloud_nodes_count: 3
+#cloud_image: 'OnMetal - CentOS 7'
+## cloud_image: 'OnMetal - Ubuntu 14.04 LTS (Trusty Tahr)'
+# cloud_flavor: 'onmetal-general2-small'
+# build_datanode_cbs: false
+#cloud_flavor: 'onmetal-io1'
+#datanode_disks: ['sdb', 'sdc']
+
+###################################
+## Arcadia Testing              ##
+###################################
+#cluster_interface: 'eth0'
+#cloud_nodes_count: 3
+# cloud_image: 'CentOS 7 (PVHVM)'
+#cloud_image: 'CentOS 6 (PVHVM)'
+#cloud_flavor: 'general1-8'
+#cloud_flavor: 'performance2-15'
+#build_datanode_cbs: true
+#cbs_disks_size: 200
+#cbs_disks_type: 'SATA'
+#datanode_disks: ['xvdf','xvdg']
 
 #########################################
 ## example for Rackspace cloud servers ##

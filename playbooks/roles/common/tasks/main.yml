@@ -158,6 +158,8 @@
 - name: Include partitioning.yml
   include: partitioning.yml
   with_flattened:
+    - "{{ namenode_disk|default([]) }}"
+    - "{{ masterservices_disk|default([]) }}"
     - "{{ hadoop_disk|default([]) }}"
     - "{{ datanode_disks|default([]) }}"
 
@@ -170,6 +172,26 @@
          dump=0
          passno=0
   when: hadoop_disk is defined and hadoop_disk and ansible_devices[hadoop_disk] is defined
+
+- name: Mount namenode disk under /hadoop/nn
+  mount: state=mounted
+         src="/dev/{{ namenode_disk }}1"
+         name="/hadoop/nn"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: namenode_disk is defined and namenode_disk and ansible_devices[namenode_disk] is defined
+
+- name: Mount master services disk under /hadoop/ms
+  mount: state=mounted
+         src="/dev/{{ masterservices_disk }}1"
+         name="/hadoop/ms"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: masterservices_disk is defined and masterservices_disk and ansible_devices[masterservices_disk] is defined
 
 - name: Mount datanode disks under /grid/{0..n}
   mount: state=mounted
