@@ -54,6 +54,28 @@ def retry(attempts=3, delay=5):
     return deco_retry
 
 
+@retry(attempts=3, delay=30)
+def execute_cmd(func, service_name, timeout, fail_msg, *args, **kwargs):
+    """
+    Wrap retry checks for pre and post start commands that sometimes are not available to
+    execute immediately after configuring or starting a service
+    """
+    def check(cmd, name, fail_msg, timeout, retry=True):
+        if not cmd.wait(timeout).success:
+            if retry:
+                if (cmd.resultMessage is not None and
+                        "is not currently available for execution" in cmd.resultMessage):
+                    raise ApiException('Retry command')
+            print_json(type=name, msg="{}. {}".format(fail_msg, cmd.resultMessage))
+
+    cmd = func(*args, **kwargs)
+    if isinstance(cmd, ApiBulkCommandList):
+        for cmdi in cmd:
+            check(cmdi, service_name, fail_msg, timeout, retry=False)
+    else:
+        check(cmd, service_name, fail_msg, timeout)
+
+
 def print_json(**kwargs):
     """
     Print json output based on the passed in arguments
@@ -214,31 +236,17 @@ class Service(object):
         """
         if self.service.serviceState == 'STARTED':
             for role in self.service.get_all_roles():
-                if role.roleState != 'STARTED':
+                if role.type != 'GATEWAY' and role.roleState != 'STARTED':
                     return False
             return True
         return False
 
-    @retry(attempts=10, delay=30)
     def run_cmd(self, func, timeout, fail_msg, *args, **kwargs):
         """
         Wrap retry checks for pre and post start commands that sometimes are not available to
         execute immediately after configuring or starting a service
         """
-        def check(self, cmd, fail_msg, timeout, retry=True):
-            if not cmd.wait(timeout).success:
-                if retry:
-                    if (cmd.resultMessage is not None and
-                            "is not currently available for execution" in cmd.resultMessage):
-                        raise ApiException('Retry command')
-                print_json(type=self.name, msg="{}. {}".format(fail_msg, cmd.resultMessage))
-
-        cmd = func(*args, **kwargs)
-        if isinstance(cmd, ApiBulkCommandList):
-            for cmdi in cmd:
-                check(self, cmdi, fail_msg, timeout, retry=False)
-        else:
-            check(self, cmd, fail_msg, timeout)
+        execute_cmd(func, self.name, timeout, fail_msg, *args, **kwargs)
 
     def deploy(self):
         """
@@ -277,7 +285,7 @@ class Service(object):
             except ApiException:
                 self.service.create_role(role_name, group, host)
 
-    @retry(attempts=6, delay=10)
+    @retry(attempts=3, delay=60)
     def start(self):
         """
         Start the service and wait for the command to finish, followed by a check that the
@@ -600,7 +608,8 @@ class ClouderaManager(object):
         if self._api is None:
             self._api = ApiResource(self.config['cm']['host'],
                                     username=self.config['cm']['username'],
-                                    password=self.config['cm']['password'])
+                                    password=self.config['cm']['password'],
+                                    use_tls=self.config['cm'].get('tls', False))
         return self._api
 
     @property
@@ -737,7 +746,11 @@ class ClouderaManager(object):
 
         # Deploy all the client configs, since some of the services depend on other services
         # and is essential that the client configs are in place
-        self.cluster.deploy_client_config()
+        try:
+            execute_cmd(self.cluster.deploy_client_config, "CLUSTER", 30, "Failed deploying client configs")
+        except ApiException:
+            # Sometimes the deploy client configs cannot be run, but we can safely ignore them
+            pass
 
         # Start each service and run the post_start actions for each service
         for svc in service_classes:
@@ -748,8 +761,6 @@ class ClouderaManager(object):
                 svc.post_start()
 
     def setup(self):
-        # TODO(rnirmal): Cloudera Manager SSL?
-
         # Enable a full license or start a trial
         self.enable_license()
 
