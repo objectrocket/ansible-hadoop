@@ -67,7 +67,7 @@
     - debug: var=vars
 
     - name: Copy cluster template
-      template: src=library/cloudera/cluster.yaml.j2 dest=/opt/cluster.yaml
+      template: src=library/cloudera/{{ cluster_template_file }} dest=/opt/cluster.yaml
       tags:
         - cluster_deploy 
     
@@ -78,7 +78,6 @@
     - include_vars: group_vars/cloudera
       tags:
         - cluster_deploy 
-
 
   tasks:
     - name: Cloudera cluster create request
