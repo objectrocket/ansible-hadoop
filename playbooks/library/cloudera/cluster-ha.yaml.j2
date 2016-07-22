@@ -23,10 +23,10 @@ cluster:
 parcels:
   - repo:
     product: CDH
-    version: 5.7.1-1.cdh5.7.1.p0.11
+    version: 5.8.0-1.cdh5.8.0.p0.42
   - repo:
     product: KAFKA
-    version: 2.0.1-1.2.0.1.p0.5
+    version: 2.0.2-1.2.0.2.p0.5
 
 # Service. All the service definitions go here
 services:
@@ -84,7 +84,7 @@ services:
       dfs_permissions: false
       dfs_block_local_path_access_user: impala,hbase,mapred,spark
       zookeeper_service: ZOOKEEPER
-+#      dfs_client_use_trash: true #needs correct parameter
+#      dfs_client_use_trash: true #needs correct parameter
     roles:
       - group: NAMENODE
         hosts:
