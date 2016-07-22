@@ -76,33 +76,34 @@ services:
         config:
           quorumPort: 2888
           electionPort: 3888
-          dataLogDir: /var/lib/zookeeper
-          dataDir: /var/lib/zookeeper
-          maxClientCnxns: 1024
+          dataLogDir: /hadoop/ms/zookeeper/log
+          dataDir: /hadoop/ms/zookeeper/data
   HDFS:
     config:
       dfs_replication: {{ hdfs.dfs_replication }}
       dfs_permissions: false
       dfs_block_local_path_access_user: impala,hbase,mapred,spark
       zookeeper_service: ZOOKEEPER
++#      dfs_client_use_trash: true #needs correct parameter
     roles:
       - group: NAMENODE
         hosts:
           - {{ groups['master-nodes'][0] }}
           - {{ groups['master-nodes'][1] }}
         config:
-          dfs_name_dir_list: /hadoop/namenode  
+          dfs_name_dir_list: /hadoop/nn/namenode/data
           dfs_namenode_handler_count: 30
           dfs_federation_namenode_nameservice: hdfsHA
           dfs_namenode_quorum_journal_name: hdfsHA
           autofailover_enabled: true
+          fs_checkpoint_dir_list: /hadoop/nn/namenode/checkpoint
       - group: JOURNALNODE
         hosts:
 {% for host in groups['master-nodes'] %}
           - {{ host }}
 {% endfor %}
         config:
-          dfs_journalnode_edits_dir: /var/lib/hadoop/journal
+          dfs_journalnode_edits_dir: /hadoop/nn/journal
       - group: FAILOVERCONTROLLER
         hosts:
           - {{ groups['master-nodes'][0] }}
@@ -138,7 +139,7 @@ services:
           - {{ host }}
 {% endfor %} 
         config:
-          yarn_nodemanager_local_dirs: /hadoop/yarn/nm
+          yarn_nodemanager_local_dirs: /hadoop/ms/yarn/nm
       - group: GATEWAY
         config:
           mapred_submit_replication: 3
@@ -243,26 +244,11 @@ services:
         hosts:
           - {{ groups['master-nodes'][0] }}
         config:
-          oozie_java_heapsize: 207881018
           oozie_database_host: {{ groups['master-nodes'][0] }}
           oozie_database_name: oozie
           oozie_database_user: oozie
           oozie_database_password: {{ oozie_pass }}
           oozie_database_type: mysql
-  SQOOP:
-    config:
-      mapreduce_yarn_service: YARN
-    roles:
-      - group: SQOOP_SERVER
-        hosts:
-          - {{ groups['master-nodes'][0] }}
-        config:
-          sqoop_java_heapsize: 207881018
-          sqoop_repository_database_host: {{ groups['master-nodes'][0] }}
-          sqoop_repository_database_name: sqoop
-          sqoop_repository_database_user: sqoop
-          sqoop_repository_database_password: {{ sqoop_pass }}
-          sqoop_repository_database_type: derby
   SOLR:
     config:
       hdfs_service: HDFS
@@ -300,7 +286,7 @@ services:
     roles:
       - group: KAFKA_BROKER
         config:
-          log.dirs: /var/lib/kafka/data
+          log.dirs: /hadoop/ms/kafka/data
           broker_max_heap_size: 1024
         hosts:
 {% for host in groups['slave-nodes'] %}
