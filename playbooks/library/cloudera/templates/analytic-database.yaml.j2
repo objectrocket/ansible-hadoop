@@ -96,7 +96,7 @@ services:
           dfs_federation_namenode_nameservice: hdfsHA
           dfs_namenode_quorum_journal_name: hdfsHA
           autofailover_enabled: true
-          fs_checkpoint_dir_list: /hadoop/nn/namenode/checkpoint
+#          fs_checkpoint_dir_list: /hadoop/nn/namenode/checkpoint
       - group: JOURNALNODE
         hosts:
 {% for host in groups['master-nodes'] %}
@@ -152,30 +152,6 @@ services:
       yarn_service: YARN
     roles:
       - group: SPARK_YARN_HISTORY_SERVER
-        hosts:
-          - {{ groups['master-nodes'][1] }}
-      - group: GATEWAY
-        hosts:
-          - {{ groups['slave-nodes'][1] }}
-  HBASE:
-    config:
-      hdfs_service: HDFS
-      zookeeper_service: ZOOKEEPER
-    roles:
-      - group: MASTER
-        hosts:
-          - {{ groups['master-nodes'][1] }}
-      - group: REGIONSERVER
-        hosts:
-{% for host in groups['slave-nodes'] %}
-          - {{ host }}
-{% endfor %}
-      - group: HBASETHRIFTSERVER
-        hosts:
-{% for host in groups['slave-nodes'] %}
-          - {{ host }}
-{% endfor %}
-      - group: HBASERESTSERVER
         hosts:
           - {{ groups['master-nodes'][1] }}
       - group: GATEWAY
@@ -249,19 +225,6 @@ services:
           oozie_database_user: oozie
           oozie_database_password: {{ oozie_pass }}
           oozie_database_type: mysql
-  SOLR:
-    config:
-      hdfs_service: HDFS
-      zookeeper_service: ZOOKEEPER
-    roles:
-      - group: SOLR_SERVER
-        hosts:
-          - {{ groups['master-nodes'][1] }}
-      - group: GATEWAY
-        hosts:
-{% for host in groups['slave-nodes'] %}
-          - {{ host }}
-{% endfor %}
   HUE:
     config:
       hive_service: HIVE
@@ -278,6 +241,9 @@ services:
       - group: HUE_SERVER
         hosts:
           - {{ groups['master-nodes'][2] }}
+#      - group: HTTPFS
+#        hosts:
+#          - {{ groups['master-nodes'][2] }}
   KAFKA:
     config:
       zookeeper_service: ZOOKEEPER
