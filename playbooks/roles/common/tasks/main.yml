@@ -162,6 +162,7 @@
     - "{{ masterservices_disk|default([]) }}"
     - "{{ hadoop_disk|default([]) }}"
     - "{{ datanode_disks|default([]) }}"
+    - "{{ mysql_disks|default([]) }}"
 
 - name: Mount hadoop disk under /hadoop
   mount: state=mounted
@@ -192,6 +193,20 @@
          dump=0
          passno=0
   when: masterservices_disk is defined and masterservices_disk and ansible_devices[masterservices_disk] is defined
+
+- name; create mysql mount
+  file: name=/var/lib/mysql state=directory
+  when: mysql_disk is defined and mysql_disk and ansible_devices[mysql_disk] is defined
+
+- name: Mount mysql services disk under /var/lib/mysql
+  mount: state=mounted
+         src="/dev/{{ mysql_disk }}1"
+         name="/var/lib/mysql/"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: mysql_disk is defined and mysql_disk and ansible_devices[mysql_disk] is defined
 
 - name: Mount datanode disks under /grid/{0..n}
   mount: state=mounted
