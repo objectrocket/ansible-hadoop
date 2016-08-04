@@ -92,5 +92,5 @@
   copy: src=scripts/hive-schema-mysql.sh dest=/opt/cloudera/
 
 - name: setup Hive Metastore
-  command: /bin/bash /opt/cloudera/hive-schema-mysql.sh {{ groups['master-nodes'][0] }} metastore {{ hive_pass }} metastore
+  command: /bin/bash /opt/cloudera/hive-schema-mysql.sh {{ groups['cm_node'][0] }} metastore {{ hive_pass }} metastore
 

@@ -20,6 +20,7 @@ hadoop_disk: xvde
 #cloud_flavor: 'onmetal-io1'
 #namenode_disk: sdb
 #masterservices_disk: sdc
+#mysql_disk: sdd
 
 ###############################
 ##  Arcadia Testing         ##

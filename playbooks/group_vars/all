@@ -1,7 +1,7 @@
 ---
 cluster_name: 'hadoopPOC'
 #valid hdp/cdh
-distro: 'hdp'
+distro: 'cdh'
 use_dns: true
 
 cloud_config:
