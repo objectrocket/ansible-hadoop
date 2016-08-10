@@ -1,6 +1,6 @@
 ---
 cloudera_version: '5'
-full_version: '5.7.0'
+full_version: '5.8.0'
 custom_repo: false
 
 adminnode: 'cm_node'
@@ -14,7 +14,7 @@ services_pass: 'temp'
 alerts_contact: 'root@localhost.localdomain'
 data_disks_filesystem: xfs
 configure_firewall: true
-cluster_template_file: 'templates/analytic-database.yaml.j2'
+cluster_template_file: 'templates/operational-database.yaml.j2'
 
 hdfs:
   dfs_replication: 3
