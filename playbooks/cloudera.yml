@@ -38,6 +38,7 @@
 - name: Build a Cloudera cluster
   gather_facts: True
   hosts: cm_node
+  become: yes
   pre_tasks:
     - name: Install python-pip (yum)
       yum: name='python-pip' state=installed

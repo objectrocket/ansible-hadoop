@@ -3,6 +3,8 @@ cluster_name: 'hadoopPOC'
 #valid hdp/cdh
 distro: 'cdh'
 use_dns: true
+dnsfwd: ['173.203.4.8', '173.203.4.9']
+dnsres: ['173.203.4.8', '173.203.4.9']
 
 cloud_config:
   rax_credentials_file: '~/.raxpub'
