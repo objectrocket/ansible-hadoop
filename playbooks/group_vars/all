@@ -1,7 +1,7 @@
 ---
 cluster_name: 'hadoopPOC'
 #valid hdp/cdh
-distro: 'cdh'
+distro: 'hdp'
 use_dns: true
 dnsfwd: ['173.203.4.8', '173.203.4.9']
 dnsres: ['173.203.4.8', '173.203.4.9']

@@ -1,7 +1,7 @@
 ---
 cluster_name: 'hadoop-poc'
 adminnode: 'ambari-node' 
-hdp_version: '2.3'
+hdp_version: '2.5'
 ambari_version: '2.2.2.0'
 admin_password: 'admin'
 services_password: 'AsdQwe123'
@@ -22,8 +22,8 @@ configure_firewall: false
 use_dns: false
 custom_blueprint: false
 custom_repo: false
-custom_repo_url: ''
-custom_repo_target: 'api/v1/stacks/HDP/versions/2.4/operating_systems/redhat6/repositories/HDP-2.4'
+custom_repo_url: 'http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Erie-Preview/2.5.0.0-7/centos7/'
+custom_repo_target: 'api/v1/stacks/HDP/versions/2.5/operating_systems/redhat7/repositories/HDP-2.5'
 
 spark_stack: false
 spark_stack_config:
@@ -37,11 +37,11 @@ spark_stack_config:
 
 #requires HDP2.3 RHEL/CentOS 6
 #available in 2 and 3 masternode blueprints
-arcadia: true
+arcadia: false
 arcadia_config:
-  archive_file: arcadia-enterprise-ambari.tar.gz
+  archive_file: ARCADIA-ENTERPRISE-3.1.0.0_1464326436-1.tar.gz
   archive_src: 'http://get.arcadiadata.com'
-  archive_dest: '/var/lib/ambari-server/resources/stacks/HDP/2.3/services/'
+  archive_dest: '/var/lib/ambari-server/resources/stacks/HDP/2.4/services/'
   hdfs-site: 'dfs.datanode.hdfs-blocks-metadata.enabled'
 
 hdfs:
