@@ -29,6 +29,12 @@
       with_items:
         - db_names
 
+    - name: "stop mariadb"
+      service: name=mariadb state=stopped
+
+    - name: "remove dirs"
+      file: path=/var/lib/mysql/* state=absent
+
 - name: "remove cloudera-mngr role to cm-node group"
   hosts: cm_node
   become: yes
@@ -43,9 +49,27 @@
         - cloudera-manager-server
         - cloudera-manager-daemons
 
-- name: "cleanup dirs"
-  hosts: hadoop_cluster
+- name: "kill procs"
+  hosts: hadoop-cluster
+  become: yes
+  tasks:
+    - name: "kill procs"
+      action: shell /usr/bin/pkill -IO 'cloudera' || true
+      ignore_errors: True
+
+- name: "cleanup datanode  dirs"
+  hosts: hadoop-cluster
   become: yes
   tasks:
     - name: "remove dirs"
-      file: path=/hadoop state=absent
+      file: path=/hadoop/* state=absent
+
+- name: "cleanup masternode  dirs"
+  hosts: hadoop-cluster
+  become: yes
+  tasks:
+    - name: "remove ms dirs"
+      file: path=/hadoop/ms/* state=absent
+
+    - name: "remove nn dirs"
+      file: path=/hadoop/nn/* state=absent

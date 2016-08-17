@@ -194,7 +194,7 @@
          passno=0
   when: masterservices_disk is defined and masterservices_disk and ansible_devices[masterservices_disk] is defined
 
-- name; create mysql mount
+- name: create mysql mount
   file: name=/var/lib/mysql state=directory
   when: mysql_disk is defined and mysql_disk and ansible_devices[mysql_disk] is defined
 
