@@ -218,3 +218,7 @@
          passno=0
   with_indexed_items: "{{ datanode_disks|default([]) }}"
   when: datanode_disks is defined and datanode_disks and ansible_devices[item.1] is defined
+
+- name: Include cachedisks.yml
+  include: cachedisks.yml
+  when: software_raid_devices is defined

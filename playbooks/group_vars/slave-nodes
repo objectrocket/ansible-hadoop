@@ -13,6 +13,21 @@ cbs_disks_size: 200
 cbs_disks_type: 'SATA'
 datanode_disks: ['xvdf','xvdg']
 
+#############################
+#setup raided cache disks   #
+#############################
+software_raid_devices:
+  device: "/dev/md0"
+  level: 0
+  components:
+    - "/dev/nvme0n1"
+    - "/dev/nvme1n1"
+  filesystem_type: "xfs"
+  mount_point: "/hadoop/cache"
+  mount_options: "noatime,noexec,nodiratime"
+  dump: 0
+  passno: 0
+
 ###################
 #Cloudera OnMetal #
 ###################

@@ -1,0 +1,52 @@
+---
+- name: software raid - check existing raid devices
+  shell: "mdadm -D {{ item }}"
+  ignore_errors: yes
+  register: mdadm_check
+  with_items: "{{ software_raid_devices.device }}"
+
+- include_vars: group_vars/slave-nodes
+
+- debug: msg="{{ software_raid_devices }}"
+
+- debug: msg="mdadm_check {{ mdadm_check.results }}"
+
+- name: software raid initialise raid devices
+  shell: mdadm -v --create {{ software_raid_devices.device }} --level={{ software_raid_devices.level }} --raid-devices={{ software_raid_devices.components | length }} {{ software_raid_devices.components | join(" ") }}
+  args:
+    creates: "/dev/md0"
+
+- name: software raid - scan raid devices
+  shell: "mdadm --detail --scan"
+  ignore_errors: yes
+  register: mdadm_scan
+
+- name: Get disk alignment for disk {{ item }}
+  shell: if [[ -e /sys/block/{{ item }}/queue/optimal_io_size && -e /sys/block/{{ item }}/alignment_offset && -e /sys/block/{{ item }}/queue/physical_block_size ]]; then echo $[$(( ($(cat /sys/block/{{ item }}/queue/optimal_io_size) + $(cat /sys/block/{{ item }}/alignment_offset)) / $(cat /sys/block/{{ item }}/queue/physical_block_size) )) | 2048]; else echo 2048; fi
+  register: disk_offset
+  with_items: "{{ software_raid_devices.device }}"
+
+- name: Partition disk {{ item }}
+  shell: parted -s -a optimal /dev/{{ item }} mklabel gpt mkpart primary {{ data_disks_filesystem }} {{ disk_offset.stdout|default("2048") }}s 100% && sleep 5 && partprobe /dev/{{ item }}; sleep 5
+  when: ansible_devices[item] is defined and ansible_devices[item]['partitions'] == {}
+  with_items: "{{ software_raid_devices.device }}"
+
+- name: Disable periodic fsck on {{ item }}
+  shell: tune2fs -c0 -i0 /dev/{{ item }}1
+  when: (data_disks_filesystem == "ext4" or data_disks_filesystem == "ext3")
+  with_items: "{{ software_raid_devices.device }}"
+
+- name: software raid - filesystem creation
+  filesystem:
+    fstype: "{{ software_raid_devices.filesystem_type }}"
+    dev: "{{ software_raid_devices.device }}"
+
+- name: software raid - mount raid devices
+  mount:
+    name: "{{ software_raid_devices.mount_point }}"
+    src: "{{ software_raid_devices.device }}"
+    fstype: "{{ software_raid_devices.filesystem_type }}"
+    opts: "{{ software_raid_devices.mount_options }}"
+    dump: "{{ software_raid_devices.dump }}"
+    passno: "{{ software_raid_devices.passno }}"
+    state: mounted
