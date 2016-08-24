@@ -5,11 +5,11 @@
   register: mdadm_check
   with_items: "{{ software_raid_devices.device }}"
 
-- include_vars: group_vars/slave-nodes
-
 - debug: msg="{{ software_raid_devices }}"
+  when: debug
 
 - debug: msg="mdadm_check {{ mdadm_check.results }}"
+  when: debug
 
 - name: software raid initialise raid devices
   shell: mdadm -v --create {{ software_raid_devices.device }} --level={{ software_raid_devices.level }} --raid-devices={{ software_raid_devices.components | length }} {{ software_raid_devices.components | join(" ") }}
