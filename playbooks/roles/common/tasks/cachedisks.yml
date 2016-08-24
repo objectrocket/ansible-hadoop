@@ -31,15 +31,15 @@
   when: ansible_devices[item] is defined and ansible_devices[item]['partitions'] == {}
   with_items: "{{ software_raid_devices.device }}"
 
-- name: Disable periodic fsck on {{ item }}
-  shell: tune2fs -c0 -i0 /dev/{{ item }}1
-  when: (data_disks_filesystem == "ext4" or data_disks_filesystem == "ext3")
-  with_items: "{{ software_raid_devices.device }}"
-
 - name: software raid - filesystem creation
   filesystem:
     fstype: "{{ software_raid_devices.filesystem_type }}"
     dev: "{{ software_raid_devices.device }}"
+
+- name: Disable periodic fsck on {{ item }}
+  shell: tune2fs -c0 -i0 /dev/{{ item }}1
+  when: (data_disks_filesystem == "ext4" or data_disks_filesystem == "ext3")
+  with_items: "{{ software_raid_devices.device }}"
 
 - name: software raid - mount raid devices
   mount:
