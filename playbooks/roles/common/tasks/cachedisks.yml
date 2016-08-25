@@ -50,3 +50,6 @@
     dump: "{{ software_raid_devices.dump }}"
     passno: "{{ software_raid_devices.passno }}"
     state: mounted
+
+- name: create hbase bucket cache file
+  file: name=/hadoop/cache/bucketcache owner=hbase group=hbase state=touch
