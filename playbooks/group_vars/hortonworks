@@ -2,7 +2,7 @@
 cluster_name: 'hadoop-poc'
 adminnode: 'ambari-node' 
 hdp_version: '2.5'
-ambari_version: '2.2.2.0'
+ambari_version: '2.4.0.1'
 admin_password: 'admin'
 services_password: 'AsdQwe123'
 alerts_contact: 'root@localhost.localdomain'
@@ -11,29 +11,19 @@ wait_timeout: 1800   # 30 minutes
 
 install_spark: true
 install_flume: true
-install_hbase: false
+install_hbase: true
 install_storm: true
 install_kafka: true
 install_falcon: true
 tachyon_service: false
 
 data_disks_filesystem: xfs
-configure_firewall: false
+configure_firewall: true
 use_dns: false
 custom_blueprint: false
 custom_repo: false
 custom_repo_url: 'http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Erie-Preview/2.5.0.0-7/centos7/'
 custom_repo_target: 'api/v1/stacks/HDP/versions/2.5/operating_systems/redhat7/repositories/HDP-2.5'
-
-spark_stack: false
-spark_stack_config:
-  tachyon_worker_memory: '1GB'
-  spark_exector_memory: '1g'
-  spark_driver_memory: '1g'
-  spark_driver_maxResultSize: '512M'
-  zeppelin_spark_executor_memory: '1g'
-  zeppelin_spark_cores_max: '1'
-  default_user: 'dgrier'
 
 #requires HDP2.3 RHEL/CentOS 6
 #available in 2 and 3 masternode blueprints

@@ -20,10 +20,6 @@
 
 - meta: flush_handlers
 
-- name: Include spark_stack.yml
-  include: spark_stack.yml
-  when: spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
-
 - include: arcadia.yml
   when: arcadia and ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
 

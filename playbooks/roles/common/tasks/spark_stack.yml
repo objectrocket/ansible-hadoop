@@ -1,5 +1,0 @@
-- name: Custom Repo
-  get_url: url=http://mirrors.dfw.cbd.rackspace.com/cbd.repo dest=/etc/yum.repos.d/
-    
-- name: Add default user
-  user: name={{ spark_stack_config.default_user }} groups=users
