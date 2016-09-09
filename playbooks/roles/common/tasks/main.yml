@@ -55,10 +55,6 @@
   apt: upgrade=dist
   when: ansible_os_family == "Debian"
 
-- name: Include spark_stack.yml
-  include: spark_stack.yml
-  when: distro == "hdp" and spark_stack and ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
-
 - name: Make sure the NTP service is stopped
   service: name={{ ntp_service }} state=stopped
 
