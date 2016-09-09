@@ -18,7 +18,7 @@ install_falcon: true
 tachyon_service: false
 
 data_disks_filesystem: xfs
-configure_firewall: true
+configure_firewall: false
 use_dns: false
 custom_blueprint: false
 custom_repo: false
