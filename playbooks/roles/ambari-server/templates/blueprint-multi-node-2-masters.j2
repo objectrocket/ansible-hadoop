@@ -387,20 +387,6 @@
         {
           "name" : "SLIDER"
         },
-        {% if spark_stack == true -%}
-        {
-          "name" : "SPARKS_CLIENT"
-        },
-        {
-          "name" : "SPARKS_SLAVE"
-        },
-        {
-          "name" : "TACHYON_WORKER"
-        },
-        {
-          "name" : "TACHYON_CLIENT"
-        },
-        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -542,26 +528,6 @@
           "name" : "SPARK_CLIENT"
         },
         {% endif -%}
-        {% if spark_stack == true -%}
-        {
-          "name" : "TACHYON_MASTER"
-        },
-        {
-          "name" : "TACHYON_CLIENT"
-        },
-        {
-          "name" : "SPARKS_HISTORY_SERVER"
-        },
-        {
-          "name" : "SPARKS_CLIENT"
-        },
-        {
-          "name" : "SPARKS_MASTER"
-        },
-        {
-          "name" : "ZEPPELIN_SERVER"
-        },
-        {% endif -%}
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_CLIENT"
@@ -645,14 +611,6 @@
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
-        },
-        {% endif -%}
-        {% if spark_stack == true -%}
-        {
-          "name" : "SPARKS_CLIENT"
-        },
-        {
-          "name" : "TACHYON_CLIENT"
         },
         {% endif -%}
         {% if install_spark == true -%}
@@ -749,14 +707,6 @@
           "name" : "FLUME_HANDLER"
         },
         {% endif -%}
-        {% if spark_stack == true -%}
-        {
-          "name" : "SPARKS_CLIENT"
-        },
-        {
-          "name" : "TACHYON_CLIENT"
-        },
-        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -821,20 +771,6 @@
         {
           "name" : "SLIDER"
         },
-        {% if spark_stack == true -%}
-        {
-          "name" : "SPARKS_CLIENT"
-        },
-        {
-          "name" : "SPARKS_SLAVE"
-        },
-        {
-          "name" : "TACHYON_WORKER"
-        },
-        {
-          "name" : "TACHYON_CLIENT"
-        },
-        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"

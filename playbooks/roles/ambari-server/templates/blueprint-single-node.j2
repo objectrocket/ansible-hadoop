@@ -376,29 +376,6 @@
           "name" : "FLUME_HANDLER"
         },
         {% endif -%}
-        {% if spark_stack == true -%}
-        {
-          "name" : "TACHYON_MASTER"
-        },
-        {
-          "name" : "TACHYON_WORKER"
-        },
-        {
-          "name" : "TACHYON_CLIENT"
-        },
-        {
-          "name" : "SPARKS_HISTORY_SERVER"
-        },
-        {
-          "name" : "SPARKS_SLAVE"
-        },
-        {
-          "name" : "SPARKS_MASTER"
-        },
-        {
-          "name" : "ZEPPELIN_SERVER"
-        },
-        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_JOBHISTORYSERVER"
