@@ -196,6 +196,48 @@
         }
     },
     {
+      "zeppelin-config" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "zeppelin.notebook.dir" : "notebook",
+          "zeppelin.ssl.keystore.type" : "JKS",
+          "zeppelin.ssl.truststore.path" : "conf/truststore",
+          "zeppelin.websocket.max.text.message.size" : "1024000",
+          "zeppelin.notebook.homescreen.hide" : "false",
+          "zeppelin.server.port" : "9995",
+          "zeppelin.ssl" : "false",
+          "zeppelin.notebook.homescreen" : " ",
+          "zeppelin.notebook.storage" : "org.apache.zeppelin.notebook.repo.VFSNotebookRepo",
+          "zeppelin.interpreter.connect.timeout" : "30000",
+          "zeppelin.anonymous.allowed" : "true",
+          "zeppelin.interpreter.dir" : "interpreter",
+          "zeppelin.ssl.truststore.type" : "JKS",
+          "zeppelin.ssl.keystore.path" : "conf/keystore",
+          "zeppelin.notebook.s3.bucket" : "zeppelin",
+          "zeppelin.server.allowed.origins" : "*",
+          "zeppelin.server.addr" : "0.0.0.0",
+          "zeppelin.ssl.client.auth" : "false"
+        }
+      }
+    },
+
+    {
+      "zeppelin-env" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "zeppelin.spark.jar.dir" : "/apps/zeppelin",
+          "zeppelin.executor.mem" : "512m",
+          "zeppelin.server.kerberos.keytab" : "",
+          "zeppelin_log_dir" : "/var/log/zeppelin",
+          "zeppelin.executor.instances" : "2",
+          "zeppelin.server.kerberos.principal" : "",
+          "zeppelin_user" : "zeppelin",
+          "zeppelin_pid_dir" : "/var/run/zeppelin",
+          "zeppelin_group" : "zeppelin"
+        }
+      }
+    },
+    {
       "hbase-env" : {
         "hbase_regionserver_heapsize" : "16384m",
         "hbase_regionserver_xmn_max" : "2048"
@@ -477,6 +519,11 @@
         {% if install_kafka == true -%}
         {
           "name" : "KAFKA_BROKER"
+        },
+        {% endif -%}
+        {% if install_zeppelin == true -%}
+        {
+          "name" : "ZEPPELIN_MASTER"
         },
         {% endif -%}
         {
