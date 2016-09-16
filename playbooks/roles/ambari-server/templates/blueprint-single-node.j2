@@ -380,12 +380,25 @@
         {
           "name" : "APP_TIMELINE_SERVER"
         },
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_COLLECTOR"
         },
         {
           "name" : "METRICS_GRAFANA"
         },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "INFRA_SOLR_CLIENT"
+        },
+        {
+          "name" : "INFRA_SOLR"
+        },
+        {
+          "name" : "LOGSEARCH_SERVER"
+        },
+        {% endif -%}
         {
           "name" : "RESOURCEMANAGER"
         },
@@ -409,9 +422,6 @@
         },
         {
           "name" : "NODEMANAGER"
-        },
-        {
-          "name" : "DATANODE"
         },
         {% if install_flume == true -%}
         {
@@ -472,8 +482,18 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "DATANODE"
         }
       ],
       "cardinality" : "1"

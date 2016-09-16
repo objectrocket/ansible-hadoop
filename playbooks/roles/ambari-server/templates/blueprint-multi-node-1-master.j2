@@ -415,16 +415,23 @@
         {
           "name" : "NODEMANAGER"
         },
-        {
-          "name" : "DATANODE"
-        },
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "DATANODE"
         }
       ],
       "cardinality" : "{{ groups['slave-nodes']|length }}"
@@ -464,9 +471,6 @@
         {
           "name" : "TEZ_CLIENT"
         },
-        {
-          "name" : "SLIDER"
-        },
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
@@ -492,8 +496,18 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "SLIDER"
         }
       ],
       "cardinality" : "{{ groups['edge-nodes']|length }}"
@@ -551,12 +565,25 @@
         {
           "name" : "APP_TIMELINE_SERVER"
         },
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_COLLECTOR"
         },
         {
           "name" : "METRICS_GRAFANA"
         },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "INFRA_SOLR_CLIENT"
+        },
+        {
+          "name" : "INFRA_SOLR"
+        },
+        {
+          "name" : "LOGSEARCH_SERVER"
+        },
+        {% endif -%}
         {
           "name" : "RESOURCEMANAGER"
         },
@@ -574,9 +601,6 @@
         },
         {
           "name" : "NAMENODE"
-        },
-        {
-          "name" : "OOZIE_SERVER"
         },
         {% if install_flume == true -%}
         {
@@ -631,8 +655,18 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "OOZIE_SERVER"
         }
       ],
       "cardinality" : "1"

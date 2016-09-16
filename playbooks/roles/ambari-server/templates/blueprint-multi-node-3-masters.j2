@@ -438,9 +438,6 @@
           "name" : "ZOOKEEPER_SERVER"
         },
         {
-          "name" : "HIVE_SERVER"
-        },
-        {
           "name" : "HIVE_METASTORE"
         },
         {
@@ -502,8 +499,18 @@
           "name" : "ARCENGINE_CATALOG"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "HIVE_SERVER"
         }
       ],
       "cardinality" : "1"
@@ -538,9 +545,6 @@
         },
         {
           "name" : "MAPREDUCE2_CLIENT"
-        },
-        {
-          "name" : "TEZ_CLIENT"
         },
         {
           "name" : "SLIDER"
@@ -581,8 +585,18 @@
           "name" : "ARCENGINE"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "TEZ_CLIENT"
         }
       ],
       "cardinality" : "{{ groups['slave-nodes']|length }}"
@@ -640,20 +654,30 @@
         {
           "name" : "AMBARI_SERVER"
         },
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_COLLECTOR"
         },
         {
           "name" : "METRICS_GRAFANA"
         },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "INFRA_SOLR_CLIENT"
+        },
+        {
+          "name" : "INFRA_SOLR"
+        },
+        {
+          "name" : "LOGSEARCH_SERVER"
+        },
+        {% endif -%}
         {% if hdfs.ha_namenode -%}
         {
           "name" : "JOURNALNODE"
         },
         {% endif -%}
-        {
-          "name" : "OOZIE_SERVER"
-        },
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
@@ -677,8 +701,18 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "OOZIE_SERVER"
         }
       ],
       "cardinality" : "1"
@@ -718,9 +752,6 @@
         {
           "name" : "TEZ_CLIENT"
         },
-        {
-          "name" : "SLIDER"
-        },
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
@@ -746,8 +777,18 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "SLIDER"
         }
       ],
       "cardinality" : "{{ groups['edge-nodes']|length }}"
@@ -821,12 +862,6 @@
           "name" : "SECONDARY_NAMENODE"
         },
         {% endif -%}
-        {
-          "name" : "APP_TIMELINE_SERVER"
-        },
-        {
-          "name" : "RESOURCEMANAGER"
-        },
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
@@ -851,8 +886,21 @@
           "name" : "HBASE_MASTER"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
+        {
+          "name" : "APP_TIMELINE_SERVER"
+        },
+        {
+          "name" : "RESOURCEMANAGER"
         }
       ],
       "cardinality" : "1"
