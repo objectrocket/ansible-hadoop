@@ -17,6 +17,7 @@ datanode_disks: ['xvdf','xvdg']
 #setup raided cache disks   #
 #############################
 #software_raid_devices:
+#imsm_dev: "/dev/md/imsm0"
 #  device: "/dev/md0"
 #  level: 0
 #  components:

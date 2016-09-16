@@ -1,4 +1,10 @@
 ---
+- name: copy intel tools rpm
+  copy: src=isdct-3.0.2.400-17.x86_64.rpm dest=/tmp
+
+- name: install intel tools
+  yum: pkg=/tmp/isdct-3.0.2.400-17.x86_64.rpm state=present
+
 - name: software raid - check existing raid devices
   shell: "mdadm -D {{ item }}"
   ignore_errors: yes
@@ -11,8 +17,13 @@
 - debug: msg="mdadm_check {{ mdadm_check.results }}"
   when: debug
 
+- name: initiate imsm container
+  shell: sudo mdadm -v --create "{{ software_raid_devices.imsm_dev }}" --raid-devices="{{ software_raid_devices.components | length }}" {{ software_raid_devices.components | join(" ") }} -e imsm --run
+  args:
+    creates: "/dev/md/imsm0"
+
 - name: software raid initialise raid devices
-  shell: mdadm -v --create {{ software_raid_devices.device }} --level={{ software_raid_devices.level }} --raid-devices={{ software_raid_devices.components | length }} {{ software_raid_devices.components | join(" ") }}
+  shell: mdadm -v --create {{ software_raid_devices.device }} --level={{ software_raid_devices.level }} --raid-devices={{ software_raid_devices.components | length }} {{ software_raid_devices.imsm_dev }} --run
   args:
     creates: "/dev/md0"
 
@@ -20,6 +31,9 @@
   shell: "mdadm --detail --scan"
   ignore_errors: yes
   register: mdadm_scan
+
+- name: setup mdadm config
+  template: src=mdadm.conf.j2 dest=/etc/mdadm.conf
 
 - name: Get disk alignment for disk {{ item }}
   shell: if [[ -e /sys/block/{{ item }}/queue/optimal_io_size && -e /sys/block/{{ item }}/alignment_offset && -e /sys/block/{{ item }}/queue/physical_block_size ]]; then echo $[$(( ($(cat /sys/block/{{ item }}/queue/optimal_io_size) + $(cat /sys/block/{{ item }}/alignment_offset)) / $(cat /sys/block/{{ item }}/queue/physical_block_size) )) | 2048]; else echo 2048; fi
