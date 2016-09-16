@@ -425,6 +425,11 @@
           "name" : "METRICS_MONITOR"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
         {
           "name" : "DATANODE"
         }
@@ -496,6 +501,11 @@
           "name" : "METRICS_MONITOR"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
+        },
+        {% endif -%}
         {
           "name" : "SLIDER"
         }
@@ -561,6 +571,17 @@
         },
         {
           "name" : "METRICS_GRAFANA"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "INFRA_SOLR_CLIENT"
+        },
+        {
+          "name" : "INFRA_SOLR"
+        },
+        {
+          "name" : "LOGSEARCH_SERVER"
         },
         {% endif -%}
         {
@@ -637,6 +658,11 @@
         {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {% if  ambari_version >= "2.4.0" -%}
+        {
+          "name" : "LOGSEARCH_LOGFEEDER"
         },
         {% endif -%}
         {
