@@ -426,9 +426,6 @@
         {
           "name" : "TEZ_CLIENT"
         },
-        {
-          "name" : "SLIDER"
-        },
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
@@ -465,8 +462,13 @@
           "name" : "ARCENGINE"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}       
+        {
+          "name" : "SLIDER"
         }
       ],
       "cardinality" : "{{ groups['slave-nodes']|length }}"
@@ -545,17 +547,16 @@
         },
         {% endif -%}
         {
-          "name" : "AMBARI_SERVER"
-        },
-        {
           "name" : "APP_TIMELINE_SERVER"
         },
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_COLLECTOR"
         },
         {
           "name" : "METRICS_GRAFANA"
         },
+        {% endif -%}
         {
           "name" : "RESOURCEMANAGER"
         },
@@ -583,8 +584,13 @@
           "name" : "HBASE_MASTER"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {
+          "name" : "AMBARI_SERVER"
         }
       ],
       "cardinality" : "1"
@@ -652,9 +658,6 @@
         {
           "name" : "NAMENODE"
         },
-        {
-          "name" : "OOZIE_SERVER"
-        },
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
@@ -705,8 +708,13 @@
           "name" : "ARCENGINE_CATALOG"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {
+          "name" : "OOZIE_SERVER"
         }
       ],
       "cardinality" : "1"
@@ -746,9 +754,6 @@
         {
           "name" : "TEZ_CLIENT"
         },
-        {
-          "name" : "SLIDER"
-        },
         {% if install_flume == true -%}
         {
           "name" : "FLUME_HANDLER"
@@ -774,8 +779,13 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {
+          "name" : "SLIDER"
         }
       ],
       "cardinality" : "{{ groups['edge-nodes']|length }}"
@@ -844,9 +854,6 @@
         {
           "name" : "NODEMANAGER"
         },
-        {
-          "name" : "DATANODE"
-        },
         {% if hdfs.ha_namenode -%}
         {
           "name" : "JOURNALNODE"
@@ -862,8 +869,13 @@
           "name" : "ARCENGINE"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {
+          "name" : "DATANODE"
         }
       ],
       "cardinality" : "1"

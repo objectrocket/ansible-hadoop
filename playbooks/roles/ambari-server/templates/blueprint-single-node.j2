@@ -380,12 +380,14 @@
         {
           "name" : "APP_TIMELINE_SERVER"
         },
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_COLLECTOR"
         },
         {
           "name" : "METRICS_GRAFANA"
         },
+        {% endif -%}
         {
           "name" : "RESOURCEMANAGER"
         },
@@ -409,9 +411,6 @@
         },
         {
           "name" : "NODEMANAGER"
-        },
-        {
-          "name" : "DATANODE"
         },
         {% if install_flume == true -%}
         {
@@ -472,8 +471,13 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if  ambari_version >= "2.2.2" -%}
         {
           "name" : "METRICS_MONITOR"
+        },
+        {% endif -%}
+        {
+          "name" : "DATANODE"
         }
       ],
       "cardinality" : "1"
