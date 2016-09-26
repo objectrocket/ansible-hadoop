@@ -1,6 +1,6 @@
 server:
     interface: 127.0.0.1
-    interface: {{ hostvars[groups['cm_node'][0]][['ansible_', hostvars[groups['cm_node'][0]]['cluster_interface']]|join]['ipv4']['address'] }}
+    interface: {{ hostvars[groups['ambari-node'][0]][['ansible_', hostvars[groups['ambari-node'][0]]['cluster_interface']]|join]['ipv4']['address'] }}
     access-control: 127.0.0.0/8 allow
     access-control: 10.0.0.0/8 allow
     {% for node in groups['hadoop-cluster'] %}
@@ -11,7 +11,7 @@ server:
 
 stub-zone:
     name: "10.in-addr.arpa."
-    stub-addr: {{ hostvars[groups['cm_node'][0]][['ansible_', hostvars[groups['cm_node'][0]]['cluster_interface']]|join]['ipv4']['address'] }}
+    stub-addr: {{ hostvars[groups['ambari-node'][0]][['ansible_', hostvars[groups['ambari-node'][0]]['cluster_interface']]|join]['ipv4']['address'] }}
 
 forward-zone:
     name: "."
