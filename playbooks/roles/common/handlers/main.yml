@@ -19,8 +19,5 @@
     - cluster_interface
     - bond_interfaces
 
-- name: Restart unbound
-  service: name=unbound state=restarted enabled=yes
-
 - name: Run depmod
   command: depmod
