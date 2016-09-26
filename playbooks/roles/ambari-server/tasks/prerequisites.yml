@@ -18,6 +18,9 @@
     - ambari-server
   when: ansible_os_family == "Debian"
 
+- include: unbound-dns.yml
+  when: use_dns
+
 - meta: flush_handlers
 
 - include: arcadia.yml
