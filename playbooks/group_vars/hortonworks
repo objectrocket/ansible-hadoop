@@ -20,7 +20,6 @@ tachyon_service: false
 
 data_disks_filesystem: xfs
 configure_firewall: false
-use_dns: false
 custom_blueprint: false
 custom_repo: false
 custom_repo_url: 'http://public-repo-1.hortonworks.com/HDP-LABS/Projects/Erie-Preview/2.5.0.0-7/centos7/'
