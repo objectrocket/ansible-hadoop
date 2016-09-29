@@ -35,6 +35,9 @@
     - ambari-agent
   when: ansible_os_family == "Debian"
 
+- include: unbound-dns.yml
+  when: use_dns
+
 - name: Configure the Ambari agent
   lineinfile: dest=/etc/ambari-agent/conf/ambari-agent.ini
               regexp='^hostname\s*='
