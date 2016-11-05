@@ -10,30 +10,15 @@
       debug: var="{{ hostvars[inventory_hostname] }}"
       when: debug
   tasks:
-    - name: "remove agent"
-      yum: name='cloudera-manager-agent' state=removed
+    - name: "stop cloudera agent"
+      service: name=cloudera-scm-agent state=stopped
 
-- name: "drop scm mysql mysql db on master nodes"
-  hosts: cm_node
-  any_errors_fatal: true
-  become: yes
-  pre_tasks:
-    - name: "Show cluster info"
-      debug: var="{{ hostvars[inventory_hostname] }}"
-      when: debug
-    - name: "include mysql vars"
-      include_vars: roles/cloudera-mysql/vars/mysql_vars.yml
-  tasks:
-    - name: 'remove scm db from master nodes'
-      mysql_db: name={{ item }} state=absent
+    - name: "remove cloudera agent"
+      yum: name={{ item }} state=removed
       with_items:
-        - db_names
+        - cloudera-manager-agent
+        - cloudera-manager-daemons
 
-    - name: "stop mariadb"
-      service: name=mariadb state=stopped
-
-    - name: "remove dirs"
-      file: path=/var/lib/mysql/* state=absent
 
 - name: "remove cloudera-mngr role to cm-node group"
   hosts: cm_node
@@ -43,33 +28,138 @@
       debug: var="{{ hostvars[inventory_hostname] }}"
       when: debug
   tasks:
+    - name: "stop cloudera manager services"
+      service: name={{ item }} state=stopped
+      with_items:
+        - cloudera-scm-server-db
+        - cloudera-scm-server
+
     - name: "remove cloudera manager"
       yum: name={{ item }} state=removed
+
+    - name: "cleanup cloudera manager dirs"
+      action: shell rm -rf  "{{ item }}"
       with_items:
-        - cloudera-manager-server
-        - cloudera-manager-daemons
+        - /etc/cloudera-scm-server
+        - /etc/default/cloudera-scm-server
+        - /etc/rc.d/init.d/cloudera-scm-server
+        - /opt/cloudera
+        - /usr/sbin/cmf-server
+        - /var/log/cloudera-scm-server
+        - /var/run/cloudera-scm-server
+      ignore_errors: yes
+
+
+- name: "drop scm mysql mysql db on master nodes"
+  hosts: cm_node
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: "Show cluster info"
+      debug: var="{{ hostvars[inventory_hostname] }}"
+      when: debug
+
+    - name: "include mysql vars"
+      include_vars: roles/cloudera-mysql/vars/mysql_vars.yml
+
+  tasks:
+    - name: 'remove scm db from master nodes'
+      mysql_db: name={{ item }} state=absent
+      with_items:
+        - "{{ db_names }}"
+      tags: rm_db
+
+    - name: "stop mariadb"
+      service: name=mariadb state=stopped
+      tags: rm_db
 
 - name: "kill procs"
   hosts: hadoop-cluster
   become: yes
   tasks:
+    - name: "find supervisor proc"
+      action: shell /usr/bin/pgrep -f 'supervisord'
+      register: super_proc
+      ignore_errors: yes
+
     - name: "kill procs"
-      action: shell /usr/bin/pkill -IO 'cloudera' || true
-      ignore_errors: True
+      action: shell /usr/bin/kill "{{ super_proc.stdout }}"
+      when: super_proc.stdout != ""
 
 - name: "cleanup datanode  dirs"
-  hosts: hadoop-cluster
+  hosts: slave-nodes
   become: yes
   tasks:
+    - name: "find ms dirs to remove"
+      action: shell find /hadoop/ms/* -maxdepth 0 -type d
+      register: dn_ms_dirs
+      ignore_errors: yes
+
     - name: "remove dirs"
-      file: path=/hadoop/* state=absent
+      file: path="{{ item }}" recurse=yes state=absent
+      with_items: "{{ dn_ms_dirs.stdout_lines }}"
+      when: dn_ms_dirs.stdout != ""
+
+    - name: "find data dirs to remove"
+      action: shell find /grid/*/hadoop/* -maxdepth 0 -type d
+      register: dn_dd_dirs
+      ignore_errors: yes
+
+    - debug: msg="{{ dn_dd_dirs.stdout_lines }}"
+
+    - name: remove dirs
+      shell: /bin/rm -rf  /grid/*/hadoop/*
+
+#    - name: "remove dirs"
+#      file: path="{{ item }}" recurse=yes state=absent follow=yes force=yes
+#      with_items: "{{ dn_dd_dirs.stdout_lines }}"
+#      when: dn_dd_dirs.stdout != ""
 
 - name: "cleanup masternode  dirs"
+  hosts: master-nodes
+  become: yes
+  tasks:
+    - name: "find dirs to remove"
+      action: shell find /hadoop/ms/* -maxdepth 1  -type d
+      register: mn_ms_dirs
+      ignore_errors: yes
+
+    - name: "remove ms dirs"
+      file: path="{{ item }}" recurse=yes state=absent force=yes
+      with_items: "{{ mn_ms_dirs.stdout_lines }}"
+      when: mn_ms_dirs.stdout != ""
+
+    - name: "find dirs to remove"
+      action: shell find /hadoop/nn/* -maxdepth 0  -type d
+      register: ms_nn_dirs
+      ignore_errors: yes
+
+    - name: "remove nn dirs"
+      file: path="{{ item }}" recurse=yes state=absent
+      with_items: "{{ ms_nn_dirs.stdout_lines }}"
+      when: ms_nn_dirs.stdout != ""
+
+- name: "cleanup cloudera agent"
   hosts: hadoop-cluster
   become: yes
   tasks:
-    - name: "remove ms dirs"
-      file: path=/hadoop/ms/* state=absent
+    - name: "remove leftover files"
+      action: shell rm -rf  "{{ item }}"
+      with_items:
+        - /etc/cloudera-scm-agent/config.ini
+        - /etc/default/cloudera-scm-agent
+        - /etc/init.d/cloudera-scm-agent
+        - /usr/lib64/cmf
+        - /usr/sbin/cmf-agent
+        - /var/lib/cloudera-scm-agent
+        - /var/log/cloudera-scm-agent
+      ignore_errors: yes
 
-    - name: "remove nn dirs"
-      file: path=/hadoop/nn/* state=absent
+    - name: "remove leftover files"
+      action: shell rm -rf  "{{ item }}"
+      with_items:
+        - /etc/security/limits.d/cloudera-scm.conf
+        - /opt/cloudera
+        - /usr/share/cmf
+        - /var/lib/cloudera-scm-server
+      ignore_errors: yes
