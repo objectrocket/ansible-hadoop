@@ -130,7 +130,7 @@ There are three types of nodes:
 
 
 
-Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set master-nodes specific information (you can remove all the existing content from this file).
+Using the template at `~/ansible-hadoop/playbooks/group_vars/master-nodes-templates; Modify the file at `~/ansible-hadoop/playbooks/group_vars/master-nodes` to set master-nodes specific information (you can remove all the existing content from this file).
 
 | Variable           | Description                                                        |
 | ------------------ | ------------------------------------------------------------------ |
@@ -188,7 +188,7 @@ For single-node clusters, if Rackspace Cloud Block Storage is to be built for st
 
 ## Set slave-nodes variables
 
-Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set slave-nodes specific information (you can remove all the existing content from this file).
+Using the template file ~/ansible-hadoop/playbooks/group_vars/master-nodes-templates; Modify the file at `~/ansible-hadoop/playbooks/group_vars/slave-nodes` to set slave-nodes specific information (you can remove all the existing content from this file).
 
 | Variable           | Description                                                        |
 | ------------------ | ------------------------------------------------------------------ |

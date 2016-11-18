@@ -1,0 +1,116 @@
+---
+############################################
+## example for Rackspace cloud servers    ##
+## performance2-15 flavor and CentOS 7    ##
+## Cloud Block Storage used for HDFS data ##
+## using the default public network       ##
+############################################
+#cluster_interface: 'eth0'
+#cloud_nodes_count: 3
+#cloud_image: 'CentOS 7 (PVHVM)'
+#cloud_flavor: 'performance2-15'
+#build_datanode_cbs: true
+#cbs_disks_size: 200
+#cbs_disks_type: 'SATA'
+#datanode_disks: ['xvdf','xvdg']
+
+##################################
+## example for static inventory ##
+##################################
+
+# cluster_interface: 'bond1'
+# bond_interfaces: ['eth4', 'eth6']
+# bond_netmask: '255.255.255.0'
+# datanode_disks: ['sdb', 'sdc', 'sdd', 'sde', 'sdf', 'sdg']
+
+#################################
+#example
+#setup raided cache disks       #
+#Intel presents PCIe as blk dev #
+#################################
+#software_raid_devices:
+#imsm_dev: "/dev/md/imsm0"
+#  device: "/dev/md0"
+#  level: 0
+#  components:
+#    - "/dev/nvme0n1"
+#    - "/dev/nvme1n1"
+#  filesystem_type: "xfs"
+#  mount_point: "/hadoop/cache"
+#  mount_options: "noatime,noexec,nodiratime"
+#  dump: 0
+#  passno: 0
+
+########################
+#example for OnMetal   #
+#local SSD datadisks   #
+########################
+#cluster_interface: 'bond0.101'
+#cloud_nodes_count: 3
+#cloud_image: 'OnMetal - CentOS 7'
+#build_datanode_cbs: false
+#cloud_flavor: 'onmetal-io1'
+#datanode_disks: ['sdb', 'sdc']
+
+#########################################
+## example for Rackspace cloud servers ##
+## general1-8 flavor and CentOS 7      ##
+## root filesystem used for HDFS data  ##
+## using the default public network    ##
+#########################################
+
+#cluster_interface: 'eth0'
+#cloud_nodes_count: 3
+#cloud_image: 'CentOS 7 (PVHVM)'
+## cloud_image: 'CentOS 6 (PVHVM)'
+##cloud_flavor: 'general1-8'
+#cloud_flavor: 'performance2-15'
+#build_datanode_cbs: true
+#cbs_disks_size: 200
+#cbs_disks_type: 'SATA'
+#cloud_flavor: 'performance2-15'
+#datanode_disks: ['xvdf']
+
+############################################
+## example for Rackspace cloud servers    ##
+## general1-8 flavor and CentOS 7         ##
+## Cloud Block Storage used for HDFS data ##
+## using the default public network       ##
+############################################
+
+# cloud_nodes_count: 3
+# cloud_image: 'CentOS 7 (PVHVM)'
+# cloud_flavor: 'general1-8'
+# build_datanode_cbs: true
+# cbs_disks_size: 200
+# cbs_disks_type: 'SATA'
+# datanode_disks: ['xvde', 'xvdf']
+
+
+#############################################
+## example for Rackspace cloud servers     ##
+## performance2-15 flavor and Ubuntu 14    ##
+## ephemeral disk used for HDFS data       ##
+## using ServiceNet as the cluster network ##
+#############################################
+
+# cluster_interface: 'eth1'
+# cloud_nodes_count: 3
+# cloud_image: 'Ubuntu 14.04 LTS (Trusty Tahr) (PVHVM)'
+# cloud_flavor: 'performance2-15'
+# datanode_disks: ['xvde']
+
+
+############################################
+## example for Rackspace OnMetal v2       ##
+## SSD ephemeral disks used for HDFS data ##
+############################################
+
+# cloud_nodes_count: 3
+# cloud_image: 'OnMetal - CentOS 7'
+# cloud_image: 'OnMetal - Ubuntu 14.04 LTS (Trusty Tahr)'
+# cloud_flavor: 'onmetal-io2'
+# datanode_disks: ['sdc', 'sdd']
+
+
+
