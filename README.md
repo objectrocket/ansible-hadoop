@@ -1,3 +1,5 @@
+[![Build Status](http://104.130.29.12/buildStatus/icon?job=ansible-hadoop)](http://104.130.29.12/job/ansible-hadoop/)
+
 ansible-hadoop
 ---------
 These Ansible playbooks will build a Hadoop cluster.
