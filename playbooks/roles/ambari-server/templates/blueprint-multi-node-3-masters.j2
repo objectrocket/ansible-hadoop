@@ -40,8 +40,19 @@
     },
     {% if hdfs.ha_namenode -%}
     {
+      "zoo.cfg" : {
+        "properties_attributes" : { },
+        "properties" : {
+          "dataDir" : "{% for disk in hostvars[groups['master-nodes'][0]]['ansible_mounts'] if disk.mount | match("/hadoop/ms/*") %}/hadoop/ms/zookeeper{% if not loop.last %},{% endif %}{% else %}/hadoop/zookeeper{%- endfor %}"
+        }
+      }
+    },
+    {
       "hbase-site" : {
-        "hbase.rootdir": "hdfs://{{ cluster_name }}/apps/hbase/data"
+        "hbase.rootdir": "hdfs://{{ cluster_name }}/apps/hbase/data",
+        "hbase.master.wait.on.regionservers.timeout": "30000",
+        "hbase.master.namespace.init.timeout": "2400000",
+        "hbase.regionserver.executor.openregion.threads": "20"
       }
     },
     {% endif -%}
