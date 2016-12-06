@@ -409,6 +409,18 @@
         {% endif -%}
         "fs.file.impl.disable.cache" : "true",
         "fs.hdfs.impl.disable.cache" : "true",
+        "fs.file.impl.disable.cache" : "true",
+        "fs.hdfs.impl.disable.cache" : "true",
+        "hive.plan.serialization.format" : "kryo",
+        "hive.execution.engine" : "tez",
+        "hive.exec.compress.intermediate" : "true",
+        "hive.exec.compress.output" : "true",
+        "hive.merge.mapfiles" : "false",
+        "hive.default.fileformat.managed" : "ORC",
+        "hive.compute.query.using.stats" : "true",
+        "hive.cbo.enable" : "true",
+        "hive.stats.fetch.column.stats" : "true",
+        "hive.stats.fetch.partition.stats" : "true",
         "javax.jdo.option.ConnectionPassword" : "{{ services_password }}"
       }
     }
