@@ -1,0 +1,39 @@
+---
+- include: create_groups.yml
+  tags:
+    - always
+
+#  parser.add_option('-c', '--cores', default = 16,
+#                     help = 'Number of cores on each host')
+#  parser.add_option('-m', '--memory', default = 64,
+#                    help = 'Amount of Memory on each host in GB')
+#  parser.add_option('-d', '--disks', default = 4,
+#                    help = 'Number of disks on each host')
+#  parser.add_option('-k', '--hbase', default = "True",
+#                    help = 'True if HBase is installed, False is not')
+#  (options, args) = parser.parse_args()
+
+
+- name: "Apply the ambari-agent role to all nodes"
+  hosts: hadoop-cluster 
+  any_errors_fatal: true
+  become: yes
+  tasks:
+    - name: "set master memory"
+      set_fact: master_mem="{{ hostvars[groups['master-nodes'][0]]['ansible_memtotal_mb']  }}"
+    - name: "set datanode memory"
+      set_fact: datanode_mem="{{ hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb']  }}"
+    - name: "debug master mem value" 
+      debug: var={{ master_mem }}
+    - name: "debug datanode mem value"
+      debug: var={{ datanode_mem }}
+
+- name: "run memory config"
+  hosts: localhost 
+  any_errors_fatal: true
+  become: no
+  tasks:
+    - name: "run yarn utlils"
+      action:
+        module: sitefacts.py
+          memory="{{ hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb']  }}"
