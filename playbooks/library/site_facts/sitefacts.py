@@ -222,7 +222,7 @@ def hdfs_site_facts():
     hdfs_site=dict()
 
     hdfs_site['dfs_datanode_balance_bandwidthPerSec']="12500000"
-    hdfs_site['dfs_datanode_balance_trafnsfer_threads']="4096"
+    hdfs_site['dfs_datanode_max_transfer_threads']="4096"
 
     return hdfs_site 
 
