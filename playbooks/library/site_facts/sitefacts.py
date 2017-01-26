@@ -339,10 +339,10 @@ def main():
                    ansible_facts=dict(
                    ams_hbase_env=dict(ams_hbase_env),
                    ams_env=dict(ams_env),
-                   hive_site=dict(zeppelin_env),
+                   hive_site=dict(hive_site),
                    hive_env=dict(hive_env),
-                   hbase_env=dict(zeppelin_env),
-                   hadoop_env=dict(zeppelin_env),
+                   hbase_env=dict(hbase_env),
+                   hadoop_env=dict(hadoop_env),
                    spark_defaults=dict(spark_defaults),
                    mapred_site=dict(mapred_site),
                    hdfs_site=dict(hdfs_site),
