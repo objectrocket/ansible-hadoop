@@ -33,6 +33,7 @@ reservedHBase = {4:1, 8:1, 16:2, 24:4, 48:8, 64:8, 72:8, 96:16,
                    128:24, 256:32, 512:64}
 GB = 1024
 
+
 def getMinContainerSize(dndnmemory):
   if (dndnmemory <= 4):
     return 256
@@ -113,6 +114,20 @@ def hive_site_facts(dnmemory):
         hive_site['hive_tez_container_size']="4096"
     else:
         hive_site['hive_tez_container_size']="2048"
+
+    hive_site['fs_file_impl_disable_cache'] = "true"
+    hive_site['fs_hdfs_impl_disable_cache'] = "true"
+    hive_site['hive_plan_serialization_format'] = "kryo"
+    hive_site['hive_execution_engine'] = "tez"
+    hive_site['hive_exec_compress_intermediate'] = "true"
+    hive_site['hive_exec_compress_output'] = "true"
+    hive_site['hive_merge_mapfiles'] = "false"
+    hive_site['hive_default_fileformat_managed'] = "ORC"
+    hive_site['hive_compute_query_using_stats'] = "true"
+    hive_site['hive_cbo_enable'] = "true"
+    hive_site['hive_stats_fetch_column_stats'] = "true"
+    hive_site['hive_stats_fetch_partition_stats'] = "true"
+
     return hive_site
 
 def hive_env_facts(mnmemory):
@@ -130,7 +145,7 @@ def hive_env_facts(mnmemory):
         hive_env['hive_metastore_heapsize']="1024"
         hive_env['hive_client_heapsize']="1024"
     return hive_env
-    
+
 def hbase_env_facts(mnmemory,dnmemory):
     hbase_env=dict()
 
@@ -141,7 +156,7 @@ def hbase_env_facts(mnmemory,dnmemory):
     else:
         hbase_env['hbase_master_heapsize']="1024m"
 
- 
+
     if (dnmemory > 110):
         hbase_env['hbase_regionserver_heapsize']="16384m"
         hbase_env['hbase_regionserver_xmn_max']="2048m"
@@ -151,9 +166,17 @@ def hbase_env_facts(mnmemory,dnmemory):
     else:
         hbase_env['hbase_regionserver_heapsize']="4096m"
         hbase_env['hbase_regionserver_xmn_max']="768m"
-       
+
     return hbase_env
 
+def hbase_site_facts():
+    hbase_site=dict()
+
+    hbase_site['hbase_master_wait_on_regionservers_timeout'] = "30000"
+    hbase_site['hbase_master_namespace_init_timeout'] = "2400000"
+    hbase_site['hbase_regionserver_executor_openregion_threads'] = "20"
+
+    return hbase_site
 def hadoop_env_facts(mnmemory,dnmemory):
       hadoop_env=dict()
       if (mnmemory > 87):
@@ -168,42 +191,42 @@ def hadoop_env_facts(mnmemory,dnmemory):
           hadoop_env['namenode_heapsize']="2048m"
           hadoop_env['namenode_opt_maxnewsize']="384m"
           hadoop_env['namenode_opt_newsize']="384m"
-                
+
       if (dnmemory > 110):
           hadoop_env['dtnode_heapsize']="4096m"
       elif (dnmemory > 57):
           hadoop_env['dtnode_heapsize']="2048m"
       else:
           hadoop_env['dtnode_heapsize']="1024m"
-    
+
       return hadoop_env
 
 def spark_defaults_facts(dnmemory):
     spark_defaults=dict()
 
     if (dnmemory > 110):
-        spark_defaults['spark_yarn_executor_memory']="7808m"            
+        spark_defaults['spark_yarn_executor_memory']="7808m"
         spark_defaults['spark_driver_memory']="7808m"
         spark_defaults['spark_yarn_am_memory']="7808m"
         spark_defaults['spark_yarn_executor_memoryOverhead']="384m"
         spark_defaults['spark_yarn_driver_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_am_memoryOverhead']="384m"       
+        spark_defaults['spark_yarn_am_memoryOverhead']="384m"
     elif (dnmemory > 57):
-        spark_defaults['spark_yarn_executor_memory']="7808m"            
+        spark_defaults['spark_yarn_executor_memory']="7808m"
         spark_defaults['spark_driver_memory']="3712m"
         spark_defaults['spark_yarn_am_memory']="3712m"
         spark_defaults['spark_yarn_executor_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_driver_memoryOverhead']="384m"    
+        spark_defaults['spark_yarn_driver_memoryOverhead']="384m"
         spark_defaults['spark_yarn_am_memoryOverhead']="384m"
     else:
-        spark_defaults['spark_yarn_executor_memory']="7808m"            
+        spark_defaults['spark_yarn_executor_memory']="7808m"
         spark_defaults['spark_driver_memory']="3712m"
         spark_defaults['spark_yarn_am_memory']="3712m"
         spark_defaults['spark_yarn_executor_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_driver_memoryOverhead']="384m"    
+        spark_defaults['spark_yarn_driver_memoryOverhead']="384m"
         spark_defaults['spark_yarn_am_memoryOverhead']="384m"
 
-    return spark_defaults    
+    return spark_defaults
 
 def mapred_site_facts(map_memory,reduce_memory,am_memory):
 
@@ -216,15 +239,19 @@ def mapred_site_facts(map_memory,reduce_memory,am_memory):
     mapred_site['yarn_app_mapreduce_am_resource_mb']=am_memory
     mapred_site['yarn_app_mapreduce_am_command_opts']="-Xmx" + str(int(0.8*am_memory)) + "m"
 
+    mapred_site['mapreduce_output_fileoutputformat_compress'] = "true"
+    mapred_site['mapreduce_map_output_compress'] = "true"
+
     return mapred_site
- 
+
 def hdfs_site_facts():
     hdfs_site=dict()
 
     hdfs_site['dfs_datanode_balance_bandwidthPerSec']="12500000"
     hdfs_site['dfs_datanode_max_transfer_threads']="4096"
-
-    return hdfs_site 
+    hdfs_site['dfs_replication'] = "3"
+    
+    return hdfs_site
 
 def yarn_site_facts(container_ram,containers):
     yarn_site=dict()
@@ -233,8 +260,10 @@ def yarn_site_facts(container_ram,containers):
     yarn_site['yarn_scheduler_maximum_allocation_mb']=(containers*container_ram)
     yarn_site['yarn_nodemanager_resource_memory_mb']=(containers*container_ram)
 
+    yarn_site['yarn_timeline-service_store-class'] = "org.apache.hadoop.yarn.server.timeline.RollingLevelDBTimelineStore"
+
     return yarn_site
-    
+
 def tez_site_facts(dnmemory):
     tez_site=dict()
 
@@ -249,7 +278,7 @@ def tez_site_facts(dnmemory):
         tez_site['tez_task_resource_memory_mb']="2048"
 
     return tez_site
-    
+
 def zeppelin_env_facts(mnmemory):
     zeppelin_env=dict()
 
@@ -260,6 +289,8 @@ def zeppelin_env_facts(mnmemory):
     else:
         zeppelin_env['zeppelin_executor_memory']="1024m"
 
+    zeppelin_env['zeppelin_executor_instances'] = "2"
+    
     return zeppelin_env
 
 def main():
@@ -322,6 +353,7 @@ def main():
   hive_site = hive_site_facts(dnmemory)
   hive_env = hive_env_facts(mnmemory)
   hbase_env = hbase_env_facts(mnmemory,dnmemory)
+  hbase_site = hbase_site_facts()
   hadoop_env = hadoop_env_facts(mnmemory,dnmemory)
   spark_defaults = spark_defaults_facts(dnmemory)
   mapred_site = mapred_site_facts(map_memory,reduce_memory,am_memory)
@@ -329,7 +361,7 @@ def main():
   yarn_site = yarn_site_facts(container_ram,containers)
   tez_site = tez_site_facts(dnmemory)
   zeppelin_env = zeppelin_env_facts(mnmemory)
-  
+
 #  print json.dumps({"Num Container" : str(containers),
 #                    "Container Ram MB" : str(container_ram),
 #                    "Used Ram GB" : str(int (containers*container_ram/float(GB))),
@@ -342,6 +374,7 @@ def main():
                    hive_site=dict(hive_site),
                    hive_env=dict(hive_env),
                    hbase_env=dict(hbase_env),
+                   hbase_site=dict(hbase_site),
                    hadoop_env=dict(hadoop_env),
                    spark_defaults=dict(spark_defaults),
                    mapred_site=dict(mapred_site),
@@ -353,4 +386,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
