@@ -105,6 +105,13 @@ def ams_env_facts(mnmemory):
 
     return ams_env
 
+def core_site_facts():
+    core_site=dict()
+    
+    core_site['fs_trash_interval']="4320"
+
+    return core_site
+
 def hive_site_facts(dnmemory):
     hive_site=dict()
 
@@ -127,6 +134,8 @@ def hive_site_facts(dnmemory):
     hive_site['hive_cbo_enable'] = "true"
     hive_site['hive_stats_fetch_column_stats'] = "true"
     hive_site['hive_stats_fetch_partition_stats'] = "true"
+    hive_site['hive_vectorized_execution_reduce_enabled'] = "true"
+    hive_site['hive_server2_tez_initialize_default_sessions'] = "true"
 
     return hive_site
 
@@ -241,6 +250,7 @@ def mapred_site_facts(map_memory,reduce_memory,am_memory):
 
     mapred_site['mapreduce_output_fileoutputformat_compress'] = "true"
     mapred_site['mapreduce_map_output_compress'] = "true"
+    mapred_site['mapreduce_job_reduce_slowstart_completedmaps'] = "0.7"
 
     return mapred_site
 
@@ -261,6 +271,7 @@ def yarn_site_facts(container_ram,containers):
     yarn_site['yarn_nodemanager_resource_memory_mb']=(containers*container_ram)
 
     yarn_site['yarn_timeline-service_store-class'] = "org.apache.hadoop.yarn.server.timeline.RollingLevelDBTimelineStore"
+    yarn_site['yarn_timeline-service_generic-application-history_save-non-am-container-meta-info'] = "false"
 
     return yarn_site
 
@@ -270,12 +281,17 @@ def tez_site_facts(dnmemory):
     if (dnmemory > 110):
         tez_site['tez_am_resource_memory_mb']="8192"
         tez_site['tez_task_resource_memory_mb']="8192"
+        memopts="4096"
     elif (dnmemory > 57):
         tez_site['tez_am_resource_memory_mb']="4096"
         tez_site['tez_task_resource_memory_mb']="4096"
+        memopts="2048"
     else:
         tez_site['tez_am_resource_memory_mb']="2048"
         tez_site['tez_task_resource_memory_mb']="2048"
+        memopts="1024"
+
+    tez_site['tez_am_launch_cmd-opts']="-XX:+PrintGCDetails -verbose:gc -XX:+PrintGCTimeStamps -XX:+UseNUMA -XX:+UseParallelGC -Xmx" + memopts + "m"
 
     return tez_site
 
@@ -350,6 +366,7 @@ def main():
 
   ams_hbase_env = ams_hbase_env_facts(mnmemory,dnmemory)
   ams_env = ams_env_facts(mnmemory)
+  core_site = core_site_facts()
   hive_site = hive_site_facts(dnmemory)
   hive_env = hive_env_facts(mnmemory)
   hbase_env = hbase_env_facts(mnmemory,dnmemory)
@@ -371,6 +388,7 @@ def main():
                    ansible_facts=dict(
                    ams_hbase_env=dict(ams_hbase_env),
                    ams_env=dict(ams_env),
+                   core_site=dict(core_site),
                    hive_site=dict(hive_site),
                    hive_env=dict(hive_env),
                    hbase_env=dict(hbase_env),
