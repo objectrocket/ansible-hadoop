@@ -67,6 +67,8 @@ def getReservedHBaseMem(dnmemory):
     ret = 2
   return ret
 
+def clip(lo, x, hi):
+    return lo if x <= lo else hi if x >= hi else x
 
 def ams_hbase_env_facts(mnmemory,dnmemory):
     ams_hbase_env=dict()
@@ -240,12 +242,12 @@ def spark_defaults_facts(dnmemory):
 def mapred_site_facts(map_memory,reduce_memory,am_memory):
 
     mapred_site=dict()
-    mapred_site['mapreduce_map_memory_mb']=map_memory
+    mapred_site['mapreduce_map_memory_mb']=clip(1028, map_memory, 4096)
     mapred_site['mapreduce_map_java_opts']="-Xmx" + str(int(0.8 * map_memory)) +"m"
-    mapred_site['mapreduce_reduce_memory_mb']=reduce_memory
+    mapred_site['mapreduce_reduce_memory_mb']=clip(1028, reduce_memory, 4096)
     mapred_site['mapreduce_reduce_java_opts']="-Xmx" + str(int(0.8 * reduce_memory)) + "m"
     mapred_site['mapreduce_task_io_sort_mb']=int(0.4 * map_memory)
-    mapred_site['yarn_app_mapreduce_am_resource_mb']=am_memory
+    mapred_site['yarn_app_mapreduce_am_resource_mb']=clip(1028, am_memory, 4096)
     mapred_site['yarn_app_mapreduce_am_command_opts']="-Xmx" + str(int(0.8*am_memory)) + "m"
 
     mapred_site['mapreduce_output_fileoutputformat_compress'] = "true"
