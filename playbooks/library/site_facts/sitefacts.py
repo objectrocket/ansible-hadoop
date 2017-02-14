@@ -34,12 +34,12 @@ reservedHBase = {4:1, 8:1, 16:2, 24:4, 48:8, 64:8, 72:8, 96:16,
 GB = 1024
 
 
-def getMinContainerSize(dndnmemory):
-  if (dndnmemory <= 4):
+def getMinContainerSize(dnmemory):
+  if (dnmemory <= 4):
     return 256
-  elif (dndnmemory <= 8):
+  elif (dnmemory <= 8):
     return 512
-  elif (dndnmemory <= 24):
+  elif (dnmemory <= 24):
     return 1024
   else:
     return 2048
