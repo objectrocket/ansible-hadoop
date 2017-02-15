@@ -268,9 +268,9 @@ def hdfs_site_facts():
 def yarn_site_facts(container_ram,containers):
     yarn_site=dict()
 
-    yarn_site['yarn_scheduler_minimum_allocation_mb']=container_ram
-    yarn_site['yarn_scheduler_maximum_allocation_mb']=(containers*container_ram)
-    yarn_site['yarn_nodemanager_resource_memory_mb']=(containers*container_ram)
+    yarn_site['yarn_scheduler_minimum_allocation_mb']=clip(1024, container_ram, 8192)
+    yarn_site['yarn_scheduler_maximum_allocation_mb']=clip(1024, (containers*container_ram), 8192)
+    yarn_site['yarn_nodemanager_resource_memory_mb']=clip(1024, (containers*container_ram), 8192)
 
     yarn_site['yarn_timeline-service_store-class'] = "org.apache.hadoop.yarn.server.timeline.RollingLevelDBTimelineStore"
     yarn_site['yarn_timeline-service_generic-application-history_save-non-am-container-meta-info'] = "false"
