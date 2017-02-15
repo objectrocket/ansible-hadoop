@@ -188,7 +188,8 @@
         "yarn.scheduler.maximum-allocation-mb" : "{{ ((hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] - 8192 - hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb']//6)//4096)*4096 }}",
         {% endif -%}
         "yarn.scheduler.minimum-allocation-mb" : "4096",
-        "yarn.timeline-service.store-class" : "org.apache.hadoop.yarn.server.timeline.RollingLevelDBTimelineStore"
+        "yarn.timeline-service.store-class" : "org.apache.hadoop.yarn.server.timeline.RollingLevelDBTimelineStore",
+        "yarn.timeline-service.generic-application-history.save-non-am-container-meta-info" : "false"
       }
     },
     {
