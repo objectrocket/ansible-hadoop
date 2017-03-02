@@ -72,57 +72,5 @@ To provision a cloud environment, run the `provision_rax.sh` script after you've
 bash provision_rax.sh
 ````
 
-###`bootstrap* and hortonworks*`
-
-Similarly, run the bootstrap and hortonworks scripts (in this order), depending what type of environment you have.
-
-- For a Rackspace Cloud environment:
-  ````
-  bash bootstrap_rax.sh
-  bash hortonworks_rax.sh
-  ````
-
-- For static / prebuilt environments:
-  ````
-  bash bootstrap_static.sh
-  bash hortonworks_static.sh
-  ````
-
-
-## [Accessing Ambari] (id:ambari)
-
-Once you are at this point you can see progress by accessing the Ambari interface (the `ambari-node` will be the last host that ran a play). 
-
-The provided Ansible playbook will only open the firewall if you've added your workstation IP to `allowed_external_ips` variable in the `playbooks/group_vars/all` file. 
-
-Alternatively, you can access Ambari by either opening the firewall manually or by opening a socks proxy with the following command:
-
-````
-ssh -D 12345 root@ambari-node
-````
-
-You will need to modify your browser settings to use socks proxy `localhost` and port `12345`. 
-
-You'll then be able to navigate to http://ambari-node:8080 in your configured browser and access all subsidiary links.
-
-
-## [Ansible-Hadoop History] (id:history)
-
-As with many projects this code is the end result of a lot of effort from individuals not properly represented by a simple commit history. 
-
-Rackspace started deploying Hadoop on dedicated gear for customers more than a year ago in a very manual process. This process landed with myself and these Rockstars:
-
-[Joe Engel](https://github.com/Joeskyyy) (Racker Emeritus)
-
-[Mark Lessel](https://github.com/magglass1)
-
-[Alexandru Anghel](https://github.com/alexandruanghel)
-
-All of whom wrote a lot of the automation for deploying Hadoop on customer gear at Rackspace.
-
-Today with a pile of customers under our belt and many more all the time, we wanted to share our efforts with the world by publishing this code which you can also use to deploy Hadoop in various ways at Rackspace.
-
-This of course is only the beginning! 
-
-I hope this project evolves and inspires even more Rockstars to find ways to contribute.
-
+Continue with the HDP deployment steps here :
+[HDP Install](../master/INSTALL-HDP.md)
