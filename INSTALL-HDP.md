@@ -266,3 +266,16 @@ Once you are at this point you can see progress by accessing the Ambari interfac
 
 The Ambari server runs on the last master-node and be accessed on port 8080.
 
+Once you are at this point you can see progress by accessing the Ambari interface (the ambari-node will be the last host that ran a play).
+
+The provided Ansible playbook will only open the firewall if you've added your workstation IP to allowed_external_ips variable in the playbooks/group_vars/all file.
+
+Alternatively, you can access Ambari by either opening the firewall manually or by opening a socks proxy with the following command:
+
+ssh -D 12345 root@ambari-node
+You will need to modify your browser settings to use socks proxy localhost and port 12345.
+
+You'll then be able to navigate to http://ambari-node:8080 in your configured browser and access all subsidiary links.
+
+
+
