@@ -221,23 +221,23 @@ def spark_defaults_facts(dnmemory):
         spark_defaults['spark_executor_memory']="7808m"
         spark_defaults['spark_driver_memory']="7808m"
         spark_defaults['spark_yarn_am_memory']="7808m"
-        spark_defaults['spark_yarn_executor_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_driver_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_am_memoryOverhead']="384m"
+        spark_defaults['spark_yarn_executor_memoryOverhead']="384"
+        spark_defaults['spark_yarn_driver_memoryOverhead']="384"
+        spark_defaults['spark_yarn_am_memoryOverhead']="384"
     elif (dnmemory > 57):
         spark_defaults['spark_executor_memory']="7808m"
         spark_defaults['spark_driver_memory']="3712m"
         spark_defaults['spark_yarn_am_memory']="3712m"
-        spark_defaults['spark_yarn_executor_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_driver_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_am_memoryOverhead']="384m"
+        spark_defaults['spark_yarn_executor_memoryOverhead']="384"
+        spark_defaults['spark_yarn_driver_memoryOverhead']="384"
+        spark_defaults['spark_yarn_am_memoryOverhead']="384"
     else:
         spark_defaults['spark_executor_memory']="7808m"
         spark_defaults['spark_driver_memory']="3712m"
         spark_defaults['spark_yarn_am_memory']="3712m"
-        spark_defaults['spark_yarn_executor_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_driver_memoryOverhead']="384m"
-        spark_defaults['spark_yarn_am_memoryOverhead']="384m"
+        spark_defaults['spark_yarn_executor_memoryOverhead']="384"
+        spark_defaults['spark_yarn_driver_memoryOverhead']="384"
+        spark_defaults['spark_yarn_am_memoryOverhead']="384"
 
     return spark_defaults
 
