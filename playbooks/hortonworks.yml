@@ -25,12 +25,17 @@
      mnmemory: "{{ hostvars[groups['master-nodes'][0]]['ansible_memtotal_mb'] / 1024 }}"
      cores: "{{ hostvars[groups['slave-nodes'][0]]['ansible_processor_count'] }}"
   tasks:
-    - name: "site facts processing"
+    - name: "gather site facts"
       action:
         module: sitefacts.py
           dnmemory="{{ dnmemory }}"
           mnmemory="{{ mnmemory }}"
           cores="{{ cores }}"
+          ambari_server="localhost"
+          ambari_pass="admin"
+          cluster_name="{{ cluster_name }}"
+          compare="false"
+          current_facts="false"
 
 - name: Apply the ambari-server role to ambari-node group
   hosts: ambari-node
