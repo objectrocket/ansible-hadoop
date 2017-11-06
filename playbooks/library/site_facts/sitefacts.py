@@ -48,7 +48,7 @@ def getMinContainerSize(dnmemory):
   pass
 
 def getReservedStackdnmemory(dnmemory):
-  if (reservedStack.has_key(dnmemory)):
+  if ('dnmemory' in reservedStack):
     return reservedStack[dnmemory]
   if (dnmemory <= 4):
     ret = 1
@@ -59,7 +59,7 @@ def getReservedStackdnmemory(dnmemory):
   return ret
 
 def getReservedHBaseMem(dnmemory):
-  if (reservedHBase.has_key(dnmemory)):
+  if ('dnmemory' in reservedHBase):
     return reservedHBase[dnmemory]
   if (dnmemory <= 4):
     ret = 1
@@ -431,21 +431,21 @@ def main():
   yarn_site = yarn_site_facts(container_ram,containers)
   tez_site = tez_site_facts(dnmemory)
   zeppelin_env = zeppelin_env_facts(mnmemory)
-  if current_facts:	  
-          curr_ams_hbase_env = get_config_property(ambari_server, cluster_name, ambari_pass, ams_hbase_env, 'ams-hbase-env') 
-	  curr_ams_env = get_config_property(ambari_server, cluster_name, ambari_pass, ams_env, 'ams-env') 
-	  curr_core_site =  get_config_property(ambari_server, cluster_name, ambari_pass, core_site, 'core-site') 
-	  curr_hive_site = get_config_property(ambari_server, cluster_name, ambari_pass, hive_site, 'hive-site') 
-	  curr_hive_env = get_config_property(ambari_server, cluster_name, ambari_pass, hive_env, 'hive-env') 
-	  curr_hbase_env = get_config_property(ambari_server, cluster_name, ambari_pass, hbase_env, 'hbase-env') 
-	  curr_hbase_site = get_config_property(ambari_server, cluster_name, ambari_pass, hbase_site, 'hbase-site') 
-	  curr_hadoop_env = get_config_property(ambari_server, cluster_name, ambari_pass, hadoop_env, 'hadoop-env') 
-	  curr_spark_defaults = get_config_property(ambari_server, cluster_name, ambari_pass, spark_defaults, 'spark-defaults') 
-	  curr_mapred_site = get_config_property(ambari_server, cluster_name, ambari_pass, mapred_site, 'mapred-site') 
-	  curr_hdfs_site = get_config_property(ambari_server, cluster_name, ambari_pass, hdfs_site, 'hdfs-site') 
-	  curr_yarn_site = get_config_property(ambari_server, cluster_name, ambari_pass, yarn_site, 'yarn-site') 
-	  curr_tez_site = get_config_property(ambari_server, cluster_name, ambari_pass, tez_site, 'tez-site') 
-#	  curr_zeppelin_env = get_config_property(ambari_server, cluster_name, ambari_pass, zeppelin_env, 'zeppelin-env') 
+  if current_facts:    
+    curr_ams_hbase_env = get_config_property(ambari_server, cluster_name, ambari_pass, ams_hbase_env, 'ams-hbase-env') 
+    curr_ams_env = get_config_property(ambari_server, cluster_name, ambari_pass, ams_env, 'ams-env') 
+    curr_core_site =  get_config_property(ambari_server, cluster_name, ambari_pass, core_site, 'core-site') 
+    curr_hive_site = get_config_property(ambari_server, cluster_name, ambari_pass, hive_site, 'hive-site') 
+    curr_hive_env = get_config_property(ambari_server, cluster_name, ambari_pass, hive_env, 'hive-env') 
+    curr_hbase_env = get_config_property(ambari_server, cluster_name, ambari_pass, hbase_env, 'hbase-env') 
+    curr_hbase_site = get_config_property(ambari_server, cluster_name, ambari_pass, hbase_site, 'hbase-site') 
+    curr_hadoop_env = get_config_property(ambari_server, cluster_name, ambari_pass, hadoop_env, 'hadoop-env') 
+    curr_spark_defaults = get_config_property(ambari_server, cluster_name, ambari_pass, spark_defaults, 'spark-defaults') 
+    curr_mapred_site = get_config_property(ambari_server, cluster_name, ambari_pass, mapred_site, 'mapred-site') 
+    curr_hdfs_site = get_config_property(ambari_server, cluster_name, ambari_pass, hdfs_site, 'hdfs-site') 
+    curr_yarn_site = get_config_property(ambari_server, cluster_name, ambari_pass, yarn_site, 'yarn-site') 
+    curr_tez_site = get_config_property(ambari_server, cluster_name, ambari_pass, tez_site, 'tez-site') 
+#    curr_zeppelin_env = get_config_property(ambari_server, cluster_name, ambari_pass, zeppelin_env, 'zeppelin-env') 
 
 #  print json.dumps({"Num Container" : str(containers),
 #                    "Container Ram MB" : str(container_ram),
@@ -453,36 +453,36 @@ def main():
 #                    "Unused Ram GB" : str(reservedMem),
 
   if current_facts:
-	  module.exit_json(changed=True,
-			   ansible_facts=dict(
-			   ams_hbase_env=dict(ams_hbase_env),
-			   ams_env=dict(ams_env),
-			   core_site=dict(core_site),
-			   hive_site=dict(hive_site),
-			   hive_env=dict(hive_env),
-			   hbase_env=dict(hbase_env),
-			   hbase_site=dict(hbase_site),
-			   hadoop_env=dict(hadoop_env),
-			   spark_defaults=dict(spark_defaults),
-			   mapred_site=dict(mapred_site),
-			   hdfs_site=dict(hdfs_site),
-			   yarn_site=dict(yarn_site),
-			   tez_site=dict(tez_site),
-			   zeppelin_env=dict(zeppelin_env),
-			   curr_ams_hbase_env=dict(curr_ams_hbase_env),
-			   curr_ams_env=dict(curr_ams_env), 
-			   curr_core_site=dict(curr_core_site),
-			   curr_hive_site=dict(curr_hive_site),
-			   curr_hive_env=dict(curr_hive_env),
-			   curr_hbase_env=dict(curr_hbase_env),
-			   curr_hbase_site=dict(curr_hbase_site),
-			   curr_hadoop_env=dict(curr_hadoop_env),
-			   curr_spark_defaults=dict(curr_spark_defaults),
-			   curr_mapred_site=dict(curr_mapred_site),
-			   curr_hdfs_site=dict(curr_hdfs_site),
-			   curr_yarn_site=dict(curr_yarn_site),
-			   curr_tez_site=dict(curr_tez_site)
-			   ))
+    module.exit_json(changed=True,
+         ansible_facts=dict(
+         ams_hbase_env=dict(ams_hbase_env),
+         ams_env=dict(ams_env),
+         core_site=dict(core_site),
+         hive_site=dict(hive_site),
+         hive_env=dict(hive_env),
+         hbase_env=dict(hbase_env),
+         hbase_site=dict(hbase_site),
+         hadoop_env=dict(hadoop_env),
+         spark_defaults=dict(spark_defaults),
+         mapred_site=dict(mapred_site),
+         hdfs_site=dict(hdfs_site),
+         yarn_site=dict(yarn_site),
+         tez_site=dict(tez_site),
+         zeppelin_env=dict(zeppelin_env),
+         curr_ams_hbase_env=dict(curr_ams_hbase_env),
+         curr_ams_env=dict(curr_ams_env), 
+         curr_core_site=dict(curr_core_site),
+         curr_hive_site=dict(curr_hive_site),
+         curr_hive_env=dict(curr_hive_env),
+         curr_hbase_env=dict(curr_hbase_env),
+         curr_hbase_site=dict(curr_hbase_site),
+         curr_hadoop_env=dict(curr_hadoop_env),
+         curr_spark_defaults=dict(curr_spark_defaults),
+         curr_mapred_site=dict(curr_mapred_site),
+         curr_hdfs_site=dict(curr_hdfs_site),
+         curr_yarn_site=dict(curr_yarn_site),
+         curr_tez_site=dict(curr_tez_site)
+         ))
   else:
                    module.exit_json(changed=True,
                            ansible_facts=dict(
