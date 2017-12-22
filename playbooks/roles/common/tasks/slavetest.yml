@@ -27,5 +27,5 @@
   when: item != slave_interface
 
 - name: Pause if ping test failed
-  pause: prompt="Ping test failed using {{ slave_interface }}. Would you like to proceed anyway? Press Enter to continue or ctrl-c A to abort."
+  pause: prompt="Ping test failed using {{ slave_interface }}. Would you like to proceed anyway? Press Enter to continue or ctrl-c A to abort"
   when: result|failed
