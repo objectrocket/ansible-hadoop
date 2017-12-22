@@ -1,0 +1,31 @@
+- name: "Ensure all slaves are enabled"
+  shell: ifup {{ item }}
+  with_items: "{{ bond_interfaces }}"
+
+- name: "Disable all slaves other than {{ slave_interface }}"
+  shell: ifdown {{ item }}
+  with_items: "{{ bond_interfaces }}"
+  when: item != slave_interface
+
+- name: Pause to allow bond to come online
+  pause: seconds=5
+
+- name: "Ping all hosts using {{ slave_interface }}"
+  shell: ping -q -c 5 -i 0.2 -W 1 {{ hostvars[item]['bond_ip'] }}
+  when: bond_ip is defined and hostvars[item]['bond_ip'] is defined
+  with_items: "{{ groups['all'] }}"
+  changed_when: 0
+  register: result
+  retries: 1
+  delay: 1
+  until: result.rc == 0
+  ignore_errors: yes
+
+- name: Re-enable slaves
+  shell: ifup {{ item }}
+  with_items: "{{ bond_interfaces }}"
+  when: item != slave_interface
+
+- name: Pause if ping test failed
+  pause: prompt="Ping test failed using {{ slave_interface }}. Would you like to proceed anyway? Press Enter to continue or ctrl-c A to abort."
+  when: result|failed
