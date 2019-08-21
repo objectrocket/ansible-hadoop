@@ -2,8 +2,10 @@
   "configurations" : [
     {
       "core-site": {
+        {% if hdp_version < '3' -%}
         "hadoop.proxyuser.hcat.groups" : "*",
         "hadoop.proxyuser.hcat.hosts" : "*",
+        {% endif -%}
         "hadoop.proxyuser.hue.groups" : "*",
         "hadoop.proxyuser.hue.hosts" : "*"
       }

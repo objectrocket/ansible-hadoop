@@ -8,8 +8,10 @@
         "hadoop.proxyuser.httpfs.groups" : "*",
         "hadoop.proxyuser.httpfs.hosts" : "*",
         {% endif -%}
+        {% if hdp_version < '3' -%}
         "hadoop.proxyuser.hcat.groups" : "*",
         "hadoop.proxyuser.hcat.hosts" : "*",
+        {% endif -%}
         "hadoop.proxyuser.hue.groups" : "*",
         "hadoop.proxyuser.hue.hosts" : "*"
       }
@@ -206,6 +208,7 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
+    {% if install_zeppelin -%}
     {
       "zeppelin-config" : {
         "properties_attributes" : { },
@@ -231,7 +234,6 @@
         }
       }
     },
-
     {
       "zeppelin-env" : {
         "properties_attributes" : { },
@@ -248,6 +250,7 @@
         }
       }
     },
+    {% endif -%}
     {
       "hbase-env" : {
         "hbase_regionserver_heapsize" : "16384m",
@@ -381,12 +384,14 @@
         "oozie.service.ProxyUserService.proxyuser.hue.hosts" : "*"
       }
     },
+    {% if hdp_version < '3' -%}
     {
       "webhcat-site" : {
         "webhcat.proxyuser.hue.groups" : "*",
         "webhcat.proxyuser.hue.hosts" : "*"
       }
     },
+    {% endif -%}
     {
       "hive-site" : {
         {% if hostvars[groups['slave-nodes'][0]]['ansible_memtotal_mb'] > 119000 -%}
@@ -428,9 +433,11 @@
         {
           "name" : "YARN_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "HCAT"
         },
+        {% endif -%}
         {
           "name" : "MAPREDUCE2_CLIENT"
         },
@@ -460,9 +467,6 @@
         {
           "name" : "NODEMANAGER"
         },
-        {
-          "name" : "DATANODE"
-        },
         {% if install_hbase == true -%}
         {
           "name" : "HBASE_REGIONSERVER"
@@ -483,8 +487,13 @@
           "name" : "LOGSEARCH_LOGFEEDER"
         },
         {% endif -%}
+        {% if hdp_version < '3' -%}
         {
           "name" : "SLIDER"
+        },
+        {% endif -%}
+        {
+          "name" : "DATANODE"
         }
       ],
       "cardinality" : "{{ groups['slave-nodes']|length }}"
@@ -514,9 +523,11 @@
         {
           "name" : "YARN_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "HCAT"
         },
+        {% endif -%}
         {
           "name" : "MAPREDUCE2_CLIENT"
         },
@@ -528,9 +539,11 @@
           "name" : "FALCON_CLIENT"
         },
         {% endif -%}
+        {% if hdp_version < '3' -%}
         {
           "name" : "SLIDER"
         },
+        {% endif -%}
         {
           "name" : "ZOOKEEPER_SERVER"
         },
@@ -652,18 +665,22 @@
         {
           "name" : "YARN_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "HCAT"
         },
+        {% endif -%}
         {
           "name" : "MAPREDUCE2_CLIENT"
         },
         {
           "name" : "TEZ_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "SLIDER"
         },
+        {% endif -%}
         {
           "name" : "ZOOKEEPER_SERVER"
         },
@@ -673,9 +690,11 @@
         {
           "name" : "HIVE_METASTORE"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "WEBHCAT_SERVER"
         },
+        {% endif -%}
         {
           "name" : "MYSQL_SERVER"
         },
@@ -782,14 +801,13 @@
         {
           "name" : "YARN_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "HCAT"
         },
+        {% endif -%}
         {
           "name" : "MAPREDUCE2_CLIENT"
-        },
-        {
-          "name" : "TEZ_CLIENT"
         },
         {% if install_flume == true -%}
         {
@@ -826,8 +844,13 @@
           "name" : "LOGSEARCH_LOGFEEDER"
         },
         {% endif -%}
+        {% if hdp_version < '3' -%}
         {
           "name" : "SLIDER"
+        },
+        {% endif -%}
+        {
+          "name" : "TEZ_CLIENT"
         }
       ],
       "cardinality" : "{{ groups['edge-nodes']|length }}"
@@ -858,18 +881,22 @@
         {
           "name" : "YARN_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "HCAT"
         },
+        {% endif -%}
         {
           "name" : "MAPREDUCE2_CLIENT"
         },
         {
           "name" : "TEZ_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "SLIDER"
         },
+        {% endif -%}
         {% if install_spark == true -%}
         {
           "name" : "SPARK_CLIENT"
