@@ -9,13 +9,13 @@ alerts_contact: 'root@localhost.localdomain'
 wait: true
 wait_timeout: 1800   # 30 minutes
 
-install_spark: true
-install_zeppelin: false # >= HDP2_5
+install_spark: false # <= HDP 2.6
+install_zeppelin: false # >= HDP 2.5
 install_flume: true
 install_hbase: true
 install_storm: true
 install_kafka: true
-install_falcon: true
+install_falcon: false
 tachyon_service: false
 
 data_disks_filesystem: xfs

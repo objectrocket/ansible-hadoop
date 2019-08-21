@@ -2,8 +2,10 @@
   "configurations" : [
     {
       "core-site": {
+        {% if hdp_version < '3' -%}
         "hadoop.proxyuser.hcat.groups" : "*",
         "hadoop.proxyuser.hcat.hosts" : "*",
+        {% endif -%}
         "hadoop.proxyuser.hue.groups" : "*",
         "hadoop.proxyuser.hue.hosts" : "*"
       }
@@ -132,6 +134,7 @@
         "spark.yarn.am.memoryOverhead" : "384"
         }
     },
+    {% if install_zeppelin -%}
     {
       "zeppelin-config" : {
         "properties_attributes" : { },
@@ -157,7 +160,6 @@
         }
       }
     },
-
     {
       "zeppelin-env" : {
         "properties_attributes" : { },
@@ -174,6 +176,7 @@
         }
       }
     },
+    {% endif -%}
     {
       "hbase-env" : {
         "hbase_regionserver_heapsize" : "8192m",
@@ -306,12 +309,14 @@
         "oozie.service.ProxyUserService.proxyuser.hue.hosts" : "*"
       }
     },
+    {% if hdp_version < '3' -%}
     {
       "webhcat-site" : {
         "webhcat.proxyuser.hue.groups" : "*",
         "webhcat.proxyuser.hue.hosts" : "*"
       }
     },
+    {% endif -%}
     {
       "hive-site" : {
         {% if ansible_memtotal_mb > 119000 -%}
@@ -353,18 +358,22 @@
         {
           "name" : "YARN_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "HCAT"
         },
+        {% endif -%}
         {
           "name" : "MAPREDUCE2_CLIENT"
         },
         {
           "name" : "TEZ_CLIENT"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "SLIDER"
         },
+        {% endif -%}
         {
           "name" : "ZOOKEEPER_SERVER"
         },
@@ -408,9 +417,11 @@
         {
           "name" : "HIVE_METASTORE"
         },
+        {% if hdp_version < '3' -%}
         {
           "name" : "WEBHCAT_SERVER"
         },
+        {% endif -%}
         {
           "name" : "MYSQL_SERVER"
         },
