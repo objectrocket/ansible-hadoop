@@ -5,6 +5,7 @@
     update_cache: yes
     state: installed
   with_items:
+    - mysql-connector-java
     - ambari-server
   notify: Reload systemd
   when: ansible_os_family == "RedHat"
@@ -27,7 +28,7 @@
   when: arcadia and ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
 
 - name: Run Ambari Server setup
-  shell: /usr/sbin/ambari-server setup -s
+  shell: /usr/sbin/ambari-server setup -s --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar
 
 - name: Make sure ambari-server is running
   command: service ambari-server restart
