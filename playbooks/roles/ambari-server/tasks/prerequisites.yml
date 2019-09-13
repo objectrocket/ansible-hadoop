@@ -27,8 +27,11 @@
 - include: arcadia.yml
   when: arcadia and ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
 
-- name: Run Ambari Server setup
+- name: Run Ambari Server setup for mysql connector
   shell: /usr/sbin/ambari-server setup -s --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar
+
+- name: Run Ambari Server setup for default config
+  shell: /usr/sbin/ambari-server setup -s
 
 - name: Make sure ambari-server is running
   command: service ambari-server restart
