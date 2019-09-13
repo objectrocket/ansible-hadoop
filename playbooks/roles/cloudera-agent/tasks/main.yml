@@ -29,7 +29,7 @@
   with_items: 
     - cloudera-manager-agent
     - cloudera-manager-daemons
-    - oracle-j2sdk1.7
+    - oracle-j2sdk1.8
   when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
