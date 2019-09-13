@@ -28,7 +28,7 @@
        method=PUT
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        body=" {{ hdprepo.content | b64decode }}"
        body_format=raw
@@ -47,7 +47,7 @@
        method=GET
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        status_code=200,201,202,404
        return_content=yes
@@ -58,7 +58,7 @@
        method=POST
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        body=" {{ alert_targets.content | b64decode }}"
        body_format=raw
@@ -82,9 +82,10 @@
        method=DELETE
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        status_code=200,201,202,404
+  register: delete_blueprint
   ignore_errors: true
 
 - name: Register the blueprint with the Ambari server
@@ -92,11 +93,12 @@
        method=POST
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        body=" {{ cluster_blueprint.content | b64decode }}"
        body_format=raw
        status_code=200,201,202
+  when: delete_blueprint is not failed
 
 - name: Slurp the cluster creation template
   slurp: src=/tmp/cluster_template
@@ -107,7 +109,7 @@
        method=GET
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        status_code=200,201,202,404
   register: current_cluster
@@ -117,7 +119,7 @@
        method=POST
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        body=" {{ cluster_template.content | b64decode }}"
        body_format=raw
@@ -129,7 +131,7 @@
        method=GET
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_Content-Type="application/json"
        HEADER_X-Requested-By="ambari"
        status_code=200,201,202
@@ -148,15 +150,3 @@
   when: wait and ((cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
          (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
          (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')
-
-- name: Change Ambari admin user password
-  uri: url=http://{{ ansible_nodename }}:8080/api/v1/users/admin
-       method=PUT
-       force_basic_auth=yes
-       user=admin
-       password=admin
-       HEADER_X-Requested-By="ambari"
-       body=' {"Users":{ "password":"{{ admin_password }}", "old_password":"admin"}}'
-       body_format=raw
-       status_code=200,201,202
-  when: admin_password != 'admin'

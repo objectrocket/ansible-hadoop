@@ -36,12 +36,24 @@
 - name: Waiting for ambari-server to start listening on port 8080
   wait_for: host={{ ansible_nodename }} port=8080
 
+- name: Change Ambari admin user password
+  uri: url=http://{{ ansible_nodename }}:8080/api/v1/users/admin
+       method=PUT
+       force_basic_auth=yes
+       user=admin
+       password=admin
+       HEADER_X-Requested-By="ambari"
+       body=' {"Users":{ "password":"{{ admin_password }}", "old_password":"admin"}}'
+       body_format=raw
+       status_code=200,201,202,403
+  when: admin_password != 'admin'
+
 - name: Waiting for ambari-agents to register
   uri: url=http://{{ ansible_nodename }}:8080/api/v1/hosts/{{ hostvars[item]['ansible_nodename'] | lower }}
        method=GET
        force_basic_auth=yes
        user=admin
-       password=admin
+       password={{ admin_password }}
        HEADER_X-Requested-By="ambari"
        status_code=200,201,202,404
   with_items: "{{ groups['hadoop-cluster'] }}"
