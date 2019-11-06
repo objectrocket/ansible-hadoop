@@ -5,7 +5,7 @@
   gather_facts: False
   tasks:
     - name: Add all cluster nodes to the hadoop-cluster group
-      always_run: yes
+#      check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -18,8 +18,32 @@
         - "{{ groups['master-nodes']|default([]) }}"
         - "{{ groups['slave-nodes']|default([]) }}"
         - "{{ groups['edge-nodes']|default([]) }}"
-      register: hadoop_cluster    
+      register: hadoop-cluster    
       when: "'hadoop-cluster' not in groups or groups['hadoop-cluster']|length < 1"
+
+    - name: Add all cluster nodes to the common-cluster group
+#      check_mode: no
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: bd-cluster
+      with_flattened:
+        - "{{ groups['master-nodes']|default([]) }}"
+        - "{{ groups['slave-nodes']|default([]) }}"
+        - "{{ groups['edge-nodes']|default([]) }}"
+        - "{{ groups['kafka-nodes']|default([]) }}"
+        - "{{ groups['kube-nodes']|default([]) }}"
+        - "{{ groups['kube-masters']|default([]) }}"
+      register: bd-cluster    
+      when: "'bd-cluster' not in groups or groups['bd-cluster']|length < 1"
+
+    - name: debugging some vars
+      debug:
+        var: groups['hadoop-cluster']
 
     - name: "include cdh vars"
       include_vars: group_vars/cloudera
@@ -29,8 +53,14 @@
       include_vars: group_vars/hortonworks
       when: distro == "hdp"
 
+    - name: "include hdp vars"
+      include_vars: group_vars/kube-all.yml
+
+    - name: "include hdp vars"
+      include_vars: group_vars/kube-cluster.yml
+
     - name: Add the last masternode to ambari-node variable group
-      always_run: yes
+#     check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -42,4 +72,82 @@
       with_items: "{{ groups['master-nodes']|sort|last }}"
       register: "{{ adminnode }}"
       when: "'ambari-node' not in groups or groups['ambari-node']|length < 1"
-      
+
+    - name: Add kafka nodes nodes to the kafka-cluster group
+#      check_mode: no
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: kafka-cluster
+      with_flattened:
+      - "{{ groups['kafka-nodes']|default([]) }}"
+      - "{{ groups['kafka-zk-nodes']|default([]) }}"
+      register: kafka-cluster    
+      when: "'kafka-cluster' not in groups or groups['kafka-cluster']|length < 1"
+
+    - name: Add kafka  nodes to the kafka-zookeeper cluster group
+#      check_mode: no
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: kafka-zookeeper-cluster
+      with_flattened:
+      - "{{ groups['kafka-zk-nodes']|default([]) }}"
+      register: kafka-zookeeper-cluster    
+      when: "'kafka-zookeeper-cluster' not in groups or groups['kafka-zookeeper-cluster']|length < 1"
+
+    - name: Add kafka nodes nodes to the kafka-broker-cluster group
+#      check_mode: no
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: kafka-broker-cluster
+      with_flattened:
+      - "{{ groups['kafka-nodes']|default([]) }}"
+      register: kafka-broker-cluster    
+      when: "'kafka-broker-cluster' not in groups or groups['kafka-broker-cluster']|length < 1"
+
+    - name: Add kafka nodes nodes to the kafka-manager group
+#      check_mode: no
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: kafka-manager
+      with_flattened:
+      - "{{ groups['kafka-nodes']|sort|last }}"
+      register: kafka-manager    
+      when: "'kafka-manager' not in groups or groups['kafka-manager']|length < 1"
+
+    - name: Add kube nodes to the kube-cluster group
+#      check_mode: no
+      add_host:
+        name: "{{ hostvars[item].inventory_hostname }}"
+        ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
+        ansible_user: "{{ hostvars[item].ansible_user|default('root') }}"
+        ansible_ssh_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        ansible_become_user: root
+        ansible_become_pass: "{{ hostvars[item].ansible_ssh_pass|default('') }}"
+        groups: kube-cluster
+      with_flattened:
+        - "{{ groups['kube-nodes']|default([]) }}"
+        - "{{ groups['kube-masters']|default([]) }}"
+      register: kubecluster    
+      when: "'kube-cluster' not in groups or groups['kube-cluster']|length < 1"
+
+

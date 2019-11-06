@@ -1,0 +1,15 @@
+---
+###############################################################
+# use template file for example references                    # 
+# ~/ansible-hadoop/playbooks/group_vars/master-nodes-templates#
+###############################################################
+cluster_interface: 'eth0'
+cloud_nodes_count: 6
+cloud_image: 'CentOS 7 (PVHVM)'
+# cloud_image: 'CentOS 6 (PVHVM)'
+cloud_flavor: 'performance1-8'
+build_kafka_cbs: true
+cbs_disks_size: 200
+cbs_disks_type: 'SATA'
+kafka_disk: xvde
+#datanode_disks: ['xvdf', 'xvdg']
