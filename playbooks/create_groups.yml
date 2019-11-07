@@ -5,7 +5,7 @@
   gather_facts: False
   tasks:
     - name: Add all cluster nodes to the hadoop-cluster group
-#      check_mode: no
+      check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -22,7 +22,7 @@
       when: "'hadoop-cluster' not in groups or groups['hadoop-cluster']|length < 1"
 
     - name: Add all cluster nodes to the common-cluster group
-#      check_mode: no
+      check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -53,7 +53,7 @@
       when: distro == "hdp"
 
     - name: Add the last masternode to ambari-node variable group
-#     check_mode: no
+     check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -67,7 +67,7 @@
       when: "'ambari-node' not in groups or groups['ambari-node']|length < 1"
 
     - name: Add kafka nodes nodes to the kafka-cluster group
-#      check_mode: no
+      check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -83,7 +83,7 @@
       when: "'kafka-cluster' not in groups or groups['kafka-cluster']|length < 1"
 
     - name: Add kafka  nodes to the kafka-zookeeper cluster group
-#      check_mode: no
+      check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -98,7 +98,7 @@
       when: "'kafka-zookeeper-cluster' not in groups or groups['kafka-zookeeper-cluster']|length < 1"
 
     - name: Add kafka nodes nodes to the kafka-broker-cluster group
-#      check_mode: no
+      check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
@@ -113,7 +113,7 @@
       when: "'kafka-broker-cluster' not in groups or groups['kafka-broker-cluster']|length < 1"
 
     - name: Add kafka nodes nodes to the kafka-manager group
-#      check_mode: no
+      check_mode: no
       add_host:
         name: "{{ hostvars[item].inventory_hostname }}"
         ansible_host: "{{ hostvars[item].ansible_host|default(hostvars[item].ansible_ssh_host) }}"
