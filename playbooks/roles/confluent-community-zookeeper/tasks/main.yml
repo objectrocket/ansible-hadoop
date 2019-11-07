@@ -1,1 +1,12 @@
 ---
+- name: Set Zookeeper Id
+  set_fact: zk_id={{item.0 + 1}}
+  with_indexed_items: "{{ groups['kafka-zk-nodes'] }}"
+  when: item.1 == "{{inventory_hostname}}"
+ 
+- name: Template zk id 
+  template:
+    src: myid.j2
+    dest: /zookeeper/myid
+
+- debug: var=ansible_facts
