@@ -1,0 +1,17 @@
+packages:
+  - curl
+  - wget
+  - xfsprogs
+  - confluent-community-2.12
+  - java-1.8.0-openjdk-devel
+
+
+epel_rpm_url: "http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+
+epel_yum: "epel-release"
+
+resolv_conf: "/etc/resolv.conf"
+
+networking_path: "/etc/sysconfig/network-scripts"
+networking_eth: "redhat-ifcfg-eth.j2"
+networking_bond: "redhat-ifcfg-bond.j2"

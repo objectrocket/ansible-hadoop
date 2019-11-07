@@ -1,0 +1,47 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/confluent-community
+  when: distro == "cpc"
+
+- name: Create Jolokia directory
+  file:
+    path: /opt/jolokia
+    state: directory
+    mode: 0755
+  when: jolokia_enabled|bool
+
+- name: Download Jolokia Jar
+  get_url:
+    url: "http://search.maven.org/remotecontent?filepath=org/jolokia/jolokia-jvm/{{jolokia_version}}/jolokia-jvm-{{jolokia_version}}-agent.jar"
+    dest: "{{ jolokia_jar_path }}"
+  when: jolokia_enabled|bool
+
+- name: Create Prometheus install directory
+  file:
+    path: /opt/prometheus
+    state: directory
+    mode: 0755
+  when: jmxexporter_enabled|bool
+
+- name: Download Prometheus JMX Exporter Jar
+  get_url:
+    url: https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.12.0/jmx_prometheus_javaagent-0.12.0.jar
+    dest: "{{ jmxexporter_jar_path }}"
+  when: jmxexporter_enabled|bool
+
+- name: Download kafka prom config 
+  get_url:
+    url: https://github.com/prometheus/jmx_exporter/raw/master/example_configs/kafka-2_0_0.yml
+    dest: "{{ jmxexporter_jar_path }}"
+  when: jmxexporter_enabled|bool
+

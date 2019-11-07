@@ -1,0 +1,9 @@
+[Service]
+Type=simple
+User=cp-kafka
+Group=confluent
+ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties
+LimitNOFILE=1000000
+TimeoutStopSec=180
+Restart=no
+Environment=KAFKA_OPTS=-javaagent:/opt/prometheus/jmx_prometheus_javaagent-0.12.jar=7071:/opt/prometheus/kafka-2_0_0.yml
