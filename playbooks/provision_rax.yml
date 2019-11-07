@@ -85,3 +85,47 @@
         wait_timeout: 900
       register: rax
       when: cloud_nodes_count > 0
+
+    - name: Include kafka-server-nodes group variables
+      include_vars: group_vars/kafka-server-nodes
+
+    - name: Create kafka server nodes
+      local_action:
+        module: rax
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "kafka-%02d.{{ cloud_config.domain }}"
+        image: "{{ cloud_image }}"
+        flavor: "{{ cloud_flavor }}"
+        count: "{{ cloud_nodes_count }}"
+        region: "{{ cloud_config.rax_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        exact_count: yes
+        auto_increment: true
+        group: kafka-server-nodes
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax
+      when: cloud_nodes_count > 0
+
+    - name: Include kafka-zk-nodes group variables
+      include_vars: group_vars/kafka-zk-nodes
+
+    - name: Create kafka zookeeper nodes
+      local_action:
+        module: rax
+        credentials: "{{ cloud_config.rax_credentials_file }}"
+        name: "kafka-zk-%02d.{{ cloud_config.domain }}"
+        image: "{{ cloud_image }}"
+        flavor: "{{ cloud_flavor }}"
+        count: "{{ cloud_nodes_count }}"
+        region: "{{ cloud_config.rax_region }}"
+        key_name: "{{ cloud_config.ssh.keyname }}"
+        exact_count: yes
+        auto_increment: true
+        group: kafka-zk-nodes
+        state: present
+        wait: true
+        wait_timeout: 900
+      register: rax
+      when: cloud_nodes_count > 0
