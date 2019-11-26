@@ -1,0 +1,110 @@
+---
+- include: create_groups.yml
+
+- name: Apply the  to all nodes
+  hosts: kube-cluster
+  any_errors_fatal: true
+  become: yes
+  pre_tasks:
+    - name: Show hadoop-cluster info
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+    - name: include kube vars
+      include_vars: group_vars/kube-all.yml
+
+    - name: include kube vars
+      include_vars: group_vars/kube-cluster.yml
+  roles:
+    - { role: docker, tags: docker }
+
+- name: kubernetes role
+  hosts: kube-masters
+  gather_facts: yes
+  become: yes
+  pre_tasks:
+    - name: Show hadoop-cluster info
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+    - name: include kube vars
+      include_vars: group_vars/kube-all.yml
+
+    - name: include kube vars
+      include_vars: group_vars/kube-cluster.yml
+  roles:
+    - { role: kubernetes/master, tags: master }
+    - { role: cni, tags: cni }
+
+- name: kubernetes nodes
+  hosts: kube-nodes  
+  gather_facts: yes
+  become: yes
+  pre_tasks:
+    - name: Show hadoop-cluster info
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+    - name: include kube vars
+      include_vars: group_vars/kube-all.yml
+
+    - name: include kube vars
+      include_vars: group_vars/kube-cluster.yml
+  roles:
+    - { role: kubernetes/node, tags: node }
+
+
+#
+#
+#- name: Apply the kluster 
+#  hosts: kube-cluster 
+#  become: yes
+#  pre_tasks:
+#    - name: include kube vars
+#      include_vars: group_vars/kube
+#  tasks:
+#    - name: run kubeadm ansible on cluser 
+#      include: /root/ansible-hadoop/playbooks/roles/kubeadm-ansible/site.yaml 
+#
+#- hosts: kube-cluster
+#  gather_facts: yes
+#  become: yes
+#  roles:
+#    - { role: docker, tags: docker }
+#
+- name: extra kube roles
+  hosts: kube-masters
+  gather_facts: yes
+  become: yes
+  pre_tasks:
+    - name: Show hadoop-cluster info
+      debug: var=hostvars[inventory_hostname]
+      when: debug
+
+    - name: include kube vars
+      include_vars: group_vars/kube-all.yml
+
+    - name: include kube vars
+      include_vars: group_vars/kube-cluster.yml
+  tasks:
+    - name: "Helm role"
+      include_role:
+        name: helm
+      when: "additional_features.helm"
+      run_once: yes
+      tags: helm
+
+    - name: "MetalLB role"
+      include_role:
+        name: metallb
+      when: "additional_features.metallb"
+      run_once: yes
+      tags: metallb
+
+    - name: "Healthcheck role"
+      include_role:
+        name: healthcheck
+      when: "additional_features.healthcheck"
+      run_once: yes
+      tags: healthcheck
+
