@@ -1,0 +1,36 @@
+---
+- name: Write bonding.conf file
+  lineinfile: dest=/etc/modprobe.d/bonding.conf line='alias {{ cluster_interface }} bonding' state=present create=yes mode=0664 owner=root group=root
+  notify: Run depmod
+
+- meta: flush_handlers
+
+- name: Make sure the interfaces.d files are included
+  lineinfile: line="source /etc/network/interfaces.d/ifcfg-*"
+              dest=/etc/network/interfaces
+              state=present
+              insertafter=EOF
+  when: ansible_os_family == "Debian"
+
+- name: Write ifcfg files for bonded interfaces
+  template: src={{ ansible_os_family|lower }}-ifcfg-eth.j2 dest={{ networking_path }}/ifcfg-{{ item }}
+  with_items: "{{ bond_interfaces }}"
+  notify: Restart network interfaces
+
+- name: Write ifcfg file for bond interface
+  template: src={{ ansible_os_family|lower }}-ifcfg-bond.j2 dest={{ networking_path }}/ifcfg-{{ cluster_interface }}
+  notify: Restart network interfaces
+
+- meta: flush_handlers
+
+- name: Test slave interfaces
+  include: slavetest.yml
+  with_items: "{{ bond_interfaces }}"
+  loop_control:
+    loop_var: slave_interface
+
+- name: Ping between all hosts on bond interface to verify network connectivity
+  command: /bin/ping -q -c 5 -i 0.2 -W 1 {{ hostvars[item]['bond_ip'] }}
+  when: bond_ip is defined and hostvars[item]['bond_ip'] is defined
+  with_items: "{{ groups['all'] }}"
+  changed_when: 0

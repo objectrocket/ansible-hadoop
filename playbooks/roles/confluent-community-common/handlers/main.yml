@@ -3,3 +3,26 @@
   command: yum clean metadata
   args:
     warn: no
+
+- name: Restart iptables
+  service: name=iptables state=restarted enabled=yes
+
+- name: Reload firewalld
+  command: firewall-cmd --reload
+
+- name: Run update-grub
+  shell: "{{ update_grub }}"
+  when: ansible_distribution_major_version|int > 6
+
+- name: Run resolvconf
+  shell: resolvconf -u
+  when: ansible_os_family == "Debian"
+
+- name: Restart network interfaces
+  shell: ifdown {{ item }}; ifup {{ item }}; ifup {{ cluster_interface }}
+  with_flattened:
+    - cluster_interface
+    - bond_interfaces
+
+- name: Run depmod
+  command: depmod

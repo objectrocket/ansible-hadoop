@@ -1,0 +1,17 @@
+---
+- name: Get disk alignment for disk {{ item }}
+  shell: if [[ -e /sys/block/{{ item }}/queue/optimal_io_size && -e /sys/block/{{ item }}/alignment_offset && -e /sys/block/{{ item }}/queue/physical_block_size ]]; then echo $[$(( ($(cat /sys/block/{{ item }}/queue/optimal_io_size) + $(cat /sys/block/{{ item }}/alignment_offset)) / $(cat /sys/block/{{ item }}/queue/physical_block_size) )) | 2048]; else echo 2048; fi
+  when: ansible_devices[item] is defined
+  register: disk_offset
+
+- name: Partition disk {{ item }}
+  shell: parted -s -a optimal /dev/{{ item }} mklabel gpt mkpart primary {{ data_disks_filesystem }} {{ disk_offset.stdout|default("2048") }}s 100% && sleep 5 && partprobe /dev/{{ item }}; sleep 5
+  when: ansible_devices[item] is defined and ansible_devices[item]['partitions'] == {}
+
+- name: Create the filesystem on disk {{ item }}
+  filesystem: dev="/dev/{{ item }}1" fstype="{{ data_disks_filesystem }}"
+  when: ansible_devices[item] is defined
+
+- name: Disable periodic fsck on {{ item }}
+  shell: tune2fs -c0 -i0 /dev/{{ item }}1
+  when: ansible_devices[item] is defined and (data_disks_filesystem == "ext4" or data_disks_filesystem == "ext3")

@@ -13,6 +13,10 @@
 - include_vars: group_vars/confluent-community
   when: distro == "cpc"
 
+- include_vars: group_vars/kafka-server-nodes
+
+- include_vars: group_vars/kafka-zookeeper-nodes
+
 - name: install confluent community repo
   copy:
     src: confluent.repo
@@ -20,12 +24,9 @@
   notify: yum-clean-metadata
 
 - name: add gpg key
-  rpm-key:
+  rpm_key:
     state: present
     key: https://packages.confluent.io/rpm/5.3/archive.key
-
-- name: clean yum
-  yum: 
 
 - name: Ensure required packages are installed (yum)
   yum:
@@ -125,4 +126,16 @@
   notify: Run resolvconf
 
 - meta: flush_handlers
+
+- name: Configure bonding
+  include: bonding.yml
+  when: bond_interfaces is defined
+
+- name: Set hosts file
+  template: src=hosts.j2 dest=/etc/hosts mode=0644
+  when: not azure
+
+- name: Include firewall.yml
+  include: firewall.yml
+  when: configure_firewall or rax_id is defined
 

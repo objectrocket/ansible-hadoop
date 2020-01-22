@@ -1,0 +1,7 @@
+auto {{ cluster_interface }}
+iface {{ cluster_interface }} inet static
+    address {{ bond_ip }}
+    netmask {{ bond_netmask }}
+    bond-mode active-backup
+    bond-miimon 100
+    bond-slaves none
