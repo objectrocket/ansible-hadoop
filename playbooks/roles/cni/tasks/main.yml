@@ -1,0 +1,27 @@
+---
+
+- name: Create Kubernetes addon directory
+  file:
+    path: "{{ network_dir }}"
+    state: directory
+
+- name: "Copy {{ network }} YAML files"
+  template:
+    src: "{{ item }}"
+    dest: "{{ network_dir }}/{{ item | basename | regex_replace('\\.j2','') }}"
+  with_fileglob:
+    - ../templates/{{ network }}*.j2
+
+- name: "Check {{ network }} daemonset is working"
+  shell: kubectl --kubeconfig={{ kubeadmin_config }} get ds --all-namespaces | grep {{ network }}
+  delegate_to: "{{ groups['kube-masters'][0] }}"
+  run_once: true
+  register: check_net
+  ignore_errors: true
+  changed_when: false
+
+- name: "Create {{ network }} network daemonset"
+  when: check_net is failed
+  command: kubectl apply --kubeconfig={{ kubeadmin_config }} -f {{ network_dir }}/
+  delegate_to: "{{ groups['kube-masters'][0] }}"
+  run_once: true
