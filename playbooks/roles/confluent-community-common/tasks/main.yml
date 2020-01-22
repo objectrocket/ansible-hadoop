@@ -139,9 +139,3 @@
   include: firewall.yml
   when: configure_firewall or rax_id is defined
 
-- name: Include partitioning.yml
-  include: partitioning.yml
-  with_flattened:
-    - "{{ kafka_disk|default([]) }}"
-    - "{{ zookeeper_disk|default([]) }}"
-

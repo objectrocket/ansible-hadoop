@@ -1,6 +1,11 @@
 ---
 - include_vars: group_vars/kafka-server-nodes
 
+- name: Include partitioning.yml
+  include: partitioning.yml
+  with_flattened:
+    - "{{ kafka_disk|default([]) }}"
+
 - name: Mount kafka disk under /kafka
   mount: state=mounted
          src="/dev/{{ kafka_disk }}1"
