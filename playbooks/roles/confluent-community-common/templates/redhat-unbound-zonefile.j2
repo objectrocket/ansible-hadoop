@@ -1,0 +1,9 @@
+# Local zone
+
+local-zone: "{{ ansible_domain }}." static
+
+{% for node in groups['hadoop-cluster'] %}
+local-data: "{{ hostvars[node]['ansible_fqdn'] }}. IN A {{ hostvars[node]['ansible_'~hostvars[node].cluster_interface|default(hostvars[node].ansible_default_ipv4.alias)]['ipv4']['address'] }}"
+local-data-ptr: "{{ hostvars[node]['ansible_'~hostvars[node].cluster_interface|default(hostvars[node].ansible_default_ipv4.alias)]['ipv4']['address'] }} {{ hostvars[node]['ansible_fqdn'] }}"
+
+{% endfor %}

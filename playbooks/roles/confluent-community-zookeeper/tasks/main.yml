@@ -1,4 +1,16 @@
 ---
+- include_vars: group_vars/kafka-zookeeper-nodes
+
+- name: Mount zookeeper disk under /zookeeper
+  mount: state=mounted
+         src="/dev/{{ zookeeper_disk }}1"
+         name="/zookeeper"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: zookeeper_disk is defined and zookeeper_disk and ansible_devices[zookeeper_disk] is defined
+
 - name: Set Zookeeper Id
   set_fact: zk_id={{item.0 + 1}}
   with_indexed_items: "{{ groups['kafka-zk-nodes'] }}"

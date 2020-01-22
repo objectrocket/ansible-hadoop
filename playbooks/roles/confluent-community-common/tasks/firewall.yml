@@ -1,0 +1,42 @@
+---
+- name: Set iptables between cluster nodes
+  lineinfile: dest=/etc/sysconfig/iptables
+              insertbefore="^-A INPUT"
+              line="-A INPUT -s {{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}/32 -j ACCEPT"
+              state=present
+  with_items: "{{ play_hosts }}"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  notify: Restart iptables
+
+- name: Set iptables to allow cluster access from external IPs
+  lineinfile: dest=/etc/sysconfig/iptables
+              insertbefore="^-A INPUT"
+              line="-A INPUT -s {{ item }}/32 -j ACCEPT"
+              state=present
+  with_items: "{{ cloud_config.allowed_external_ips }}"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "6"
+  notify: Restart iptables
+
+- name: Set firewalld rules between cluster nodes
+  command: firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="{{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}" accept'
+#  firewalld: source={{ hostvars[item][['ansible_', hostvars[item]['cluster_interface']]|join]['ipv4']['address'] }} state=enabled
+  with_items: "{{ play_hosts }}"
+  notify: Reload firewalld
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: Set firewalld to allow cluster access from external IPs
+  command: firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="{{ item }}" accept'
+#  firewalld: source={{ item }} state=enabled
+  with_items: "{{ cloud_config.allowed_external_ips }}"
+  notify: Reload firewalld
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version == "7"
+
+- name: Set UFW rules between cluster nodes
+  ufw: rule=allow src={{ hostvars[item]['ansible_'~hostvars[item].cluster_interface|default(hostvars[item].ansible_default_ipv4.alias)]['ipv4']['address'] }}
+  with_items: "{{ play_hosts }}"
+  when: ansible_distribution == "Ubuntu"
+
+- name: Set UFW to allow cluster access from external IPs
+  ufw: rule=allow src={{ item }}
+  with_items: "{{ cloud_config.allowed_external_ips }}"
+  when: ansible_distribution == "Ubuntu"
