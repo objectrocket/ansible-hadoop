@@ -1,5 +1,5 @@
-services_pass: 'justtesting'
-tough_pass: 'N0Gu3ssing!'
+services_pass: 'testing'
+tough_pass: 'complexpass'
 amon_pass: "{{ services_pass }}"
 rman_pass: "{{ services_pass }}"
 sentry_pass: "{{ services_pass }}"
