@@ -16,6 +16,9 @@
 - include_vars: group_vars/hortonworks
   when: distro == "hdp"
 
+- include_vars: group_vars/confluent-community
+  when: distro == "cc"
+
 - name: Install epel-release
   yum:
     name: "{{ epel_yum }}"
@@ -163,7 +166,8 @@
     - "{{ masterservices_disk|default([]) }}"
     - "{{ hadoop_disk|default([]) }}"
     - "{{ datanode_disks|default([]) }}"
-    - "{{ mysql_disks|default([]) }}"
+    - "{{ sql_disk|default([]) }}"
+    - "{{ zk_disk|default([]) }}"
 
 - name: Mount hadoop disk under /hadoop
   mount: state=mounted
@@ -195,19 +199,21 @@
          passno=0
   when: masterservices_disk is defined and masterservices_disk and ansible_devices[masterservices_disk] is defined
 
-- name: create mysql mount
-  file: name=/var/lib/mysql state=directory
-  when: mysql_disk is defined and mysql_disk and ansible_devices[mysql_disk] is defined
+- name: create sql mount
+  file: 
+    name="/var/lib/sql"
+    state=directory
+  when: sql_disk is defined and sql_disk and ansible_devices[sql_disk] is defined
 
-- name: Mount mysql services disk under /var/lib/mysql
+- name: Mount sql services disk under /var/lib/sql
   mount: state=mounted
-         src="/dev/{{ mysql_disk }}1"
-         name="/var/lib/mysql/"
+         src="/dev/{{ sql_disk }}1"
+         name="/var/lib/sql/"
          fstype="{{ data_disks_filesystem }}"
          opts=defaults,noatime
          dump=0
          passno=0
-  when: mysql_disk is defined and mysql_disk and ansible_devices[mysql_disk] is defined
+  when: sql_disk is defined and sql_disk and ansible_devices[sql_disk] is defined
 
 - name: Mount datanode disks under /grid/{0..n}
   mount: state=mounted

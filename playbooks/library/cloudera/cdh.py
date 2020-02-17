@@ -26,7 +26,7 @@ REMOTE_PARCEL_REPO_URLS = 'REMOTE_PARCEL_REPO_URLS'
 # directories on HDFS.
 BASE_SERVICES = ['Zookeeper', 'Hdfs', 'Yarn']
 ADDITIONAL_SERVICES = ['Spark_On_Yarn', 'Hbase', 'Hive', 'Impala', 'Flume', 'Oozie', 'Sqoop',
-                       'Solr', 'Kafka', 'Sentry', 'Hue']
+                       'Solr', 'Kafka', 'Ranger', 'Hue']
 
 
 def retry(attempts=3, delay=5):
@@ -469,9 +469,6 @@ class Spark_On_Yarn(Service):
         self.run_cmd(self.service._cmd, 60, "Command CreateSparkHistoryDirCommand failed",
                      'CreateSparkHistoryDirCommand', api_version=7)
 
-        self.run_cmd(self.service._cmd, 60, "Command SparkUploadJarServiceCommand failed",
-                     'SparkUploadJarServiceCommand', api_version=7)
-
 
 class Hbase(Service):
     """
@@ -583,6 +580,13 @@ class Sentry(Service):
         self.run_cmd(self.service.create_sentry_database_tables, 300,
                      "Command CreateSentryDBTables failed")
 
+class Ranger(Service):
+    """
+    Service Role Groups:
+        RANGER_USERSYNC
+        RANGER_TAGSYNC
+        RANGER_ADMIN
+    """
 
 class ClouderaManager(object):
     """

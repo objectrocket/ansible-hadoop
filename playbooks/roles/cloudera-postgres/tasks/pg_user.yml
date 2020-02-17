@@ -1,0 +1,34 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/cloudera
+
+- include_vars: group_vars/postgres_vars.yml
+
+- name: Connect to acme database, create django user, and grant access to database and products table
+  postgresql_user:
+    name: "{{ item }}"
+    password: justtesting
+  with_items:
+    - scm
+    - amon
+    - rman
+    - nav
+    - navms
+    - hue
+    - hive
+    - oozie
+    - das
+    - rangeradmin
+  become: true
+  become_method: sudo
+  become_user: postgres

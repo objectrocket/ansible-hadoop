@@ -1,0 +1,35 @@
+---
+
+- name: Install unzip package
+  package:
+    name:
+    - unzip
+    state: installed
+
+- name: Copy JCE policy zip to temp directory
+  get_url:
+    url: "{{ java_jce_url }}/{{ java_jce_zip }}"
+    dest: "{{ tmp_dir }}/jce.zip"
+
+- name: Extract JCE policy zip
+  unarchive:
+    src: "{{ tmp_dir }}/jce.zip"
+    dest: "{{ tmp_dir }}"
+    copy: no
+
+- name: Copy JCE policy jars into correct location
+  copy:
+    src: "{{ item }}"
+    dest: "{{ java_home }}/jre/lib/security/"
+    backup: yes
+  with_fileglob:
+    - "{{ tmp_dir }}/{{ unarchived_directory }}/*.jar"
+
+- name: Cleanup tmp files
+  file:
+    path: "{{ tmp_dir }}/{{ item }}"
+    state: absent
+  with_items:
+    - jce.zip
+    - "{{ unarchived_directory }}"
+  ignore_errors: True

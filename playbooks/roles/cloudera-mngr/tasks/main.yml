@@ -1,4 +1,6 @@
 ---
 - include_vars: group_vars/cloudera
 
+- include_vars: group_vars/postgres_vars.yml
+
 - include: prerequisites.yml

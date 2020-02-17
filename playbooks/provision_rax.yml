@@ -36,7 +36,7 @@
 
     - name: Build Rackspace CBS for master nodes
       include: provision_cbs.yml
-      when: cloud_nodes_count > 0 and build_datanode_cbs is defined and build_datanode_cbs
+      when: cloud_nodes_count > 0 and build_masternode_cbs is defined and build_masternode_cbs
 
     - name: Include slave-nodes group variables
       include_vars: group_vars/slave-nodes
@@ -108,8 +108,8 @@
       register: rax
       when: cloud_nodes_count > 0
 
-    - name: Include kafka-zk-nodes group variables
-      include_vars: group_vars/kafka-zk-nodes
+    - name: Include kafka-zookeeper-nodes group variables
+      include_vars: group_vars/kafka-zookeeper-nodes
 
     - name: Create kafka zookeeper nodes
       local_action:

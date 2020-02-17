@@ -1,0 +1,71 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/cloudera
+
+- include_vars: group_vars/postgres_vars.yml
+
+- name: setup dbs 
+  block:
+    - name: Create a new database
+      postgresql_db:
+        name: scm
+        owner: scm
+
+    - name: Create a new database
+      postgresql_db:
+        name: amon
+        owner: amon
+
+    - name: Create a new database
+      postgresql_db:
+        name: rman
+        owner: rman
+
+    - name: Create a new database
+      postgresql_db:
+        name: hue
+        owner: hue
+
+    - name: Create a new database
+      postgresql_db:
+        name: metastore
+        owner: hive
+
+    - name: Create a new database
+      postgresql_db:
+        name: oozie
+        owner: oozie
+
+    - name: Create a new database
+      postgresql_db:
+        name: das
+        owner: das
+
+    - name: Create a new database
+      postgresql_db:
+        name: ranger
+        owner: rangeradmin
+
+    - name: Create a new database
+      postgresql_db:
+        name: nav
+        owner: nav
+
+    - name: Create a new database
+      postgresql_db:
+        name: navms
+        owner: navms
+
+  become: true 
+  become_method: su
+  become_user: postgres 

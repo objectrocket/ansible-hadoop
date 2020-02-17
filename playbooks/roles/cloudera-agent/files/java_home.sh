@@ -1,3 +1,3 @@
 #set java home for all users
-
-export JAVA_HOME=/usr/java/jdk1.7.0_67-cloudera
+#modify with oracle jdk 1.8 
+export JAVA_HOME=/usr/java/jdk1.8.0_241-amd64

@@ -1,0 +1,4 @@
+pkgs:
+  - postgresql96-server
+  - python-pip
+  - postgresql-jdbc

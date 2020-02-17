@@ -1,0 +1,22 @@
+---
+
+- name: install postgres repo
+  block:
+    - name: download postgres repo rpm
+      get_url:
+        url: "{{ pdgd_repo_rpm_url }}{{ pdgd_repo_rpm }}"
+        dest: "{{ tmp_dir }}/"
+
+    - name: install JDK
+      yum:
+        name: "{{ tmp_dir }}/{{ pdgd_repo_rpm }}"
+        update_cache: yes
+        state: installed
+      when: ansible_os_family == "RedHat"
+
+    - name: Cleanup tmp files
+      file:
+        path: "{{ tmp_dir }}/{{ pdgd_repo_rpm }}"
+        state: absent
+  become: true
+  become_user: root

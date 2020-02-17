@@ -1,0 +1,140 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/cloudera
+
+- include_vars: group_vars/postgres_vars.yml
+
+- name: setup hba
+  block:
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: scm
+        source: 0.0.0.0/0
+        databases: scm
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: amon
+        source: 0.0.0.0/0
+        databases: amon
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: rman
+        source: 0.0.0.0/0
+        databases: rman
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: nav
+        source: 0.0.0.0/0
+        databases: nav
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: navms
+        source: 0.0.0.0/0
+        databases: navms
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: hue
+        source: 0.0.0.0/0
+        databases: hue
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: hive
+        source: 0.0.0.0/0
+        databases: metastore
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: oozie
+        source: 0.0.0.0/0
+        databases: oozie
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: das
+        source: 0.0.0.0/0
+        databases: das
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: rangeradmin
+        source: 0.0.0.0/0
+        databases: ranger
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: nav
+        source: 0.0.0.0/0
+        databases: nav
+        method: md5
+        create: true
+
+    - name: Grant users from master nodes using md5 authentication in hba
+      postgresql_pg_hba:
+        dest: /var/lib/sql/postgres/pg_hba.conf
+        contype: host
+        users: navms
+        source: 0.0.0.0/0
+        databases: navms
+        method: md5
+        create: true
+  become: yes
+  become_user: root
+  

@@ -23,10 +23,7 @@ cluster:
 parcels:
   - repo:
     product: CDH
-    version: 5.8.0-1.cdh5.8.0.p0.42
-  - repo:
-    product: KAFKA
-    version: 2.0.2-1.2.0.2.p0.5
+    version: 7.0.3-1.cdh7.0.3.p0.1635019
 
 # Service. All the service definitions go here
 services:
@@ -36,10 +33,10 @@ services:
         hosts:
           - {{ groups['cm_node'][0] }}
         config:
-          firehose_database_host: {{ groups['cm_node'][0] }}:3306
+          firehose_database_host: {{ groups['cm_node'][0] }}:5432
           firehose_database_user: amon
           firehose_database_password: {{ amon_pass }}
-          firehose_database_type: mysql
+          firehose_database_type: postgresql
           firehose_database_name: amon
       - group: ALERTPUBLISHER
         hosts:
@@ -57,10 +54,10 @@ services:
         hosts:
           - {{ groups['cm_node'][0] }}
         config:
-          headlamp_database_host: {{ groups['cm_node'][0] }}:3306
+          headlamp_database_host: {{ groups['cm_node'][0] }}:5432
           headlamp_database_user: rman
           headlamp_database_password: {{ rman_pass }}
-          headlamp_database_type: mysql
+          headlamp_database_type: postgresql
           headlamp_database_name: rman
       #- group: NAVIGATOR
       #- group: NAVIGATORMETADATASTORE
@@ -156,6 +153,9 @@ services:
           - {{ groups['master-nodes'][1] }}
       - group: GATEWAY
         hosts:
+{% for host in groups['master-nodes'] %}
+          - {{ host }}
+{% endfor %}
           - {{ groups['slave-nodes'][1] }}
   HBASE:
     config:
@@ -183,38 +183,33 @@ services:
           - {{ groups['slave-nodes'][1] }}
   HIVE:
     config:
-      hive_metastore_database_host: {{ groups['cm_node'][0] }}
+      hdfs_service: HDFS
+      hive_metastore_database_host: {{ groups['master-nodes'][2] }}
       hive_metastore_database_name: metastore
-      hive_metastore_database_user: metastore
+      hive_metastore_database_user: hive
       hive_metastore_database_password: {{ hive_pass }}
-      hive_metastore_database_port: 3306
-      hive_metastore_database_type: mysql
+      hive_metastore_database_port: 5432
+      hive_metastore_database_type: postgresql
       mapreduce_yarn_service: YARN
+      spark_on_yarn_service: SPARK_ON_YARN
       zookeeper_service: ZOOKEEPER
     roles:
       - group: HIVEMETASTORE
         config:
           hive_metastore_java_heapsize: 128306784
         hosts:
-          - {{ groups['cm_node'][0] }}
+          - {{ groups['master-nodes'][2] }}
       - group: HIVESERVER2
+        config:
+          hs2_execution_engine: spark
         hosts:
-          - {{ groups['cm_node'][0] }}
+          - {{ groups['master-nodes'][2] }}
       - group: WEBHCAT
         hosts:
-          - {{ groups['cm_node'][0] }}
+          - {{ groups['master-nodes'][2] }}
       - group: GATEWAY
         hosts:
-          - {{ groups['cm_node'][0] }}
-          - {{ groups['slave-nodes'][0] }}
-  FLUME:
-    config:
-      hdfs_service: HDFS
-      hbase_service: HBASE
-    roles:
-      - group: AGENT
-        hosts:
-{% for host in groups['slave-nodes'] %}
+{% for host in groups['master-nodes'] %}
           - {{ host }}
 {% endfor %}
   OOZIE:
@@ -231,7 +226,7 @@ services:
           oozie_database_name: oozie
           oozie_database_user: oozie
           oozie_database_password: {{ oozie_pass }}
-          oozie_database_type: mysql
+          oozie_database_type: postgresql
   SOLR:
     config:
       hdfs_service: HDFS
@@ -247,13 +242,13 @@ services:
 {% endfor %}
   HUE:
     config:
-      hive_service: HIVE
+      hdfs_service: HDFS
+      hms_service: HIVE
+      hive_service: HIVE_ON_TEZ
       hbase_service: HBASE
       impala_service: IMPALA
       oozie_service: OOZIE
-      sqoop_service: SQOOP
       solr_service: SOLR
-      sentry_service: SENTRY
       zookeeper_service: ZOOKEEPER
       hue_webhdfs: HDFS-NAMENODE-1
       hue_hbase_thrift: HBASE-HBASETHRIFTSERVER-1
@@ -278,20 +273,24 @@ services:
 {% for host in groups['slave-nodes'] %}
           - {{ host }}
 {% endfor %}
-  SENTRY:
+  RANGER:
     config:
-      zookeeper_service: ZOOKEEPER
       hdfs_service: HDFS
-      sentry_server_database_host: {{ groups['cm_node'][0] }}
-      sentry_server_database_name: sentry
-      sentry_server_database_user: sentry
-      sentry_server_database_password: {{ sentry_pass }}
-      sentry_server_database_type: mysql
+      rangeradmin_user_password: {{ tough_pass }}
+      rangertagsync_user_password: {{ tough_pass }}
+      solr_service: SOLR
+      rangerusersync_user_password: {{ tough_pass }}
+      keyadmin_user_password: {{ tough_pass }}
     roles:
-      - group: SENTRY_SERVER
+      - group: RANGER_ADMIN
+        config:
+          ranger_database_host: {{ groups['master-nodes'][2] }}
+          ranger_database_password: {{ services_pass }} 
         hosts:
-          - {{ groups['cm_node'][0] }}
-      - group: GATEWAY
+          - {{ groups['master-nodes'][2] }}
+      - group: RANGER_USERSYNC
         hosts:
-          - {{ groups['cm_node'][0] }}
-          - {{ groups['slave-nodes'][0] }}
+          - {{ groups['master-nodes'][2] }}
+      - group: RANGER_TAGSYNC
+        hosts:
+          - {{ groups['master-nodes'][2] }}
