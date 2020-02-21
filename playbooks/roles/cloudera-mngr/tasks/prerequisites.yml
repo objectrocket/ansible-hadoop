@@ -26,20 +26,20 @@
 #- name: setup SCM DB
 #  command: /opt/cloudera/cm/schema/scm_prepare_database.sh postgresql -h {{ groups['cm_node'][0] }} scm scm {{ scm_pass }}
 
-- name: download cdh parcel
-  get_url:
-    url: "{{ parcel_repo_url }}{{ cdh_parcel }}"
-    dest: /opt/cloudera/parcel-repo/ 
-    owner: cloudera-scm
-    group: cloudera-scm
-
-- name: download cdh parcel sha
-  get_url:
-    url: "{{ parcel_repo_url }}{{ cdh_parcel_sha }}"
-    dest: /opt/cloudera/parcel-repo/ 
-    owner: cloudera-scm
-    group: cloudera-scm
-
+#- name: download cdh parcel
+#  get_url:
+#    url: "{{ parcel_repo_url }}{{ cdh_parcel }}"
+#    dest: /opt/cloudera/parcel-repo/ 
+#    owner: cloudera-scm
+#    group: cloudera-scm
+#
+#- name: download cdh parcel sha
+#  get_url:
+#    url: "{{ parcel_repo_url }}{{ cdh_parcel_sha }}"
+#    dest: /opt/cloudera/parcel-repo/ 
+#    owner: cloudera-scm
+#    group: cloudera-scm
+#
 - name: Upload db properties template
   template: src=db.properties dest=/etc/cloudera-scm-server/
 
