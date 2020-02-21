@@ -12,10 +12,10 @@ resolv_conf: "/etc/resolv.conf"
 
 cloudera_repo_file: "/etc/yum.repos.d/cloudera.repo"
 
-java_jce_url: "http://23.253.245.225/jdk-files/" 
+java_jce_url: "http://jdk_url/jdk-files/" 
 java_jce_zip: "jce_policy-8.zip"
 unarchived_directory: "UnlimitedJCEPolicyJDK8"
-java_jdk_url: "http://23.253.245.225/jdk-files/"
+java_jdk_url: "http://jdk_url/jdk-files/"
 java_jdk_rpm: "jdk-8u241-linux-x64.rpm"
 
 tmp_dir: "/tmp/"
