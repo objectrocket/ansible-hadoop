@@ -14,10 +14,10 @@
 
 - include_vars: group_vars/postgres_vars.yml
 
-- name: Connect to acme database, create django user, and grant access to database and products table
+- name: setup postgres db owner users
   postgresql_user:
     name: "{{ item }}"
-    password: justtesting
+    password: "{{ services_pass }}"
   with_items:
     - scm
     - amon
