@@ -1,0 +1,121 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/cloudera
+
+- include_vars: group_vars/postgres_vars.yml
+
+- name: install postgres repo
+  include: postgres_repo_install.yml
+
+- name: install packages
+  block:
+    - name: Ensure required packages are installed (yum)
+      yum:
+        name: "{{ item }}"
+        update_cache: yes
+        state: installed
+      with_items: "{{ pkgs }}"
+      when: ansible_os_family == "RedHat"
+
+    - name: Install python db adaptor for Hue
+      pip:
+        name: "psycopg2==2.7.5"
+
+    - name: copy postgresql connector
+      copy: 
+        src: "/usr/share/java/postgresql-jdbc.jar"
+        dest: "/usr/share/java/postgresql-connector-java.jar"
+        remote_src: yes
+
+    - name: create postgres dir
+      file:
+        path: /var/lib/sql/postgres
+        owner: postgres
+        group: postgres
+        mode: '700'
+        state: directory
+
+    - name: add locale
+      lineinfile:
+        path:  /etc/locale.conf
+        line: 'LC_ALL="en_US.UTF-8"'
+        insertbefore: EOF
+  become: yes
+  become_user: root
+
+- name : test if data dir exists
+  stat:
+    path: /var/lib/sql/postgres/base
+  register: dir_details
+
+- name: init postgres data 
+  command: su postgres - -c '/usr/pgsql-9.6/bin/pg_ctl initdb --pgdata=/var/lib/sql/postgres'
+  when: not dir_details.stat.exists
+  become: true
+  become_user: postgres
+      
+- name: copy custom postgres config
+  copy:
+    src: postgresql.conf
+    dest: /var/lib/sql/postgres/
+  become: true
+  become_user: postgres
+
+- name: copy custom postgres startup 
+  copy:
+   src: postgresql-9.6.service
+   dest: /usr/lib/systemd/system/ 
+  become: true
+  become_user: root
+
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+  become: true
+  become_user: root
+
+#- name: set data dir in posgres startup
+#  replace:
+#    path: /usr/lib/systemd/system/postgresql-9.6.service
+#    regexp: '^Environment\=PGDATA\=*'
+#    replace: '\1 /var/lib/sql/postgres/data/'
+#  become: true
+#  become_user: root
+
+- name: start postgres
+  service:
+    name: postgresql-9.6
+    state: restarted
+
+- name: setup postgres hba
+  include: pg_hba.yml
+
+- name: setup postgres users
+  include: pg_user.yml
+
+- name: setup postgres dbs
+  include: pg_dbs.yml
+
+- name: start postgres
+  service:
+    name: postgresql-9.6
+    state: restarted
+
+- name: setup SCM DB
+  command: /opt/cloudera/cm/schema/scm_prepare_database.sh postgresql -h {{ groups['cm_node'][0] }} scm scm {{ scm_pass }}
+  become: true
+  become_method: sudo
+  become_user: postgres
+
+- name: setup Hive DB
+  include: hive_postgres_schema.yml

@@ -11,8 +11,22 @@
 - include_vars: ../vars/{{ ansible_os_family|lower }}.yml
 - include_vars: ../../../group_vars/cloudera
 
-- name: Download the cloudera repo
-  get_url: url={{ cloudera_repo }} dest={{ cloudera_repo_file }}
+- name: Add Cloudera Manager yum repository
+  yum_repository:
+    name: cloudera-manager
+    description: Cloudera Manager
+    baseurl: "{{ scm_repo_url }}"
+    gpgkey: "{{ scm_repo_gpgkey }}"
+    gpgcheck: yes
+    enabled: yes
+  when: 
+  - ansible_os_family|lower == "redhat"
+
+- include: jdk_install.yml
+
+- include: jce_install.yml
+
+- include: jce_config.yml
 
 - name: setup java home in profile.d
   copy: src=java_home.sh dest=/etc/profile.d/
@@ -29,7 +43,6 @@
   with_items: 
     - cloudera-manager-agent
     - cloudera-manager-daemons
-    - oracle-j2sdk1.8
   when: ansible_os_family == "RedHat"
 
 - name: Ensure required packages are installed (apt)
@@ -40,11 +53,20 @@
   with_items: "{{ package_info.pkgs }}"
   when: ansible_os_family == "Debian"
 
+- name: Configure Cloudera Manager Agent 'server_host'
+  lineinfile:
+    dest: /etc/cloudera-scm-agent/config.ini
+    regexp: "^server_host"
+    line: "server_host={{ hostvars[groups['cm_node'][0]]['ansible_nodename'] }}"
+
+- name: Restart Cloudera Manager Agents
+  service:
+    name: cloudera-scm-agent
+    state: restarted
+    enabled: yes
+
 - include: unbound-dns.yml
   when: use_dns
-
-- name: install agent config
-  template: src=config.ini dest=/etc/cloudera-scm-agent/
 
 - name: Enable the Cloudera agent
   service: name=cloudera-scm-agent state=restarted enabled=yes

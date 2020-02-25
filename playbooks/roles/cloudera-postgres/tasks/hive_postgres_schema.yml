@@ -1,0 +1,16 @@
+---
+
+- name: setup metastore schema
+  copy:
+    src: "hive-schema-3.1.2000.postgres.sql"
+    dest: "{{ tmp_dir }}/"
+
+
+- name: setup Hive Metastore schema
+  shell: PGPASSWD={{ services_pass }} psql -U hive -h localhost metastore < {{ tmp_dir }}/hive-schema-3.1.2000.postgres.sql
+
+
+- name: Cleanup tmp files
+  file:
+    path: "{{ tmp_dir }}/hive-schema-3.1.2000.postgres.sql"
+    state: absent

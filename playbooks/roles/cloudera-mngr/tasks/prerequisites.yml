@@ -8,7 +8,9 @@
       paths:
         - ../vars
 
-- include_vars: ../../cloudera-mysql/vars/mysql_vars.yml
+- include_vars: group_vars/cloudera
+
+- include_vars: group_vars/postgres_vars.yml
 
 - name: Ensure required packages are installed (yum)
   yum:
@@ -21,6 +23,23 @@
 - include: unbound-dns.yml
   when: use_dns
 
+#- name: setup SCM DB
+#  command: /opt/cloudera/cm/schema/scm_prepare_database.sh postgresql -h {{ groups['cm_node'][0] }} scm scm {{ scm_pass }}
+
+#- name: download cdh parcel
+#  get_url:
+#    url: "{{ parcel_repo_url }}{{ cdh_parcel }}"
+#    dest: /opt/cloudera/parcel-repo/ 
+#    owner: cloudera-scm
+#    group: cloudera-scm
+#
+#- name: download cdh parcel sha
+#  get_url:
+#    url: "{{ parcel_repo_url }}{{ cdh_parcel_sha }}"
+#    dest: /opt/cloudera/parcel-repo/ 
+#    owner: cloudera-scm
+#    group: cloudera-scm
+#
 - name: Upload db properties template
   template: src=db.properties dest=/etc/cloudera-scm-server/
 

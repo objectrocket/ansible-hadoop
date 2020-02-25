@@ -1,0 +1,34 @@
+---
+- name: Load OS specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution_major_version }}.yml"
+        - "{{ ansible_os_family|lower }}-{{ ansible_distribution|lower }}.yml"
+        - "{{ ansible_os_family|lower }}.yml"
+        - defaults.yml
+      paths:
+        - ../vars
+
+- include_vars: group_vars/cloudera
+
+- include_vars: group_vars/postgres_vars.yml
+
+- name: setup postgres db owner users
+  postgresql_user:
+    name: "{{ item }}"
+    password: "{{ services_pass }}"
+  with_items:
+    - scm
+    - amon
+    - rman
+    - nav
+    - navms
+    - hue
+    - hive
+    - oozie
+    - das
+    - rangeradmin
+  become: true
+  become_method: sudo
+  become_user: postgres

@@ -12,6 +12,7 @@
   with_nested:
     - "{{ rax.instances }}"
     - "{{ datanode_disks }}"
+  when: datanode_disks
 
 - name: Attach CBS Volumes
   local_action:
@@ -26,3 +27,64 @@
   with_nested:
     - "{{ rax.instances }}"
     - "{{ datanode_disks }}"
+  when: datanode_disks
+
+- name: Create CBS Volumes
+  local_action:
+    module: rax_cbs
+    credentials: "{{ cloud_config.rax_credentials_file }}"
+    name: "{{ item[0].name }}_{{ item[1] }}"
+    volume_type: "{{ cbs_disks_type }}"
+    size: "{{ cbs_disks_size }}"
+    region: "{{ cloud_config.rax_region }}"
+    state: present
+    wait: true
+  with_nested:
+    - "{{ rax.instances }}"
+    - "{{ sql_disk }}"
+  when: sql_disk is defined
+
+- name: Attach CBS Volumes
+  local_action:
+    module: rax_cbs_attachments
+    credentials: "{{ cloud_config.rax_credentials_file }}"
+    volume: "{{ item[0].name }}_{{ item[1] }}"
+    server: "{{ item[0].id }}"
+    region: "{{ cloud_config.rax_region }}"
+    device: "/dev/{{ item[1] }}"
+    state: present
+    wait: true
+  with_nested:
+    - "{{ rax.instances }}"
+    - "{{ sql_disk }}"
+  when: sql_disk is defined
+
+- name: Create CBS Volumes
+  local_action:
+    module: rax_cbs
+    credentials: "{{ cloud_config.rax_credentials_file }}"
+    name: "{{ item[0].name }}_{{ item[1] }}"
+    volume_type: "{{ cbs_disks_type }}"
+    size: "{{ cbs_disks_size }}"
+    region: "{{ cloud_config.rax_region }}"
+    state: present
+    wait: true
+  with_nested:
+    - "{{ rax.instances }}"
+    - "{{ zk_disk }}"
+  when: zk_disk is defined
+
+- name: Attach CBS Volumes
+  local_action:
+    module: rax_cbs_attachments
+    credentials: "{{ cloud_config.rax_credentials_file }}"
+    volume: "{{ item[0].name }}_{{ item[1] }}"
+    server: "{{ item[0].id }}"
+    region: "{{ cloud_config.rax_region }}"
+    device: "/dev/{{ item[1] }}"
+    state: present
+    wait: true
+  with_nested:
+    - "{{ rax.instances }}"
+    - "{{ zk_disk }}"
+  when: zk_disk is defined

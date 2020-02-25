@@ -14,18 +14,18 @@
   roles:
     - cloudera-agent
 
-- name: "setup mysql on cloudera manager node"
-  hosts: cm_node
+- name: "setup postgres on cloudera master nodes"
+  hosts: master-nodes
   any_errors_fatal: true
-  become: yes
+##  become: yes
   pre_tasks:
     - name: "Show cluster info"
       debug: var="{{ hostvars[inventory_hostname] }}"
       when: debug
   roles:
-    - cloudera-mysql
+    - cloudera-postgres
 
-- name: "Apply the cloudera-mngr role to cm-node group"
+- name: "Apply the cloudera-mngr role to cm_node group"
   hosts: cm_node
   become: yes
   pre_tasks:
@@ -57,7 +57,7 @@
       tags:
         - cluster_deploy 
 
-    - include_vars: roles/cloudera-mysql/vars/mysql_vars.yml   
+    - include_vars: group_vars/postgres_vars.yml 
       tags:
         - cluster_deploy 
 
@@ -72,13 +72,12 @@
       tags:
         - cluster_deploy 
     
-    - include_vars: roles/cloudera-mysql/vars/mysql_vars.yml   
+    - include_vars: group_vars/postgres_vars.yml
       tags:
         - cluster_deploy 
 
     - include_vars: group_vars/cloudera
-      tags:
-        - cluster_deploy 
+
 
   tasks:
     - name: Cloudera cluster create request

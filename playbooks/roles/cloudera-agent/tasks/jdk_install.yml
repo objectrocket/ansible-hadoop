@@ -1,0 +1,18 @@
+---
+
+- name: Copy jdk to temp directory
+  get_url:
+    url: "{{ java_jdk_url }}{{ java_jdk_rpm }}"
+    dest: "{{ tmp_dir }}/"
+
+- name: install JDK
+  yum:
+    name: "{{ tmp_dir }}/{{ java_jdk_rpm }}"
+    update_cache: yes
+    state: installed
+  when: ansible_os_family == "RedHat"
+
+- name: Cleanup tmp files
+  file:
+    path: "{{ tmp_dir }}/{{ java_jdk_rpm }}"
+    state: absent

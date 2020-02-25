@@ -1,16 +1,30 @@
 ---
-cloudera_version: '5'
-full_version: '5.8.0'
+cluster_name: 'hadoop-poc'
+cloudera_version: '7'
+full_version: '7.0.3'
 custom_repo: false
 
 adminnode: 'cm_node'
 
-
 #templates  
 #analytic-database.yaml.j2  basic.yaml.j2  cluster-ha.yaml.j2  data-engineering.yaml.j2  enterprise-datahub.yaml.j2  operational-database.yaml.j2
 
+scm_repo_url: "http://clouder_url/cloudera-repos/cm7/"
+scm_repo_gpgkey: "http://clouder_url/cloudera-repos/cm7/RPM-GPG-KEY-cloudera"
+
+scm_repo_user: ""
+scm_repo_pass: ""
+
+parcel_repo_url: "http://clouder_url/cloudera-repos/p/cdh7/7.0.3.0/parcels/"
+cdh_parcel: "CDH-7.0.3-1.cdh7.0.3.p0.1635019-el7.parcel"
+cdh_parcel_sha: "CDH-7.0.3-1.cdh7.0.3.p0.1635019-el7.parcel.sha"
+
+pdgd_repo_rpm_url: "https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/"
+pdgd_repo_rpm: "pgdg-redhat-repo-latest.noarch.rpm"
+
 admin_password: 'admin'
-services_pass: 'temp'
+services_pass: ''
+tough_pass: ''
 alerts_contact: 'root@localhost.localdomain'
 data_disks_filesystem: xfs
 configure_firewall: true
@@ -19,7 +33,6 @@ cluster_template_file: 'templates/operational-database.yaml.j2'
 hdfs:
   dfs_replication: 3
   failed_volumes_tolerated: 1
-
 
 # set to true to show host variables
 debug: true

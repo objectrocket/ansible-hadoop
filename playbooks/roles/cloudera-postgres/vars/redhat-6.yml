@@ -1,0 +1,7 @@
+pkgs:
+  - mysql-server
+  - mysql-connector-java
+
+mycnf_template: my.cnf-mysqld
+
+mysql_service: mysqld
