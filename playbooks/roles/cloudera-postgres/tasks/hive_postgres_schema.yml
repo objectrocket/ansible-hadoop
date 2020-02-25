@@ -1,6 +1,6 @@
 ---
 
-- name: download postgres repo rpm
+- name: setup metastore schema
   copy:
     src: "hive-schema-3.1.2000.postgres.sql"
     dest: "{{ tmp_dir }}/"
