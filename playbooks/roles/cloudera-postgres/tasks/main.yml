@@ -97,13 +97,13 @@
     name: postgresql-9.6
     state: restarted
 
-- name: install postgres repo
+- name: setup postgres hba
   include: pg_hba.yml
 
-- name: install postgres repo
+- name: setup postgres users
   include: pg_user.yml
 
-- name: install postgres repo
+- name: setup postgres dbs
   include: pg_dbs.yml
 
 - name: start postgres
