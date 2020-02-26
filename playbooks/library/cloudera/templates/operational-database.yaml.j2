@@ -73,8 +73,8 @@ services:
         config:
           quorumPort: 2888
           electionPort: 3888
-          dataLogDir: /hadoop/ms/zookeeper/log
-          dataDir: /hadoop/ms/zookeeper/data
+          dataLogDir: /var/lib/zookeeper/log
+          dataDir: /var/lib/zookeeper/data
   HDFS:
     config:
       dfs_replication: {{ hdfs.dfs_replication }}

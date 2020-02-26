@@ -215,6 +215,22 @@
          passno=0
   when: sql_disk is defined and sql_disk and ansible_devices[sql_disk] is defined
 
+- name: create zk mount
+  file: 
+    name="/var/lib/zookeeper"
+    state=directory
+  when: zk_disk is defined and zk_disk and ansible_devices[zk_disk] is defined
+
+- name: Mount zookeeper services disk under /var/lib/zookeeper
+  mount: state=mounted
+         src="/dev/{{ zk_disk }}1"
+         name="/var/lib/zookeeper/"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: zk_disk is defined and zk_disk and ansible_devices[zk_disk] is defined
+
 - name: Mount datanode disks under /grid/{0..n}
   mount: state=mounted
          src="/dev/{{ item.1 }}1"
