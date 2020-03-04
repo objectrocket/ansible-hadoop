@@ -20,10 +20,41 @@
   set_fact: broker_id={{item.0 + 1}}
   with_indexed_items: "{{ groups['kafka-server-nodes'] }}"
   when: item.1 == "{{inventory_hostname}}"
+
+
+- name: create postgres dir
+  file:
+    path: /kafka
+    owner: cp-kafka
  
 - name: Template kafka server properties 
   template:
     src: server.properties
+    dest: /etc/kafka/
+
+- name: Template kafka consumer properties
+  template:
+    src: consumer.properties
+    dest: /etc/kafka/
+
+- name: Template kafka-rest.properties
+  template:
+    src: kafka-rest.properties
+    dest: /etc/kafka/
+
+#- name: Template ksql-server.properties
+#  template:
+#    src: ksql-server.properties
+#    dest: /etc/kafka/
+
+- name: Template producer.properties
+  template:
+    src: producer.properties
+    dest: /etc/kafka/
+
+- name: Template zookeeper.properties
+  template:
+    src: zookeeper.properties
     dest: /etc/kafka/
 
 - debug: var=ansible_facts
