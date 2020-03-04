@@ -26,4 +26,29 @@
     src: myid.j2
     dest: /zookeeper/myid
 
+- name: Template kafka consumer properties
+  template:
+    src: consumer.properties
+    dest: /etc/kafka/
+
+- name: Template kafka-rest.properties
+  template:
+    src: kafka-rest.properties
+    dest: /etc/kafka/
+
+#- name: Template ksql-server.properties
+#  template:
+#    src: ksql-server.properties
+#    dest: /etc/kafka/
+
+- name: Template producer.properties
+  template:
+    src: producer.properties
+    dest: /etc/kafka/
+
+- name: Template zookeeper.properties
+  template:
+    src: zookeeper.properties
+    dest: /etc/kafka/
+
 - debug: var=ansible_facts
