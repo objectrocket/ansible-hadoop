@@ -7,7 +7,7 @@ dnsres: ['173.203.4.8', '173.203.4.9']
 
 cloud_config:
   rax_credentials_file: '~/.raxpub'
-  rax_region: 'IAD'
+  rax_region: 'DFW'
   domain: 'localnet'
   allowed_external_ips: ['127.0.0.1']
   ssh:

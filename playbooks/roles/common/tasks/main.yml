@@ -231,6 +231,38 @@
          passno=0
   when: zk_disk is defined and zk_disk and ansible_devices[zk_disk] is defined
 
+- name: create kafka mount
+  file: 
+    name="/var/lib/kafka"
+    state=directory
+  when: kafka_disk is defined and kafka_disk and ansible_devices[kafka_disk] is defined
+
+- name: Mount kafka services disk under /var/lib/kafka
+  mount: state=mounted
+         src="/dev/{{ kafka_disk }}1"
+         name="/var/lib/kafka/"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: kafka_disk is defined and kafka_disk and ansible_devices[kafka_disk] is defined
+
+- name: create kafka streams mount
+  file: 
+    name="/var/lib/kafka-streams"
+    state=directory
+  when: kafka_streams_disk is defined and kafka_streams_disk and ansible_devices[kafka_streams_disk] is defined
+
+- name: Mount kafka-streams services disk under /var/lib/kafka-streams
+  mount: state=mounted
+         src="/dev/{{ kafka_streams_disk }}1"
+         name="/var/lib/kafka-streams/"
+         fstype="{{ data_disks_filesystem }}"
+         opts=defaults,noatime
+         dump=0
+         passno=0
+  when: kafka_streams_disk is defined and kafka_streams_disk and ansible_devices[kafka_streams_disk] is defined
+
 - name: Mount datanode disks under /grid/{0..n}
   mount: state=mounted
          src="/dev/{{ item.1 }}1"
