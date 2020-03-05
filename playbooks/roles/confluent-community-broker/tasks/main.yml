@@ -26,7 +26,14 @@
   file:
     path: /kafka
     owner: cp-kafka
- 
+    state: directory
+
+- name: create kafka streams dir
+  file:
+    path: /var/lib/kafka-streams
+    owner: cp-ksql
+    state: directory
+
 - name: Template kafka server properties 
   template:
     src: server.properties
@@ -56,5 +63,30 @@
   template:
     src: zookeeper.properties
     dest: /etc/kafka/
+
+- name: start kafka server
+  systemd:
+    name: confluent-kafka
+    state: started
+
+- name: start kafka rest
+  systemd:
+    name: confluent-kafka-rest
+    state: started
+
+- name: start ksql server
+  systemd:
+    name: confluent-ksql
+    state: started
+
+- name: start schema registry
+  systemd:
+    name: confluent-schema-registry
+    state: started
+
+- name: start connect service
+  systemd:
+    name: confluent-kafka-connect
+    state: started
 
 - debug: var=ansible_facts
