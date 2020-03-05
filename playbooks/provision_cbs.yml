@@ -12,7 +12,7 @@
   with_nested:
     - "{{ rax.instances }}"
     - "{{ datanode_disks }}"
-  when: datanode_disks
+  when: datanode_disks is defined and datanode_disks
 
 - name: Attach CBS Volumes
   local_action:
@@ -27,7 +27,7 @@
   with_nested:
     - "{{ rax.instances }}"
     - "{{ datanode_disks }}"
-  when: datanode_disks
+  when: datanode_disks is defined and datanode_disks
 
 - name: Create CBS Volumes
   local_action:
