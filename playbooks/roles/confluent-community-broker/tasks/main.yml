@@ -1,32 +1,27 @@
 ---
 - include_vars: group_vars/kafka-server-nodes
 
-- name: Include partitioning.yml
-  include: partitioning.yml
-  with_flattened:
-    - "{{ kafka_disk|default([]) }}"
-
-- name: Mount kafka disk under /kafka
-  mount: state=mounted
-         src="/dev/{{ kafka_disk }}1"
-         name="/kafka"
-         fstype="{{ data_disks_filesystem }}"
-         opts=defaults,noatime
-         dump=0
-         passno=0
-  when: kafka_disk is defined and kafka_disk and ansible_devices[kafka_disk] is defined
-
 - name: Set Broker Id
   set_fact: broker_id={{item.0 + 1}}
   with_indexed_items: "{{ groups['kafka-server-nodes'] }}"
   when: item.1 == "{{inventory_hostname}}"
 
-
-- name: create postgres dir
+- name: setup kafka dir
   file:
-    path: /kafka
+    path: /var/lib/kafka
     owner: cp-kafka
- 
+    group: confluent
+    mode: 640
+    state: directory
+
+- name: setup kafka streams dir
+  file:
+    path: /var/lib/kafka-streams
+    owner: cp-ksql
+    group: confluent
+    mode: 640
+    state: directory
+
 - name: Template kafka server properties 
   template:
     src: server.properties
@@ -56,5 +51,30 @@
   template:
     src: zookeeper.properties
     dest: /etc/kafka/
+
+- name: start kafka server
+  systemd:
+    name: confluent-kafka
+    state: started
+
+- name: start kafka rest
+  systemd:
+    name: confluent-kafka-rest
+    state: started
+
+- name: start ksql server
+  systemd:
+    name: confluent-ksql
+    state: started
+
+- name: start schema registry
+  systemd:
+    name: confluent-schema-registry
+    state: started
+
+- name: start connect service
+  systemd:
+    name: confluent-kafka-connect
+    state: started
 
 - debug: var=ansible_facts

@@ -12,4 +12,5 @@ build_kafka_cbs: true
 cbs_disks_size: 200
 cbs_disks_type: 'SATA'
 kafka_disk: xvde
+kafka-streams: xvdf
 #datanode_disks: ['xvdf', 'xvdg']
