@@ -11,13 +11,13 @@
     path: /var/lib/zookeeper
     owner: cp-kafka
     group: confluent
-    mode: 640
+    mode: '750'
     state: directory
 
 - name: Template zk id 
   template:
     src: myid.j2
-    dest: /zookeeper/myid
+    dest: /var/lib/zookeeper/myid
 
 - name: Template zookeeper.properties
   template:

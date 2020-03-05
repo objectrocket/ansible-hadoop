@@ -11,7 +11,7 @@
     path: /var/lib/kafka
     owner: cp-kafka
     group: confluent
-    mode: 640
+    mode: '750'
     state: directory
 
 - name: setup kafka streams dir
@@ -19,7 +19,7 @@
     path: /var/lib/kafka-streams
     owner: cp-ksql
     group: confluent
-    mode: 640
+    mode: '750'
     state: directory
 
 - name: Template kafka server properties 
