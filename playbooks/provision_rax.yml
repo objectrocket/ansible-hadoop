@@ -134,7 +134,7 @@
       register: rax
       when: cloud_nodes_count > 0
 
-    - name: Build Rackspace CBS for master nodes
+    - name: Build Rackspace CBS for zookeeper nodes
       include: provision_cbs.yml
       when: cloud_nodes_count > 0 and build_kafka_cbs is defined and build_kafka_cbs
 
