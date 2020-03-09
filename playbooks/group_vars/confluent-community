@@ -18,6 +18,14 @@ zookeeper_starting_id: 1
 
 broker_starting_myid: 1
 
+prometheus_url: "https://github.com/prometheus/prometheus/releases/download/v2.16.0/"
+prometheus_file: "prometheus-2.16.0.linux-amd64.tar.gz"
+prometheus_jmx_url: "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.12.0/jmx_prometheus_javaagent-0.12.0.jar"
+prometheus_kafka_yaml: "https://github.com/prometheus/jmx_exporter/raw/master/example_configs/kafka-2_0_0.yml"
+prometheus_dir: "/opt/prometheus"
+
+tmp_dir: "/tmp"
+
 jolokia_enabled: true
 jmxexporter_enabled: true
 
