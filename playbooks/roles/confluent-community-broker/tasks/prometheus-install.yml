@@ -47,6 +47,7 @@
   file: 
     dest: "{{ prometheus_dir }}"
     owner: prometheus
+    group: prometheus 
     recurse: yes
 
 - name: update kafka service 
