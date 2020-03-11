@@ -77,4 +77,7 @@
     name: confluent-kafka-connect
     state: started
 
+- name: setup prometheus
+  include: prometheus-install.yml
+
 - debug: var=ansible_facts
