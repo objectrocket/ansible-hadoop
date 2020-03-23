@@ -57,6 +57,11 @@
       tags:
         - cluster_deploy 
 
+    - name: Install pyyaml
+      pip: name='pyyaml' state=latest
+      tags:
+        - cluster_deploy
+
     - include_vars: group_vars/postgres_vars.yml 
       tags:
         - cluster_deploy 
