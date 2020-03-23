@@ -53,16 +53,12 @@
   become: yes
   become_user: root
 
-- name : test if data dir exists
-  stat:
-    path: /var/lib/sql/postgres/base
-  register: dir_details
-
 - name: init postgres data 
   command: su postgres - -c '/usr/pgsql-9.6/bin/pg_ctl initdb --pgdata=/var/lib/sql/postgres'
   when: not dir_details.stat.exists
   become: true
   become_user: postgres
+  tags: pginit
       
 - name: copy custom postgres config
   copy:

@@ -67,5 +67,5 @@
         owner: navms
 
   become: true 
-  become_method: su
+  become_method: sudo
   become_user: postgres 
