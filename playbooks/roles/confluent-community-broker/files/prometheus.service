@@ -8,7 +8,7 @@ After=network-online.target
 User=prometheus
 Restart=on-failure
 ExecStart=/opt/prometheus/prometheus-2.16.0.linux-amd64/prometheus \
-                                --config.file=/opt/prometheus/prometheus-2.16.0.linux-amd64/prometheus.yml \
+                                --config.file=/opt/prometheus/prometheus.yml \
                                 --storage.tsdb.path=/opt/prometheus/prometheus-2.16.0.linux-amd64/data
 
 [Install]
