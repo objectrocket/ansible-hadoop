@@ -1,35 +1,10 @@
 packages:
-  - python-simplejson
-  - python-httplib2
-  - man
-  - man-pages
-  - vim-enhanced
-  - sysstat
-  - lsof
-  - jwhois
-  - telnet
-  - nc
-  - libselinux-python
-  - ntpdate
-  - chrony
-  - parted
-  - mc
-  - perl
-  - openssh-clients
-  - util-linux-ng
-  - iotop
-  - links
-  - unzip
   - curl
   - wget
   - xfsprogs
   - confluent-community-2.12
-  - java-1.8.0-openjdk-devel
+  - java-11-openjdk-devel
 
-update_grub: 'cd && grub2-mkconfig -o "$(readlink -n /etc/grub2.cfg)"'
-
-ntp_service: chronyd
-ntp_sync: "systemctl restart ntpdate"
 
 epel_rpm_url: "http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
 
