@@ -20,29 +20,6 @@
     url: "{{ prometheus_kafka_yaml }}"
     dest: "{{ prometheus_dir }}/"
 
-- name: Extract prometheus.tgz into prometheus dir
-  unarchive:
-    src: "{{ tmp_dir }}/{{ prometheus_file }}"
-    dest: "{{ prometheus_dir }}/"
-    remote_src: yes
-
-- name: install prometheus config
-  copy:
-    src: "prometheus.yml"
-    dest: "{{ prometheus_dir }}/"
-
-- name: Cleanup tmp files
-  file:
-    path: "{{ tmp_dir }}/{{ prometheus_file }}"
-    state: absent
-
-- name: setup prometheus user
-  user:
-    name: prometheus
-    shell: /sbin/nologin
-    home: "{{ prometheus_dir }}"
-  ignore_errors: yes
-
 - name: chown prometeus dirs
   file: 
     dest: "{{ prometheus_dir }}"
@@ -64,16 +41,3 @@
     name: confluent-kafka
     state: started
 
-- name: add prometheus service
-  copy:
-    src: prometheus.service
-    dest: /usr/lib/systemd/system/prometheus.service
-
-- name: reload systemd
-  systemd:
-    daemon_reload: yes
-
-- name: start prometheus service
-  systemd:
-    name: prometheus
-    state: started

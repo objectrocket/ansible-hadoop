@@ -1,0 +1,7 @@
+---
+- include_vars: group_vars/kafka-server-nodes
+
+- name: setup prometheus
+  include: prometheus-install.yml
+
+- debug: var=ansible_facts
