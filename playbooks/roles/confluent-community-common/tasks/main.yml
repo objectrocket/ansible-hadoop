@@ -17,6 +17,12 @@
 
 - include_vars: group_vars/kafka-zookeeper-nodes
 
+- name: Correct java version selected
+  alternatives:
+    name: java
+    link: /usr/bin/java
+    path: /usr/lib/jvm/java-11-openjdk-11.0.6.10-1.el7_7.x86_64/bin/java
+
 - name: install confluent community repo
   copy:
     src: confluent.repo

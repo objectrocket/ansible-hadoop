@@ -65,13 +65,11 @@
 #          compare="false"
 #          current_facts="false"
 #
-#- name: Apply the confluent-community manager  role to manager node group
-#  hosts: confluent-community-manager
-#  become: yes
-#  pre_tasks:
-#    - name: include confluent community vars
-#      include_vars: group_vars/confluent-community
-#  roles:
-#    - confluent-community-manager
-#  tags:
-#    - confluent-community-manager-only
+- name: Apply the confluent-community manager  role to manager node group
+  hosts: kafka-manager
+  become: yes
+  pre_tasks:
+    - name: include confluent community vars
+      include_vars: group_vars/confluent-community
+  roles:
+    - confluent-community-mngr
