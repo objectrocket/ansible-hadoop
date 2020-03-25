@@ -20,7 +20,7 @@
     url: "{{ prometheus_kafka_yaml }}"
     dest: "{{ prometheus_dir }}/"
 
-- name: chown prometeus dirs
+- name: chown prometheus dirs
   file: 
     dest: "{{ prometheus_dir }}"
     owner: prometheus

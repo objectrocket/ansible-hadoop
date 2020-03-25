@@ -33,7 +33,7 @@
     home: "{{ prometheus_dir }}"
   ignore_errors: yes
 
-- name: chown prometeus dirs
+- name: chown prometheus dirs
   file: 
     dest: "{{ prometheus_dir }}"
     owner: prometheus
