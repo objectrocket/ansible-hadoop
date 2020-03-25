@@ -37,10 +37,10 @@
     src: kafka-rest.properties
     dest: /etc/kafka/
 
-#- name: Template ksql-server.properties
-#  template:
-#    src: ksql-server.properties
-#    dest: /etc/kafka/
+- name: Template ksql-server.properties
+  template:
+    src: ksql-server.properties
+    dest: /etc/kafka/
 
 - name: Template producer.properties
   template:
