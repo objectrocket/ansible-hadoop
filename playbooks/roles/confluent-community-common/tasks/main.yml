@@ -32,7 +32,7 @@
 - name: add gpg key
   rpm_key:
     state: present
-    key: https://packages.confluent.io/rpm/5.3/archive.key
+    key: https://packages.confluent.io/rpm/5.4/archive.key
 
 - name: Ensure required packages are installed (yum)
   yum:
