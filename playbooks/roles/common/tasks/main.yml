@@ -10,6 +10,8 @@
       paths:
         - ../vars
 
+- include_vars: group_vars/all
+  
 - include_vars: group_vars/cloudera
   when: distro == "cdh"
 
@@ -153,7 +155,12 @@
 
 - name: Set hosts file
   template: src=hosts.j2 dest=/etc/hosts mode=0644
-  when: not azure
+  when: distro == "hdp" or distro == "cdp"
+  
+
+- name: Set hosts file
+  template: src=kafka_hosts.j2 dest=/etc/hosts mode=0644
+  when: not azure and distro == "cc"
 
 - name: Include firewall.yml
   include: firewall.yml
@@ -167,6 +174,7 @@
     - "{{ hadoop_disk|default([]) }}"
     - "{{ datanode_disks|default([]) }}"
     - "{{ sql_disk|default([]) }}"
+    - "{{ kafka_disk|default([]) }}"
     - "{{ zk_disk|default([]) }}"
 
 - name: Mount hadoop disk under /hadoop
