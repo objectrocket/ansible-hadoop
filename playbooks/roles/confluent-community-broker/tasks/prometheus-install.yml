@@ -1,5 +1,10 @@
 ---
 
+- name: add prometheus system user
+  user:
+    name: prometheus
+    system: yes
+
 - name: setup prometheus dir
   file:
     path: "{{ prometheus_dir }}"
