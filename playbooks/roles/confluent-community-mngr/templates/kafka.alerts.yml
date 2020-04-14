@@ -1,0 +1,38 @@
+groups:
+- name: kafka
+  rules:
+  - alert: BytesInPerSec50kThreshold
+    expr: kafka_server_brokertopicmetrics_oneminuterate{name="BytesInPerSec"} > 5000
+    for: 10s
+    labels:
+      severity: warning
+    annotations:
+      summary: Kafka High Bytes In CRIT 5k (10sec)
+  - alert: BytesInPerSec100kThreshold
+    expr: kafka_server_brokertopicmetrics_oneminuterate{name="BytesInPerSec"} > 10000
+    for: 10s
+    labels:
+      severity: critical
+    annotations:
+      summary: Kafka High Bytes In CRIT 10k (10sec)
+  - alert: BytesInPerSec150kThreshold
+    expr: kafka_server_brokertopicmetrics_oneminuterate{name="BytesInPerSec"} > 15000
+    for: 10s
+    labels:
+      severity: critical
+    annotations:
+      summary: Kafka High Bytes In CRIT 15k (10sec)
+  - alert: CPU-90%+
+    expr: java_lang_operatingsystem_systemcpuload > 90
+    for: 1s
+    labels:
+      severity: critical
+    annotations:
+      summary: CPU Load 90%+
+  - alert: EndpointDown
+    expr: up == 0
+    for: 10s
+    labels:
+      severity: "critical"
+    annotations:
+      summary: "Endpoint down"

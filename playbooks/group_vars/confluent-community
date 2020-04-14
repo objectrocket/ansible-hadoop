@@ -24,6 +24,8 @@ prometheus_jmx_url: "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_promet
 prometheus_kafka_yaml: "https://github.com/prometheus/jmx_exporter/raw/master/example_configs/kafka-2_0_0.yml"
 prometheus_dir: "/opt/prometheus"
 
+alertmanager: "127.0.0.1"
+
 tmp_dir: "/tmp"
 
 jolokia_enabled: true
