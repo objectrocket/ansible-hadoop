@@ -56,7 +56,7 @@
   alternatives:
     name: java
     link: /usr/bin/java
-    path: /usr/lib/jvm/java-11-openjdk-11.0.6.10-1.el7_7.x86_64/bin/java
+    path: /usr/lib/jvm/java-11-openjdk-11.0.7.10-4.el7_8.x86_64/bin/java
 
 - name: Set nofile limits
   lineinfile: dest=/etc/security/limits.conf
