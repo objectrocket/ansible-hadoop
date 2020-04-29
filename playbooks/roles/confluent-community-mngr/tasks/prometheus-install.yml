@@ -23,7 +23,7 @@
 
 - name: install alerts config
   template:
-    src: "kafka.alert.rules.yml
+    src: "kafka.alerts.yml"
     dest: "{{ prometheus_dir }}/"
 
 - name: Cleanup tmp files
