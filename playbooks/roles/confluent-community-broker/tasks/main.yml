@@ -52,6 +52,11 @@
     src: zookeeper.properties
     dest: /etc/kafka/
 
+- name: Template schema-registry.properties
+  template:
+    src: schema-registry.properties
+    dest: /etc/schema-registry/
+
 - name: start kafka server
   systemd:
     name: confluent-kafka
