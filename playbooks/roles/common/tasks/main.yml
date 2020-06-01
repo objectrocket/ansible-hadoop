@@ -157,7 +157,6 @@
   template: src=hosts.j2 dest=/etc/hosts mode=0644
   when: distro == "hdp" or distro == "cdp"
   
-
 - name: Set hosts file
   template: src=kafka_hosts.j2 dest=/etc/hosts mode=0644
   when: not azure and distro == "cc"
