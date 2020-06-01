@@ -69,7 +69,7 @@
 
 - name: start ksql server
   systemd:
-    name: confluent-ksql
+    name: confluent-ksqldb
     state: started
 
 - name: start schema registry
