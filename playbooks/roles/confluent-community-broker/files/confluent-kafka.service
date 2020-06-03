@@ -6,4 +6,4 @@ ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties
 LimitNOFILE=1000000
 TimeoutStopSec=180
 Restart=no
-Environment=KAFKA_OPTS=-javaagent:/opt/prometheus/jmx_prometheus_javaagent-0.12.0.jar=7071:/opt/prometheus/kafka-2_0_0.yml
+Environment="KAFKA_OPTS=-javaagent:/opt/prometheus/jmx_prometheus_javaagent-0.12.0.jar=7071:/opt/prometheus/kafka-2_0_0.yml" "KAFKA_HEAP_OPTS=-Xms6g -Xmx6g -XX:MetaspaceSize=96m -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:G1HeapRegionSize=16M -XX:MinMetaspaceFreeRatio=50 -XX:MaxMetaspaceFreeRatio=80"
